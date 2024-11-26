@@ -1,3 +1,11 @@
+# Project Specific
+
+llvm.sh
+CMakeUserPresets.json
+build/
+
+# -- C++ Ignores --
+
 # Prerequisites
 *.d
 
