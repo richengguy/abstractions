@@ -4,8 +4,7 @@ channels:
   - defaults
 
 dependencies:
-  - cmake=3.26
   - python=3.13
   - pip
   - pip:
-    - conan == 2.9.3
+    - -r requirements.txt
