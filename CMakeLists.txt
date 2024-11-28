@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.15)
 project(abstractions CXX)
 
+set(CMAKE_CXX_STANDARD 20)
+add_compile_options(-Wall)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-O0)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_options(-Werror)
+endif()
 
+include(CTest)
 
-add_library(abstractions src/abstractions.cpp)
-target_include_directories(abstractions PUBLIC include)
-
-
-
-set_target_properties(abstractions PROPERTIES PUBLIC_HEADER "include/abstractions.h")
-install(TARGETS abstractions)
+add_subdirectory(src)
