@@ -10,8 +10,8 @@ jobs:
 
       - uses: ./.github/actions/run-linter
         with:
-          cmd: python ./scripts/run-clang-formatter lint include src
-          diff-cmd: python ./scripts/run-clang-formatter lint include src
+          cmd: python ./scripts/run-clang-format lint include src
+          diff-cmd: python ./scripts/run-clang-format lint include src
           diff-lang: cpp
 
       # - uses: actions/setup-python@v5
