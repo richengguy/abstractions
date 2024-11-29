@@ -7,9 +7,12 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from difflib import unified_diff
 from pathlib import Path
-from typing import Iterator, Literal
+from typing import Callable, Iterator
 
 _IN_TTY = sys.stdout.isatty()
+
+
+_ClangFormatCmd = Callable[[Path, Path], "LintResult"]
 
 
 def _ansi_control(s: str, n: int) -> str:
@@ -89,18 +92,12 @@ def collect_results(requests: list[Future]) -> list[LintResult]:
     return results
 
 
-def dispatch(
-    mode: Literal["lint", "format"], config: Path, paths: list[Path]
-) -> list[Future]:
+def dispatch(cmd: _ClangFormatCmd, config: Path, paths: list[Path]) -> list[Future]:
     pool = ThreadPoolExecutor(max_workers=4)
 
     requests: list[Future] = []
     for path in paths:
-        match mode:
-            case "lint":
-                requests.append(pool.submit(lint, config, path))
-            case "format":
-                raise NotImplementedError()
+        requests.append(pool.submit(cmd, config, path))
 
     return requests
 
@@ -130,6 +127,19 @@ def lint(config: Path, file: Path) -> LintResult:
     return LintResult(file, diff)
 
 
+def reformat(config: Path, file: Path) -> LintResult:
+    output = subprocess.run(
+        ["clang-format", f"--style=file:{config}", "-i", file.as_posix()],
+        capture_output=True,
+        text=True,
+    )
+
+    if output.returncode != 0:
+        raise RuntimeError(output.stderr)
+
+    return LintResult(file)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -147,18 +157,27 @@ def main() -> None:
     parser.add_argument("--config", "-c", default=Path(".clang-format"), type=Path)
     args = parser.parse_args()
 
+    only_check = args.diff or args.check
+    clang_cmd = lint if only_check else reformat
+
     files = collect_files(*args.paths)
-    requests = dispatch("lint", args.config, files)
+    requests = dispatch(clang_cmd, args.config, files)
     results = collect_results(requests)
+
+    if not only_check:
+        print(f"Processed {_bold(str(len(files)))} files:")
 
     num_changed = 0
     for result in results:
         if result.has_change:
             num_changed += 1
 
-        sys.stdout.writelines(result.render(show_diff=args.diff))
+        if only_check:
+            sys.stdout.writelines(result.render(show_diff=args.diff))
+        else:
+            print(f"{_bold('\u27A1')} {result.path.as_posix()}")
 
-    if not args.diff:
+    if args.check:
         count = f"{num_changed} / {len(files)}"
         print("")
         print(f"{_bold(count)} files will be reformatted")
