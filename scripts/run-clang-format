@@ -45,9 +45,13 @@ class LintResult:
     def has_change(self) -> bool:
         return self.diff is not None
 
-    def render(self) -> Iterator[str]:
+    def render(self, *, show_diff: bool = True) -> Iterator[str]:
         if self.diff is None:
             yield f"{_green('\u2713')} ... {self.path.as_posix()}\n"
+            return
+
+        if not show_diff:
+            yield f"{_red('\u2717')} ... {self.path.as_posix()}\n"
             return
 
         for line in self.diff:
@@ -128,12 +132,17 @@ def lint(config: Path, file: Path) -> LintResult:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    # parser.add_argument("mode", choices=["lint", "format"], help="clang-format mode")
     parser.add_argument(
         "paths", metavar="path", nargs="+", help="source code path", type=Path
     )
-    parser.add_argument("--check", action="store_true", help="Return a non-zero exit code if there are any code changes.")
-    parser.add_argument("--diff", action="store_true", help="Only show the proposed changes.")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Return a non-zero exit code if there are any code changes.",
+    )
+    parser.add_argument(
+        "--diff", action="store_true", help="Only show the proposed changes."
+    )
 
     parser.add_argument("--config", "-c", default=Path(".clang-format"), type=Path)
     args = parser.parse_args()
@@ -142,12 +151,19 @@ def main() -> None:
     requests = dispatch("lint", args.config, files)
     results = collect_results(requests)
 
-    has_changes = False
+    num_changed = 0
     for result in results:
-        has_changes |= result.has_change
-        sys.stdout.writelines(result.render())
+        if result.has_change:
+            num_changed += 1
 
-    if args.check and has_changes:
+        sys.stdout.writelines(result.render(show_diff=args.diff))
+
+    if not args.diff:
+        count = f"{num_changed} / {len(files)}"
+        print("")
+        print(f"{_bold(count)} files will be reformatted")
+
+    if args.check and num_changed > 0:
         sys.exit(1)
 
 
