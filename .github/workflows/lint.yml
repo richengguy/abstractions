@@ -10,8 +10,8 @@ jobs:
 
       - uses: ./.github/actions/run-linter
         with:
-          cmd: python ./scripts/run-clang-format lint include src
-          diff-cmd: python ./scripts/run-clang-format lint include src
+          cmd: python ./scripts/run-clang-format --check include src
+          diff-cmd: python ./scripts/run-clang-format --diff include src
           diff-language: cpp
 
   lint-python:
@@ -21,6 +21,6 @@ jobs:
 
       - uses: ./.github/actions/run-linter
         with:
-          cmd: black --check scripts
+          cmd: black --check scripts/run-mypy scripts/run-clang-format
           diff-cmd: black --diff scripts
           diff-language: python
