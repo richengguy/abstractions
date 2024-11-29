@@ -1,10 +1,70 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 import argparse
 import concurrent.futures
 import subprocess
-from concurrent.futures import ThreadPoolExecutor
+import sys
+from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import dataclass
 from difflib import unified_diff
 from pathlib import Path
+from typing import Iterator, Literal
+
+_IN_TTY = sys.stdout.isatty()
+
+
+def _ansi_control(s: str, n: int) -> str:
+    return f"\033[{n}m{s}\033[m"
+
+
+def _bold(s: str) -> str:
+    return _ansi_control(s, 1) if _IN_TTY else s
+
+
+def _faint(s: str) -> str:
+    return _ansi_control(s, 2) if _IN_TTY else s
+
+
+def _cyan(s: str) -> str:
+    return _ansi_control(s, 36) if _IN_TTY else s
+
+
+def _green(s: str) -> str:
+    return _ansi_control(s, 92) if _IN_TTY else s
+
+
+def _red(s: str) -> str:
+    return _ansi_control(s, 91) if _IN_TTY else s
+
+
+@dataclass(frozen=True)
+class LintResult:
+    path: Path
+    diff: list[str] | None = None
+
+    @property
+    def no_change(self) -> bool:
+        return self.diff is not None
+
+    def render(self) -> Iterator[str]:
+        if self.diff is None:
+            yield f"{_green('\u2713')} ... {self.path.as_posix()}\n"
+            return
+
+        for line in self.diff:
+            colour = _faint
+
+            if line.startswith(("--- ", "+++ ")):
+                colour = _bold
+            elif line.startswith("@@ "):
+                colour = _cyan
+            elif line[0] == "-":
+                colour = _red
+            elif line[0] == "+":
+                colour = _green
+
+            yield colour(line)
+
+        yield "\n"
 
 
 def collect_files(*paths: Path) -> list[Path]:
@@ -18,21 +78,52 @@ def collect_files(*paths: Path) -> list[Path]:
     return files
 
 
-def lint(config: Path, file: Path) -> str:
+def collect_results(requests: list[Future]) -> list[LintResult]:
+    processes = concurrent.futures.wait(requests)
+    results: list[LintResult] = [proc.result() for proc in processes.done]
+    results.sort(key=lambda x: x.path)
+    return results
+
+
+def dispatch(
+    mode: Literal["lint", "format"], config: Path, paths: list[Path]
+) -> list[Future]:
+    pool = ThreadPoolExecutor(max_workers=4)
+
+    requests: list[Future] = []
+    for path in paths:
+        match mode:
+            case "lint":
+                requests.append(pool.submit(lint, config, path))
+            case "format":
+                raise NotImplementedError()
+
+    return requests
+
+
+def lint(config: Path, file: Path) -> LintResult:
     output = subprocess.run(
-        ["clang-format", f"--style={config}", file.as_posix()],
+        ["clang-format", f"--style=file:{config}", file.as_posix()],
         capture_output=True,
         text=True,
     )
-    formatted = output.stdout.splitlines()
+
+    if output.returncode != 0:
+        raise RuntimeError(output.stderr)
+
+    formatted = output.stdout.splitlines(keepends=True)
 
     if len(formatted) == 0:
-        return ""
+        return LintResult(file)
 
     with file.open("rt") as f:
-        original = f.read().splitlines()
+        original = f.readlines()
 
-    return "\n".join(unified_diff(original, formatted))
+    original_file = f"{file.as_posix()} (original)"
+    formatted_file = f"{file.as_posix()} (formatted)"
+
+    diff = list(unified_diff(original, formatted, original_file, formatted_file))
+    return LintResult(file, diff)
 
 
 def main() -> None:
@@ -45,13 +136,11 @@ def main() -> None:
     args = parser.parse_args()
 
     files = collect_files(*args.paths)
-    print("Collected:")
-    for f in files:
-        print(f"  {f}")
+    requests = dispatch(args.mode, args.config, files)
+    results = collect_results(requests)
 
-    for f in files:
-        print(lint(args.config, f))
-        print("====")
+    for result in results:
+        sys.stdout.writelines(result.render())
 
 
 if __name__ == "__main__":
