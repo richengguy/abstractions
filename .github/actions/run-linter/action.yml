@@ -30,7 +30,7 @@ runs:
       run: ${{ inputs.cmd }}
 
     - name: Print formatting errors
-      if: ${{ failure() &&  inputs.diff-cmd != "" }}
+      if: ${{ failure() && inputs.diff-cmd != '' }}
       shell: bash
       run: |
         out=$(${{ inputs.diff-cmd }})
