@@ -1,0 +1,62 @@
+name: Run Linters
+
+on: [pull_request]
+
+jobs:
+  lint-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/run-linter
+        with:
+          cmd: python ./scripts/run-clang-formatter lint include src
+          diff-cmd: python ./scripts/run-clang-formatter lint include src
+          diff-lang: cpp
+
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: "3.13"
+
+      # - name: Install linting tools
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     python -m pip install -r requirements.txt
+
+      # - name: Run 'clang-format'
+      #   run: python ./scripts/run-clang-format lint include src
+
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/run-linter
+        with:
+          cmd: black --check scripts
+          diff-cmd: black --diff scripts
+          diff-language: python
+
+      # - name: Set up Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: "3.13"
+
+      # - name: Install linting tools
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     python -m pip install -r requirements.txt
+
+      # - name: Run 'black'
+      #   run: |
+      #     black --check scripts
+
+      # - name: Print formatting errors
+      #   run: |
+      #     out=$(black --diff tools)
+
+      #     echo "${out}"
+      #     echo "\`\`\`python" >> $GITHUB_STEP_SUMMARY
+      #     echo "${out}" >> $GITHUB_STEP_SUMMARY
+      #     echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      #   if: ${{ failure() }}
