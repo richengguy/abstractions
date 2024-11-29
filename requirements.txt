@@ -1,1 +1,8 @@
+# C++ Utilities
 conan == 2.9.3
+clang-format == 19.1.4
+
+# Python Utilities
+black
+mypy
+flake8
