@@ -1,0 +1,51 @@
+name: Run source code linter
+description: Run a linting tool on repository folders
+inputs:
+  cmd:
+    description: |
+      Linting command.
+      Either an executable (like 'black') or a script that calls a linting tool.
+    required: true
+  sources:
+    description: List of files/folders to send to the linting tool
+    required: true
+  check-args:
+    description: Arguments used to have the linting tool perform a "check"
+    required: true
+  diff-args:
+    description: Arugments used to have the linting tool generate a diff
+    required: false
+    default: ""
+  diff-lang:
+    description: The language the diff is for (used for markdown rendering)
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+
+    - name: Install linting tools
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
+
+    - name: Run linter
+      shell: bash
+      run: ${{ inputs.cmd }} ${{ inputs.check-args }} ${{ inputs.sources }}
+
+    - name: Print formatting errors
+      if: ${{ failure() && inputs.diff-args != '' }}
+      shell: bash
+      run: |
+        out=$(${{ inputs.cmd }} ${{ inputs.diff-args }} ${{ inputs.sources }})
+
+        echo "${out}"
+        echo "\`\`\`${{ inputs.diff-lang }}" >> $GITHUB_STEP_SUMMARY
+        echo "${out}" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+import argparse
+import concurrent.futures
+import subprocess
+import sys
+from concurrent.futures import Future, ThreadPoolExecutor
+from dataclasses import dataclass
+from difflib import unified_diff
+from pathlib import Path
+from typing import Callable, Iterator, cast
+
+_IN_TTY = sys.stdout.isatty()
+
+
+_ClangFormatCmd = Callable[[Path, Path], "LintResult"]
+
+
+def _ansi_control(s: str, n: int) -> str:
+    return f"\033[{n}m{s}\033[m"
+
+
+def _bold(s: str) -> str:
+    return _ansi_control(s, 1) if _IN_TTY else s
+
+
+def _faint(s: str) -> str:
+    return _ansi_control(s, 2) if _IN_TTY else s
+
+
+def _cyan(s: str) -> str:
+    return _ansi_control(s, 36) if _IN_TTY else s
+
+
+def _green(s: str) -> str:
+    return _ansi_control(s, 92) if _IN_TTY else s
+
+
+def _red(s: str) -> str:
+    return _ansi_control(s, 91) if _IN_TTY else s
+
+
+@dataclass(frozen=True)
+class LintResult:
+    path: Path
+    diff: list[str] | None = None
+
+    @property
+    def has_change(self) -> bool:
+        return self.diff is not None and len(self.diff) > 0
+
+    def render(self, *, show_diff: bool = True) -> Iterator[str]:
+        if not show_diff:
+            # Show a red 'x' if the file is properly formatted, otherwise show a
+            # green check mark.
+            status = _red("\u2717") if self.has_change else _green("\u2713")
+            yield f"{status} ... {self.path.as_posix()}\n"
+            return
+
+        diff_lines = cast(list[str], self.diff)
+        for line in diff_lines:
+            colour = _faint
+
+            if line.startswith(("--- ", "+++ ")):
+                colour = _bold
+            elif line.startswith("@@ "):
+                colour = _cyan
+            elif line[0] == "-":
+                colour = _red
+            elif line[0] == "+":
+                colour = _green
+
+            yield colour(line)
+
+
+def collect_files(*paths: Path) -> list[Path]:
+    files: list[Path] = []
+    for path in paths:
+        files.extend(path.glob("**/*.h"))
+        files.extend(path.glob("**/*.hpp"))
+        files.extend(path.glob("**/*.c"))
+        files.extend(path.glob("**/*.cpp"))
+
+    return files
+
+
+def collect_results(requests: list[Future]) -> list[LintResult]:
+    processes = concurrent.futures.wait(requests)
+    results: list[LintResult] = [proc.result() for proc in processes.done]
+    results.sort(key=lambda x: x.path)
+    return results
+
+
+def dispatch(cmd: _ClangFormatCmd, config: Path, paths: list[Path]) -> list[Future]:
+    pool = ThreadPoolExecutor(max_workers=4)
+
+    requests: list[Future] = []
+    for path in paths:
+        requests.append(pool.submit(cmd, config, path))
+
+    return requests
+
+
+def lint(config: Path, file: Path) -> LintResult:
+    output = subprocess.run(
+        ["clang-format", f"--style=file:{config}", file.as_posix()],
+        capture_output=True,
+        text=True,
+    )
+
+    if output.returncode != 0:
+        raise RuntimeError(output.stderr)
+
+    formatted = output.stdout.splitlines(keepends=True)
+
+    if len(formatted) == 0:
+        return LintResult(file)
+
+    with file.open("rt") as f:
+        original = f.readlines()
+
+    original_file = f"{file.as_posix()} (original)"
+    formatted_file = f"{file.as_posix()} (formatted)"
+
+    diff = list(unified_diff(original, formatted, original_file, formatted_file))
+    return LintResult(file, diff)
+
+
+def reformat(config: Path, file: Path) -> LintResult:
+    output = subprocess.run(
+        ["clang-format", f"--style=file:{config}", "-i", file.as_posix()],
+        capture_output=True,
+        text=True,
+    )
+
+    if output.returncode != 0:
+        raise RuntimeError(output.stderr)
+
+    return LintResult(file)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "paths", metavar="path", nargs="+", help="source code path", type=Path
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Return a non-zero exit code if there are any code changes.",
+    )
+    parser.add_argument(
+        "--diff", action="store_true", help="Only show the proposed changes."
+    )
+
+    parser.add_argument("--config", "-c", default=Path(".clang-format"), type=Path)
+    args = parser.parse_args()
+
+    only_check = args.diff or args.check
+    clang_cmd = lint if only_check else reformat
+
+    files = collect_files(*args.paths)
+    requests = dispatch(clang_cmd, args.config, files)
+    results = collect_results(requests)
+
+    if not only_check:
+        print(f"Processed {_bold(str(len(files)))} files:")
+
+    num_changed = 0
+    for result in results:
+        if result.has_change:
+            num_changed += 1
+
+        if only_check:
+            sys.stdout.writelines(result.render(show_diff=args.diff))
+        else:
+            print(f"{_bold('\u27A1')} {result.path.as_posix()}")
+
+    if args.check:
+        if num_changed == 0:
+            msg = "No files need to be reformatted"
+        else:
+            count = f"{num_changed} / {len(files)}"
+            msg = f"{_bold(count)} files will be reformatted"
+
+        print("")
+        print(msg)
+
+    if args.check and num_changed > 0:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
