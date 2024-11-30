@@ -2,12 +2,10 @@
 
 #include <iostream>
 
-namespace abstractions
-{
+namespace abstractions {
 
-void hello_world()
-{
+void hello_world() {
     std::cout << "Hello world" << std::endl;
 }
 
-} // namespace abstractions
+}  // namespace abstractions

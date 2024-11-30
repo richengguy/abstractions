@@ -7,7 +7,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from difflib import unified_diff
 from pathlib import Path
-from typing import Callable, Iterator
+from typing import Callable, Iterator, cast
 
 _IN_TTY = sys.stdout.isatty()
 
@@ -46,18 +46,18 @@ class LintResult:
 
     @property
     def has_change(self) -> bool:
-        return self.diff is not None
+        return self.diff is not None and len(self.diff) > 0
 
     def render(self, *, show_diff: bool = True) -> Iterator[str]:
-        if self.diff is None:
-            yield f"{_green('\u2713')} ... {self.path.as_posix()}\n"
-            return
-
         if not show_diff:
-            yield f"{_red('\u2717')} ... {self.path.as_posix()}\n"
+            # Show a red 'x' if the file is properly formatted, otherwise show a
+            # green check mark.
+            status = _red("\u2717") if self.has_change else _green("\u2713")
+            yield f"{status} ... {self.path.as_posix()}\n"
             return
 
-        for line in self.diff:
+        diff_lines = cast(list[str], self.diff)
+        for line in diff_lines:
             colour = _faint
 
             if line.startswith(("--- ", "+++ ")):
@@ -70,8 +70,6 @@ class LintResult:
                 colour = _green
 
             yield colour(line)
-
-        yield "\n"
 
 
 def collect_files(*paths: Path) -> list[Path]:
@@ -178,9 +176,14 @@ def main() -> None:
             print(f"{_bold('\u27A1')} {result.path.as_posix()}")
 
     if args.check:
-        count = f"{num_changed} / {len(files)}"
+        if num_changed == 0:
+            msg = "No files need to be reformatted"
+        else:
+            count = f"{num_changed} / {len(files)}"
+            msg = f"{_bold(count)} files will be reformatted"
+
         print("")
-        print(f"{_bold(count)} files will be reformatted")
+        print(msg)
 
     if args.check and num_changed > 0:
         sys.exit(1)

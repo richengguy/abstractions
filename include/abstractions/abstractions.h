@@ -1,8 +1,7 @@
 #pragma once
 
-namespace abstractions
-{
+namespace abstractions {
 
 void hello_world();
 
-} // namespace abstractions
+}  // namespace abstractions
