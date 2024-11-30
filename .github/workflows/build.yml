@@ -1,0 +1,57 @@
+name: Run Linters
+
+on: [pull_request]
+
+jobs:
+  lint-cpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/run-linter
+        with:
+          cmd: python ./scripts/run-clang-format
+          sources: include src
+          check-args: --check
+          diff-args: --diff
+          diff-lang: cpp
+
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/run-linter
+        with:
+          cmd: black
+          sources: scripts/run-mypy scripts/run-clang-format
+          check-args: --check
+          diff-args: --diff
+          diff-lang: python
+
+  build-cpp:
+    runs-on: ubuntu-latest
+    needs: lint-cpp
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install build dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          wget https://apt.llvm.org/llvm.sh
+          chmod u+x ./llvm.sh
+          sudo ./llvm.sh 19
+
+      - name: Install app dependencies
+        run: |
+          conan install . -pr:a ./profiles/linux-x86_64 --build=missing
+
+      - name: Build project
+        run: |
+          conan build . -pr:a ./profiles/linux-x86_64
