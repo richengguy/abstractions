@@ -2,6 +2,7 @@ set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
 
 set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/abstractions.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/profile.h
 )
 
 set (ABSTRACTIONS_SOURCES
