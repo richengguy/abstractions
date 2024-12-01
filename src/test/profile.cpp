@@ -1,16 +1,14 @@
+#include <abstractions/profile.h>
 #include <doctest/doctest.h>
 
 #include <chrono>
 #include <thread>
 
-#include <abstractions/profile.h>
-
 using namespace std::chrono_literals;
 
 TEST_SUITE_BEGIN("profile");
 
-TEST_CASE("Check that the timer is working correctly.")
-{
+TEST_CASE("Check that the timer is working correctly.") {
     abstractions::Timer timer;
 
     std::this_thread::sleep_for(250ms);
@@ -28,8 +26,7 @@ TEST_CASE("Check that the timer is working correctly.")
     CHECK(second_call < 510ms);
 }
 
-TEST_CASE("Check that timing stats can be captured correctly.")
-{
+TEST_CASE("Check that timing stats can be captured correctly.") {
     abstractions::OperationTiming timing;
 
     timing.AddSample(250ms);
@@ -41,10 +38,8 @@ TEST_CASE("Check that timing stats can be captured correctly.")
     CHECK(stats.mean == 250ms);
 }
 
-TEST_CASE("Check that profile scoping works as intended.")
-{
-    SUBCASE("Single scope works as intended.")
-    {
+TEST_CASE("Check that profile scoping works as intended.") {
+    SUBCASE("Single scope works as intended.") {
         abstractions::OperationTiming simple_op;
         {
             abstractions::Profile profile(simple_op);
@@ -58,11 +53,9 @@ TEST_CASE("Check that profile scoping works as intended.")
         CHECK(stats.mean < 110ms);
     }
 
-    SUBCASE("Looping works as intended.")
-    {
+    SUBCASE("Looping works as intended.") {
         abstractions::OperationTiming loop_op;
-        for (int i = 0; i < 5; i++)
-        {
+        for (int i = 0; i < 5; i++) {
             abstractions::Profile profile(loop_op);
             std::this_thread::sleep_for(50ms);
         }
