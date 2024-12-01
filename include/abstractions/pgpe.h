@@ -1,5 +1,7 @@
 #pragma once
 
+#include <abstractions/types.h>
+
 #include <limits>
 #include <optional>
 #include <string>
@@ -35,7 +37,7 @@ struct PgpeOptimizerSettings {
 
     /// @brief Validate the optimizer settings.
     /// @return If the settings are invalid, then it will return the reason why they are invalid.
-    std::optional<std::string> Validate() const;
+    error_t Validate() const;
 };
 
 }  // namespace abstractions
