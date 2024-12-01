@@ -7,7 +7,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from difflib import unified_diff
 from pathlib import Path
-from typing import Callable, Iterator, cast
+from typing import Callable, Iterator
 
 _IN_TTY = sys.stdout.isatty()
 
