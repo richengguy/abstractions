@@ -2,4 +2,9 @@
 BasedOnStyle: Google
 IndentWidth: 4
 UseTab: Never
-AllowShortFunctionsOnASingleLine: None
+
+# Style customizations
+AllowShortFunctionsOnASingleLine: Empty
+PackConstructorInitializers: Never
+AccessModifierOffset: -4
+ColumnLimit: 100

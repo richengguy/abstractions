@@ -56,8 +56,10 @@ class LintResult:
             yield f"{status} ... {self.path.as_posix()}\n"
             return
 
-        diff_lines = cast(list[str], self.diff)
-        for line in diff_lines:
+        if self.diff is None:
+            return
+
+        for line in self.diff:
             colour = _faint
 
             if line.startswith(("--- ", "+++ ")):
