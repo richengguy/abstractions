@@ -1,9 +1,11 @@
 name: abstractions
 
 channels:
+  - conda-forge
   - defaults
 
 dependencies:
+  - doxygen=1.11.0
   - python=3.13
   - pip
   - pip:
