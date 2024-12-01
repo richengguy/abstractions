@@ -1,4 +1,3 @@
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
 #include <chrono>
@@ -7,6 +6,8 @@
 #include <abstractions/profile.h>
 
 using namespace std::chrono_literals;
+
+TEST_SUITE_BEGIN("profile");
 
 TEST_CASE("Check that the timer is working correctly.")
 {
@@ -81,3 +82,5 @@ TEST_CASE("Check that profile scoping works as intended.")
         WARN(stats.mean < 60ms);
     }
 }
+
+TEST_SUITE_END();

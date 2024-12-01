@@ -2,6 +2,7 @@ find_package(doctest REQUIRED)
 find_package(fmt REQUIRED)
 
 set(ABSTRACTIONS_TESTS
+    library-tests.cpp
     profile.cpp
 )
 
