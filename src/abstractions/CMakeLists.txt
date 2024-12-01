@@ -2,11 +2,14 @@ set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
 
 set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/abstractions.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/pgpe.h
     ${ABSTRACTIONS_INCLUDE_DIR}/profile.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/types.h
 )
 
 set (ABSTRACTIONS_SOURCES
     abstractions.cpp
+    pgpe.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})
