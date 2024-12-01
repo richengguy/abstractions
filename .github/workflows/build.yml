@@ -24,7 +24,7 @@ jobs:
       - uses: ./.github/actions/run-linter
         with:
           cmd: black
-          sources: scripts/run-mypy scripts/run-clang-format
+          sources: conanfile.py scripts/run-mypy scripts/run-clang-format
           check-args: --check
           diff-args: --diff
           diff-lang: python
