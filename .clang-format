@@ -5,6 +5,7 @@ UseTab: Never
 
 # Style customizations
 AllowShortFunctionsOnASingleLine: Empty
+BreakConstructorInitializers: AfterColon
 PackConstructorInitializers: Never
 AccessModifierOffset: -4
 ColumnLimit: 100
