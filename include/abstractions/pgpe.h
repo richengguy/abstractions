@@ -2,9 +2,9 @@
 
 #include <abstractions/types.h>
 
+#include <expected>
 #include <limits>
 #include <optional>
-#include <expected>
 #include <string>
 
 namespace abstractions {
@@ -41,7 +41,6 @@ struct PgpeOptimizerSettings {
     error_t Validate() const;
 };
 
-
 /// @brief Optimize a function using Policy Gradients with Parameter-based
 ///     Exploration (PGPE).
 ///
@@ -72,15 +71,13 @@ struct PgpeOptimizerSettings {
 ///     optimizer.Update(samples, costs);
 /// }
 /// ```
-class PgpeOptimizer
-{
+class PgpeOptimizer {
 public:
-
     /// @brief Create a new optimizer with the given settings.
     /// @param settings optimizer settings
     /// @return The configured optimizer or an error_t instance if the creation
     ///     failed.
-    static expected_t<PgpeOptimizer> Create(const PgpeOptimizerSettings & settings);
+    static expected_t<PgpeOptimizer> Create(const PgpeOptimizerSettings &settings);
 
     /// @brief Create an optimizer from another one.
     /// @param other other optimizer

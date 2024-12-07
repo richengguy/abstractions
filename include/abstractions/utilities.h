@@ -1,19 +1,16 @@
 #pragma once
 
-#include <initializer_list>
-#include <exception>
-
 #include <abstractions/types.h>
 
-namespace abstractions
-{
+#include <exception>
+#include <initializer_list>
 
-namespace errors
-{
+namespace abstractions {
+
+namespace errors {
 
 template <typename T>
-expected_t<T> report(const char *msg)
-{
+expected_t<T> report(const char *msg) {
     return std::unexpected<error_t>(msg);
 }
 
@@ -23,8 +20,7 @@ expected_t<T> report(const char *msg)
 /// @note This is a thin wrapper around std::unexpected.
 /// @return The "unexpected" value, which will be an error_t object.
 template <typename T>
-expected_t<T> report(const std::string &msg)
-{
+expected_t<T> report(const std::string &msg) {
     return report<T>(msg.c_str());
 }
 
@@ -35,10 +31,8 @@ expected_t<T> report(const std::string &msg)
 /// @return The "unexpected" value, which will contain the provided error.
 /// @throws std::runtime_error if the error is empty
 template <typename T>
-expected_t<T> report(const error_t &err)
-{
-    if (!err)
-    {
+expected_t<T> report(const error_t &err) {
+    if (!err) {
         throw std::runtime_error("There is no error to report.");
     }
 
@@ -48,12 +42,9 @@ expected_t<T> report(const error_t &err)
 /// @brief Find any errors in a list of possible errors.
 /// @param errs Set of errors
 /// @return The first detected error, or a std::nullopt.
-inline error_t find_any(std::initializer_list<error_t> errs)
-{
-    for (const auto &e : errs)
-    {
-        if (e)
-        {
+inline error_t find_any(std::initializer_list<error_t> errs) {
+    for (const auto &e : errs) {
+        if (e) {
             return e;
         }
     }
@@ -61,6 +52,6 @@ inline error_t find_any(std::initializer_list<error_t> errs)
     return std::nullopt;
 }
 
-}
+}  // namespace errors
 
-}
+}  // namespace abstractions

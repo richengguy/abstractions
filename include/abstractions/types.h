@@ -1,10 +1,9 @@
 #pragma once
 
+#include <Eigen/Core>
 #include <expected>
 #include <optional>
 #include <string>
-
-#include <Eigen/Core>
 
 namespace abstractions {
 
@@ -20,7 +19,8 @@ using error_t = std::optional<std::string>;
 ///
 /// If an error occurs then this will contain an error_t value instead of the
 /// expected result type.
-template <typename T> using expected_t = std::expected<T, error_t>;
+template <typename T>
+using expected_t = std::expected<T, error_t>;
 
 /// @brief Basic definition of an `MxN` matrix.
 using matrix_t = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
