@@ -9,6 +9,11 @@ namespace abstractions {
 
 namespace errors {
 
+/// @brief Creates an error when an expected value could not be returned.
+/// @tparam T expected result type
+/// @param err The reason why the expected value could not be returned.
+/// @note This is a thin wrapper around std::unexpected.
+/// @return The "unexpected" value, which will be an error_t object.
 template <typename T>
 expected_t<T> report(const char *msg) {
     return std::unexpected<error_t>(msg);
