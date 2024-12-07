@@ -40,4 +40,23 @@ TEST_CASE("Can validate PGPE optimizer settings.") {
     }
 }
 
+TEST_CASE("Can create an optimizer using PgpeOptimizer::Create()") {
+    SUBCASE("Error when settings are invalid.") {
+        abstractions::PgpeOptimizerSettings settings{};
+        auto optim = abstractions::PgpeOptimizer::Create(settings);
+        REQUIRE_FALSE(optim.has_value());
+    }
+
+    SUBCASE("No error when the settings are valid.") {
+        abstractions::PgpeOptimizerSettings settings{
+            .max_speed = 1,
+            .momentum = 123,
+        };
+        auto optim = abstractions::PgpeOptimizer::Create(settings);
+        REQUIRE(optim.has_value());
+        CHECK(optim->GetSettings().max_speed == 1);
+        CHECK(optim->GetSettings().momentum == 123);
+    }
+}
+
 TEST_SUITE_END();
