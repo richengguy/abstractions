@@ -8,9 +8,9 @@ namespace abstractions {
 
 namespace detail {
 
-using clock_t = std::chrono::steady_clock;
-using duration_t = std::chrono::microseconds;
-using time_point_t = std::chrono::time_point<clock_t>;
+using Clock = std::chrono::steady_clock;
+using Duration = std::chrono::microseconds;
+using TimePoint = std::chrono::time_point<Clock>;
 
 }  // namespace detail
 
@@ -19,17 +19,17 @@ class Timer {
 public:
     /// @brief Create a new timer and record the starting time.
     Timer() :
-        _start{detail::clock_t::now()} {}
+        _start{detail::Clock::now()} {}
 
     /// @brief Returns the time since the timer was created.
     /// @return The elapsed time, in microseconds.
-    [[nodiscard]] detail::duration_t GetElapsedTime() const {
-        auto now = detail::clock_t::now();
-        return std::chrono::duration_cast<detail::duration_t>(now - _start);
+    [[nodiscard]] detail::Duration GetElapsedTime() const {
+        auto now = detail::Clock::now();
+        return std::chrono::duration_cast<detail::Duration>(now - _start);
     }
 
 private:
-    detail::time_point_t _start;
+    detail::TimePoint _start;
 };
 
 /// @brief Compute the timing statistics for some repeated operation.
@@ -41,13 +41,13 @@ public:
     /// @brief The timing statistics for an observed operation.
     struct Timing {
         /// @brief The total length of time the operation has been tracked.
-        detail::duration_t total;
+        detail::Duration total;
 
         /// @brief The mean duration of the observed operations.
-        detail::duration_t mean;
+        detail::Duration mean;
 
         /// @brief The standard deviation of the duration for the observed operations.
-        detail::duration_t stddev;
+        detail::Duration stddev;
 
         /// @brief The number of times the operation timing has been sampled.
         int64_t count;
@@ -61,7 +61,7 @@ public:
 
     /// @brief Add a timing sample to update the timing statistics.
     /// @param sample The time a particular operation took.
-    void AddSample(const detail::duration_t &sample) {
+    void AddSample(const detail::Duration &sample) {
         using namespace std::chrono_literals;
 
         _total += sample;
@@ -71,7 +71,7 @@ public:
             _mean = sample;
             _welford_m2 = 0us;
         } else {
-            detail::duration_t d1, d2;
+            detail::Duration d1, d2;
             d1 = sample - _mean;
             _mean = _mean + d1 / _count;
             d2 = sample - _mean;
@@ -90,19 +90,19 @@ public:
         return Timing{
             .total = _total,
             .mean = _mean,
-            .stddev = detail::duration_t{static_cast<detail::duration_t::rep>(std)},
+            .stddev = detail::Duration{static_cast<detail::Duration::rep>(std)},
             .count = _count,
         };
     }
 
 private:
-    detail::duration_t _total;
+    detail::Duration _total;
 
     // Used for Welford's algorithm.  See
     // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
     int64_t _count;
-    detail::duration_t _mean;
-    detail::duration_t _welford_m2;
+    detail::Duration _mean;
+    detail::Duration _welford_m2;
 };
 
 /// @brief Tracks the time an operation took within a single scope.
