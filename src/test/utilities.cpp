@@ -2,7 +2,7 @@
 #include <abstractions/utilities.h>
 #include <doctest/doctest.h>
 
-using int_expected_t = abstractions::expected_t<int>;
+using int_expected_t = abstractions::Expected<int>;
 
 TEST_SUITE_BEGIN("utilities");
 
@@ -16,7 +16,7 @@ TEST_CASE("Errors are wrapped correctly.") {
     }
 
     SUBCASE("Can wrap an error object.") {
-        auto value = errors::report<int>(error_t{"another error"});
+        auto value = errors::report<int>(Error{"another error"});
         CHECK(value.has_value() == false);
         CHECK(value.error() == "another error");
     }
@@ -36,13 +36,13 @@ TEST_CASE("Able to find the first error with errors::find_any.") {
     }
 
     SUBCASE("Can get the first error.") {
-        auto err = errors::find_any({error_t{"abc"}, error_t{"def"}});
+        auto err = errors::find_any({Error{"abc"}, Error{"def"}});
         REQUIRE(err);
         CHECK(err == "abc");
     }
 
     SUBCASE("Can get the first error when some are passing.") {
-        auto err = errors::find_any({std::nullopt, std::nullopt, error_t{"error"}, std::nullopt});
+        auto err = errors::find_any({std::nullopt, std::nullopt, Error{"error"}, std::nullopt});
         REQUIRE(err);
         CHECK(err == "error");
     }

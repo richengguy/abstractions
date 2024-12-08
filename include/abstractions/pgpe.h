@@ -38,7 +38,7 @@ struct PgpeOptimizerSettings {
 
     /// @brief Validate the optimizer settings.
     /// @return If the settings are invalid, then it will return the reason why they are invalid.
-    error_t Validate() const;
+    Error Validate() const;
 };
 
 /// @brief Optimize a function using Policy Gradients with Parameter-based
@@ -59,15 +59,15 @@ struct PgpeOptimizerSettings {
 /// This will generally look something like
 ///
 /// ```cpp
-/// row_vec_t solution = InitialGuess();
-/// matrix_t samples = Allocate();
+/// RowVector solution = InitialGuess();
+/// Matrix samples = Allocate();
 ///
 /// auto optimizer = PgpeOptimizer::Create(settings);
 /// optimizer.Initialize(solution);
 ///
 /// while (!converged) {
 ///     optimizer.Sample(samples);
-///     col_vec_t costs = EstimateCosts(samples);
+///     ColumnVector costs = EstimateCosts(samples);
 ///     optimizer.Update(samples, costs);
 /// }
 /// ```
@@ -75,9 +75,9 @@ class PgpeOptimizer {
 public:
     /// @brief Create a new optimizer with the given settings.
     /// @param settings optimizer settings
-    /// @return The configured optimizer or an error_t instance if the creation
+    /// @return The configured optimizer or an Error instance if the creation
     ///     failed.
-    static expected_t<PgpeOptimizer> Create(const PgpeOptimizerSettings &settings);
+    static Expected<PgpeOptimizer> Create(const PgpeOptimizerSettings &settings);
 
     /// @brief Create an optimizer from another one.
     /// @param other other optimizer
@@ -86,12 +86,12 @@ public:
     /// @brief Get the current estimate of the best parameter vector from the optimizer.
     /// @return A row vector with the current estimate.
     [[nodiscard]]
-    expected_t<row_vec_t> GetEstimate() const;
+    Expected<RowVector> GetEstimate() const;
 
     /// @brief Get the current estimate of the solutions standard deviation.
     /// @return A row vector storing the per-parameter standard deviations.
     [[nodiscard]]
-    expected_t<row_vec_t> GetSolutionStdDev() const;
+    Expected<RowVector> GetSolutionStdDev() const;
 
     /// @brief Get the currently estimated optimizer velocity.
     /// @return A row vector with the current solution velocity.
@@ -100,7 +100,7 @@ public:
     /// but with a magnitude defined by the PgpeOptimizerSettings::max_speed
     /// option.
     [[nodiscard]]
-    expected_t<row_vec_t> GetSolutionVelocity() const;
+    Expected<RowVector> GetSolutionVelocity() const;
 
     /// @brief Get the settings used for this optimizer.
     [[nodiscard]]
@@ -112,7 +112,7 @@ public:
     /// Calling this has the effect of resetting the optimizer.  All of the
     /// internal state variables will be randomly initialized, regardless of
     /// whether or not the optimizer has ran at any point before.
-    void Initialize(const_row_vec_ref_t x_init);
+    void Initialize(ConstRowVectorRef x_init);
 
     /// @brief Sample parameters from the current optimizer state.
     /// @param samples A reference to the matrix that will store the drawn
@@ -123,7 +123,7 @@ public:
     /// samples will be equal to the number of rows in the provided matrix.  The
     /// number of columns must match the length of the vector that was passed
     /// into PgpeOptimizer::Initialize().
-    error_t Sample(matrix_ref_t samples) const;
+    Error Sample(MatrixRef samples) const;
 
     /// @brief Update the optimizer's internal state based on the reported sample costs.
     /// @param samples A set of state vector samples.  This has the same format
@@ -136,21 +136,21 @@ public:
     /// Rather, it has a strategy for exploring a solution space and finding the
     /// most optimal one.  The caller is responsible for calculating the
     /// correctness of each solution.
-    error_t Update(const_matrix_ref_t samples, const_col_vec_ref_t costs);
+    Error Update(ConstMatrixRef samples, ConstColumnVectorRef costs);
 
 private:
     PgpeOptimizer(const PgpeOptimizerSettings &settings);
 
-    error_t CheckInitialized() const;
-    error_t ValidateCosts(int num_samples, const_col_vec_ref_t costs) const;
-    error_t ValidateSamples(const_matrix_ref_t samples) const;
+    Error CheckInitialized() const;
+    Error ValidateCosts(int num_samples, ConstColumnVectorRef costs) const;
+    Error ValidateSamples(ConstMatrixRef samples) const;
 
     bool _is_initialized;
     PgpeOptimizerSettings _settings;
 
-    row_vec_t _current_state;
-    row_vec_t _current_standard_deviation;
-    row_vec_t _current_velocity;
+    RowVector _current_state;
+    RowVector _current_standard_deviation;
+    RowVector _current_velocity;
 };
 
 }  // namespace abstractions
