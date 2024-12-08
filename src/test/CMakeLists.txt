@@ -3,6 +3,7 @@ find_package(fmt REQUIRED)
 
 set(ABSTRACTIONS_TESTS
     library-tests.cpp
+    math.cpp
     pgpe.cpp
     profile.cpp
     utilities.cpp

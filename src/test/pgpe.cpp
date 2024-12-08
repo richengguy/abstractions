@@ -1,3 +1,4 @@
+#include <abstractions/math/random.h>
 #include <abstractions/pgpe.h>
 #include <doctest/doctest.h>
 
