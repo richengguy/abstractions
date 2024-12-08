@@ -11,6 +11,7 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/types.h
     ${ABSTRACTIONS_INCLUDE_DIR}/utilities.h
 
+    ${ABSTRACTIONS_INCLUDE_DIR}/math/matrices.h
     ${ABSTRACTIONS_INCLUDE_DIR}/math/random.h
     ${ABSTRACTIONS_INCLUDE_DIR}/math/types.h
 )

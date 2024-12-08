@@ -16,6 +16,8 @@ namespace abstractions {
 template <typename G>
 class Prng {
 public:
+    /// @brief Create a new PRNG with the given seed.
+    /// @param seed initial seed
     Prng(G::result_type seed) :
         _generator{seed},
         _seed{seed} {}
@@ -104,6 +106,22 @@ private:
     G::result_type _sequence_number;
 
     std::mutex _mutex;
+};
+
+template<typename G, typename D>
+class Distribution
+{
+public:
+    Distribution(Prng<G> generator, D distribution)
+        : _generator{generator},
+          _distribution{distribution}
+    {
+        // TODO: Figure this out
+    }
+
+private:
+    Prng<G> _generator;
+    D _distribution;
 };
 
 }  // namespace abstractions
