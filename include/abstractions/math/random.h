@@ -61,6 +61,16 @@ private:
 template <typename G = std::mt19937>
 class PrngGenerator {
 public:
+    /// @brief Draw a random see from some random source.
+    /// @return randomly-generated seed for a PRNG
+    /// @note This uses std::random_device so shouldn't be called all that
+    ///     often.  Use this when a PRNG seed only needs to be drawn once.
+    ///     Otherwise, use the full PrngGenerator class to quick spawn PRNGs.
+    static G::result_type DrawRandomSeed() {
+        std::random_device device;
+        return device();
+    }
+
     /// @brief Create a new PRNG generator.
     /// @param seed base seed value; a random one will be generated if not provided
     PrngGenerator(std::optional<typename G::result_type> seed = {}) :

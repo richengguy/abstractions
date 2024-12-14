@@ -1,5 +1,6 @@
 #pragma once
 
+#include <abstractions/math/random.h>
 #include <abstractions/types.h>
 
 #include <expected>
@@ -35,6 +36,10 @@ struct PgpeOptimizerSettings {
 
     /// @brief The maximum allowable change between standard deviation updates.
     double stddev_max_change = 0.2;
+
+    /// @brief The seed used by the optimizer's internal RNG.  Will be generated
+    ///     from a random source if not provided.
+    std::optional<uint64_t> seed = {};
 
     /// @brief Validate the optimizer settings.
     /// @return If the settings are invalid, then it will return the reason why they are invalid.
@@ -139,7 +144,7 @@ public:
     Error Update(ConstMatrixRef samples, ConstColumnVectorRef costs);
 
 private:
-    PgpeOptimizer(const PgpeOptimizerSettings &settings);
+    PgpeOptimizer(const PgpeOptimizerSettings &settings, const uint64_t seed);
 
     Error CheckInitialized() const;
     Error ValidateCosts(int num_samples, ConstColumnVectorRef costs) const;
@@ -147,6 +152,7 @@ private:
 
     bool _is_initialized;
     PgpeOptimizerSettings _settings;
+    Prng<std::mt19937> _prng;
 
     RowVector _current_state;
     RowVector _current_standard_deviation;
