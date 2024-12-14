@@ -16,30 +16,33 @@ namespace abstractions {
 template <typename G = std::mt19937>
 class Prng {
 public:
+    /// @brief The wrapped bit generator's result type.
+    typedef G::result_type result_type;
+
     /// @brief Create a new PRNG with the given seed.
     /// @param seed initial seed
-    Prng(G::result_type seed) :
+    Prng(result_type seed) :
         _generator{seed},
         _seed{seed} {}
 
     /// @brief The smallest value that the generator will return.
-    static constexpr G::result_type min() {
+    static constexpr result_type min() {
         return G::min();
     }
 
     /// @brief The largest value that the generator will return.
-    static constexpr G::result_type max() {
+    static constexpr result_type max() {
         return G::max();
     }
 
     /// @brief The seed the generator was initialized with.
-    constexpr G::result_type seed() const {
+    constexpr result_type seed() const {
         return _seed;
     }
 
     /// @brief Generate a pseudo-random number.
     /// @return A pseudo-random value between min() and max().
-    G::result_type operator()() {
+    result_type operator()() {
         return _generator();
     }
 

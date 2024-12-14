@@ -39,7 +39,7 @@ struct PgpeOptimizerSettings {
 
     /// @brief The seed used by the optimizer's internal RNG.  Will be generated
     ///     from a random source if not provided.
-    std::optional<uint64_t> seed = {};
+    std::optional<uint32_t> seed = {};
 
     /// @brief Validate the optimizer settings.
     /// @return If the settings are invalid, then it will return the reason why they are invalid.
@@ -144,7 +144,7 @@ public:
     Error Update(ConstMatrixRef samples, ConstColumnVectorRef costs);
 
 private:
-    PgpeOptimizer(const PgpeOptimizerSettings &settings, const uint64_t seed);
+    PgpeOptimizer(const PgpeOptimizerSettings &settings, const uint32_t seed);
 
     Error CheckInitialized() const;
     Error ValidateCosts(int num_samples, ConstColumnVectorRef costs) const;

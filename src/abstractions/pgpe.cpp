@@ -121,7 +121,7 @@ Expected<PgpeOptimizer> PgpeOptimizer::Create(const PgpeOptimizerSettings &setti
     return PgpeOptimizer(settings, seed);
 }
 
-PgpeOptimizer::PgpeOptimizer(const PgpeOptimizerSettings &settings, const uint64_t seed) :
+PgpeOptimizer::PgpeOptimizer(const PgpeOptimizerSettings &settings, const uint32_t seed) :
     _is_initialized{true},
     _settings{settings},
     _prng{seed} {}
