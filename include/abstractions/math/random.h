@@ -13,7 +13,7 @@ namespace abstractions {
 ///     keep track of what seed it used.  This complies with the
 ///     *UniformRandomBitGenerator* named requirement.
 /// @tparam G an object that meets the *RandomNumberEngine* requirements
-template <typename G>
+template <typename G = std::mt19937>
 class Prng {
 public:
     /// @brief Create a new PRNG with the given seed.
@@ -108,20 +108,54 @@ private:
     std::mutex _mutex;
 };
 
-template<typename G, typename D>
-class Distribution
-{
+/// @brief Combine an object that can take the output of a PRNG and turn it into
+///     a proper statistical distribution.
+/// @tparam G an object that meets the *RandomNumberEngine* named requirement
+/// @tparam D an object that means the *RandomNumberDistribution* name requirement
+template <typename G, typename D>
+class Distribution {
 public:
-    Distribution(Prng<G> generator, D distribution)
-        : _generator{generator},
-          _distribution{distribution}
-    {
-        // TODO: Figure this out
+    /// @brief Create a new Distribution instance.
+    /// @param generator the PRNG instance
+    /// @param distribution the statistical distribution
+    Distribution(Prng<G> generator, D distribution) :
+        _generator{generator},
+        _distribution{distribution} {}
+
+    /// @brief Draw a sample from the given distribution.
+    D::result_type Sample() {
+        return _distribution(_generator);
     }
 
 private:
     Prng<G> _generator;
     D _distribution;
+};
+
+/// @brief Generate a sequence of normally distributed random numbers.
+/// @tparam G an object that meets the *RandomNumberEngine* named requirement
+template <typename G = std::mt19937>
+class NormalDistribution : public Distribution<G, std::normal_distribution<double>> {
+public:
+    /// @brief Create a new normal distribution instance.
+    /// @param generator a PRNG instance
+    /// @param mean the distribution mean
+    /// @param sigma the distribution standard deviation
+    NormalDistribution(Prng<G> generator, double mean, double sigma) :
+        Distribution<G, std::normal_distribution<double>>(generator,
+                                                          std::normal_distribution(mean, sigma)) {}
+};
+
+/// @brief Generate a sequence of uniformally distributed random numbers on [0,1).
+/// @tparam G an object that meets the *RandomNumberEngine* named requirement
+template <typename G = std::mt19937>
+class UniformDistribution : public Distribution<G, std::uniform_real_distribution<double>> {
+public:
+    /// @brief Create a new uniform distribution instance.
+    /// @param generator a PRNG instance
+    UniformDistribution(Prng<G> generator) :
+        Distribution<G, std::uniform_real_distribution<double>>(
+            generator, std::uniform_real_distribution(0.0, 1.0)) {}
 };
 
 }  // namespace abstractions
