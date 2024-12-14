@@ -5,6 +5,8 @@
 #include <abstractions/math/matrices.h>
 #include <Eigen/Core>
 
+#include <numbers>
+
 TEST_SUITE_BEGIN("pgpe");
 
 TEST_CASE("Can validate PGPE optimizer settings.") {
@@ -63,7 +65,7 @@ TEST_CASE("Can create an optimizer using PgpeOptimizer::Create()") {
     }
 }
 
-TEST_CASE("The PgpeOptimizer can find the equation of a line from noisy data.")
+TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
 {
     using abstractions::Matrix;
     using abstractions::ColumnVector;
@@ -76,10 +78,11 @@ TEST_CASE("The PgpeOptimizer can find the equation of a line from noisy data.")
     // Constants
     constexpr int kIterations = 2500;
     constexpr int kNumPoints = 100;
+    constexpr int kSamples = 16;
     constexpr double kNoiseMagnitude = 0.1;
     constexpr double kInvSqrt2 = 1.0/std::numbers::sqrt2;
 
-    auto estimate_costs = [&](const Eigen::Matrix<double, kNumPoints, 2> &points, const Eigen::Matrix<double, kNumPoints, 2> &solutions) -> ColumnVector
+    auto estimate_costs = [&](const Eigen::Matrix<double, kNumPoints, 2> &points, const Eigen::Matrix<double, kSamples, 3> &solutions) -> ColumnVector
     {
         // The solution costs are calculated from the perpendicular point-line
         // distances.  First, the solutions are converted into Hesse-normal form
@@ -87,11 +90,11 @@ TEST_CASE("The PgpeOptimizer can find the equation of a line from noisy data.")
         // proposed solution.  PGPE maximizes rewards so the negative cost is
         // returns, as the lower the value, the better the fit.
 
-        const Eigen::Matrix<float, Eigen::Dynamic, 3> lines =
+        const Eigen::Matrix<double, Eigen::Dynamic, 3> lines =
             solutions.array().colwise() / solutions.leftCols<2>().rowwise().norm().array();
 
-        Eigen::Matrix<float, Eigen::Dynamic, 3> points_augmented =
-            Eigen::Matrix<float, Eigen::Dynamic, 3>::Ones(points.rows(), 3);
+        Eigen::Matrix<double, Eigen::Dynamic, 3> points_augmented =
+            Eigen::Matrix<double, Eigen::Dynamic, 3>::Ones(points.rows(), 3);
         points_augmented.leftCols(2) = points;
 
         ColumnVector costs(solutions.rows());
@@ -104,7 +107,7 @@ TEST_CASE("The PgpeOptimizer can find the equation of a line from noisy data.")
     };
 
     // Generate the ground truth and input data
-    // The line's equation in implicit form is '0 = x/sqrt(2) + y/sqrt(2) - 5'
+    // The line's equation in implicit form is 'x/sqrt(2) + y/sqrt(2) - 5 = 0'
     const Eigen::RowVector2<double> norm(kInvSqrt2, kInvSqrt2);
     const double distance = 5;
 
@@ -118,9 +121,9 @@ TEST_CASE("The PgpeOptimizer can find the equation of a line from noisy data.")
     // The expression below is just 'direction * t + line_pt + noise'.  The
     // reason it looks like this is just from the Eigen broadcasting operations.
     const Eigen::Matrix<double, kNumPoints, 1> t = Eigen::Matrix<double, kNumPoints, 1>::LinSpaced(-5, 5);
-    const Eigen::Matrix<double, kNumPoints, 2> points = (direction.replicate(kNumPoints, 1).array() * t.replicate(1, 2).array() + noise.array()).rowwise() + line_pt;
+    const Eigen::Matrix<double, kNumPoints, 2> points = (direction.replicate(kNumPoints, 1).array() * t.replicate(1, 2).array() + noise.array()).rowwise() + line_pt.array();
 
-    // Construct the optimizer and try to find a "good" solution.
+    // Construct the optimizer and try to find a "good" solution
     auto optimizer = PgpeOptimizer::Create(PgpeOptimizerSettings
     {
         .max_speed = 0.2,
@@ -128,9 +131,47 @@ TEST_CASE("The PgpeOptimizer can find the equation of a line from noisy data.")
         .seed = 3
     });
 
+    INFO("Ensure optimizer is created.");
+    REQUIRE(optimizer);
+
+    // Allocate samples storage and initial solution vector
+    Eigen::Matrix<double, kSamples, 3> samples = Eigen::Matrix<double, kSamples, 3>::Zero();
+    samples.col(1).array() = 1;
+
+    // Initialize the optimizer with the line 'y = 0'
     Eigen::RowVector3<double> solution(0, 1, 0);
-    INFO("Initial solution: {}", solution);
-    CHECK(false);
+    INFO("Initial solution: ", solution);
+
+    optimizer->Initialize(solution);
+
+    // Run the optimization loop
+    for (int i = 0; i < kIterations; i++)
+    {
+        optimizer->Sample(samples);
+        ColumnVector costs = estimate_costs(points, samples);
+        optimizer->Update(samples, costs);
+    }
+
+    // Get the final, predicted, solution
+    auto estimate = optimizer->GetEstimate();
+    REQUIRE(estimate);
+
+    // Convert it into Hesse-normal form
+    solution = *estimate;
+    solution.array() /= solution.head<2>().norm();
+    if (solution(2) > 0)
+    {
+        solution = -solution;
+    }
+
+    // Compute the mean absolute error and ensure it's "good enough"
+    const Eigen::RowVector3<double> line(kInvSqrt2, kInvSqrt2, -distance);
+    const double error = (line - solution).cwiseAbs().mean();
+
+    INFO("Expected: ", line);
+    INFO("Actual:   ", solution);
+    INFO("Error:    ", error);
+    REQUIRE(error < 0.5);
 }
 
 TEST_SUITE_END();
