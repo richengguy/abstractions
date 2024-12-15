@@ -65,6 +65,31 @@ TEST_CASE("Can create an optimizer using PgpeOptimizer::Create()") {
     }
 }
 
+TEST_CASE("Costs can be correctly rank-linearized.") {
+    using abstractions::ColumnVector;
+    using abstractions::Matrix;
+    using abstractions::PgpeOptimizer;
+    using abstractions::PgpeOptimizerSettings;
+
+    ColumnVector costs(5);
+    costs << 8, 7, 1, 9, 6;
+    // Rank: 3  2  0  4  1
+
+    ColumnVector original_costs = costs;
+
+    ColumnVector expected(5);
+    expected << 0.25, 0.0, -0.5, 0.5, -0.25;
+
+    auto optimizer = PgpeOptimizer::Create(PgpeOptimizerSettings{
+        .max_speed = 1.0
+    });
+    optimizer->RankLinearize(costs);
+
+    INFO("Linearized Costs: ", costs.transpose());
+    INFO("Expected Costs:   ", expected.transpose());
+    REQUIRE(costs == expected);
+}
+
 TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
 {
     using abstractions::Matrix;

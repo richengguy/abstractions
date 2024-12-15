@@ -8,6 +8,8 @@
 #include <expected>
 #include <optional>
 #include <string>
+#include <vector>
+#include <numeric>
 
 namespace abstractions {
 
@@ -109,20 +111,21 @@ void PgpeOptimizer::Initialize(ConstRowVectorRef x_init) {
     _is_initialized = true;
 }
 
-void PgpeOptimizer::RankLinearize(MatrixRef samples, ColumnVectorRef costs) const
+void PgpeOptimizer::RankLinearize(ColumnVectorRef costs) const
 {
-    ColumnVector scaled_costs = ColumnVector::LinSpaced(costs.size(), 0, costs.size() - 1);
+    const int num_costs = costs.rows();
+    std::vector<int> indices(num_costs);
 
-    double *start_ptr = scaled_costs.data();
-    double *end_ptr = start_ptr + scaled_costs.size();
-
-    std::sort(start_ptr, end_ptr, [&costs](const double a, const double b) -> bool {
-        const int i = static_cast<int>(a);
-        const int j = static_cast<int>(b);
-        return costs(i) < costs(j);
+    std::iota(std::begin(indices), std::end(indices), 0);
+    std::sort(std::begin(indices), std::end(indices), [costs](const int &a, const int &b) -> bool
+    {
+        return costs(a) < costs(b);
     });
 
-    scaled_costs = (scaled_costs / (costs.size() - 1)).array() - 0.5;
+    for (int i = 0; i < num_costs; i++)
+    {
+        costs(indices[i]) = static_cast<double>(i) / (num_costs - 1) - 0.5;
+    }
 }
 
 Error PgpeOptimizer::Sample(MatrixRef samples) const {
