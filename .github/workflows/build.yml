@@ -1,4 +1,4 @@
-name: Run Linters
+name: PR Lint, Build, and Test
 
 on: [pull_request]
 
@@ -55,3 +55,8 @@ jobs:
       - name: Build project
         run: |
           conan build . -pr:a ./profiles/linux-x86_64
+
+      - name: Run project tests
+        run: |
+          cd build/Release
+          ctest
