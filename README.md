@@ -12,6 +12,11 @@ LLVM project itself.  Adapted from https://apt.llvm.org/,
 wget https://apt.llvm.org/llvm.sh
 chmod u+x llvm.sh
 sudo ./llvm.sh 19
+
+# The line below is only needed if the default GCC version is less than 12
+# (e.g., on Ubuntu 22.04).  Clang uses the libstdc++ headers GCC provides and
+# versions older than 12 don't have the necessary C++23 headers.
+sudo apt install g++-12
 ```
 
 ### Getting Clang 19 (macOS)

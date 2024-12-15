@@ -7,7 +7,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from difflib import unified_diff
 from pathlib import Path
-from typing import Callable, Iterator, cast
+from typing import Callable, Iterator
 
 _IN_TTY = sys.stdout.isatty()
 
@@ -56,8 +56,10 @@ class LintResult:
             yield f"{status} ... {self.path.as_posix()}\n"
             return
 
-        diff_lines = cast(list[str], self.diff)
-        for line in diff_lines:
+        if self.diff is None:
+            return
+
+        for line in self.diff:
             colour = _faint
 
             if line.startswith(("--- ", "+++ ")):

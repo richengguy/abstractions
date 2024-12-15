@@ -1,4 +1,4 @@
-name: Run Linters
+name: PR Lint, Build, and Test
 
 on: [pull_request]
 
@@ -24,7 +24,7 @@ jobs:
       - uses: ./.github/actions/run-linter
         with:
           cmd: black
-          sources: scripts/run-mypy scripts/run-clang-format
+          sources: conanfile.py scripts/run-mypy scripts/run-clang-format
           check-args: --check
           diff-args: --diff
           diff-lang: python
@@ -41,12 +41,21 @@ jobs:
           python-version: "3.13"
 
       - name: Install build dependencies
+        id: install-deps
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
           wget https://apt.llvm.org/llvm.sh
           chmod u+x ./llvm.sh
           sudo ./llvm.sh 19
+          echo "CONAN_CONFIG_HOME=$(conan config home)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Conan build cache
+        id: conan-restore-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.install-deps.outputs.CONAN_CONFIG_HOME }}
+          key: ${{ runner.os }}-conan-cache
 
       - name: Install app dependencies
         run: |
@@ -54,4 +63,16 @@ jobs:
 
       - name: Build project
         run: |
-          conan build . -pr:a ./profiles/linux-x86_64
+          conan build . -pr:a ./profiles/linux-x86_64 -o build_tests=True
+
+      - name: Run project tests
+        run: |
+          cd build/Release
+          ctest
+
+      - name: Save Conan build cache
+        id: conan-save-cache
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.install-deps.outputs.CONAN_CONFIG_HOME }}
+          key: ${{ steps.conan-restore-cache.outputs.cache-primary-key }}
