@@ -140,16 +140,29 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
 
     // Initialize the optimizer with the line 'y = 0'
     Eigen::RowVector3<double> solution(0, 1, 0);
-    INFO("Initial solution: ", solution);
+    auto msg_solution = fmt::format("Initial Solution: {} {} {}", solution.x(), solution.y(), solution.z());
+    INFO(msg_solution);
 
     optimizer->Initialize(solution);
 
     // Run the optimization loop
     for (int i = 0; i < kIterations; i++)
     {
-        optimizer->Sample(samples);
+        auto err = optimizer->Sample(samples);
+        if (err)
+        {
+            INFO("Sample Error: ", err.value());
+            REQUIRE(false);
+        }
+
         ColumnVector costs = estimate_costs(points, samples);
-        optimizer->Update(samples, costs);
+
+        err = optimizer->Update(samples, costs);
+        if (err)
+        {
+            INFO("Update Error: ", err.value());
+            REQUIRE(false);
+        }
     }
 
     // Get the final, predicted, solution
@@ -171,7 +184,7 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
     INFO("Expected: ", line);
     INFO("Actual:   ", solution);
     INFO("Error:    ", error);
-    REQUIRE(error < 0.5);
+    REQUIRE(error < 0.1);
 }
 
 TEST_SUITE_END();

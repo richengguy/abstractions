@@ -1,4 +1,8 @@
+#pragma once
+
 #include <Eigen/Core>
+
+#include <fmt/ostream.h>
 
 namespace abstractions {
 /// @brief Basic definition of an `MxN` matrix.
@@ -15,6 +19,16 @@ using RowVector = Eigen::Matrix<double, 1, Eigen::Dynamic>;
 /// Use this instead of `Matrix &`.
 using MatrixRef = Eigen::Ref<Matrix>;
 
+/// @brief An Eigen-friendly way to pass a ColumnVector by reference.
+///
+/// Use this instead of `ColumnVector &`.
+using ColumnVectorRef = Eigen::Ref<ColumnVector>;
+
+/// @brief An Eigen-friendly way to pass a RowVector by reference.
+///
+/// Use this instead of `RowVector &`.
+using RowVectorRef = Eigen::Ref<RowVector>;
+
 /// @brief An Eigen-friendly constant reference to a Matrix.
 ///
 /// Use this instead of `const Matrix &`.
@@ -29,4 +43,8 @@ using ConstColumnVectorRef = const Eigen::Ref<const ColumnVector>&;
 ///
 /// Use this instead of `const RowVector &`.
 using ConstRowVectorRef = const Eigen::Ref<const RowVector>&;
+
 }  // namespace abstractions
+
+template<>
+struct fmt::formatter<abstractions::Matrix> : fmt::ostream_formatter { };

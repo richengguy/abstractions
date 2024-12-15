@@ -119,6 +119,12 @@ public:
     /// whether or not the optimizer has ran at any point before.
     void Initialize(ConstRowVectorRef x_init);
 
+    /// @brief Linearizes the costs so they are equally distributed on [-0.5, 0.5].
+    /// @param[in,out] samples input samples
+    /// @param[in,out] costs per-sample costs
+    /// @note The samples and costs are modified in-place.
+    void RankLinearize(MatrixRef samples, ColumnVectorRef costs) const;
+
     /// @brief Sample parameters from the current optimizer state.
     /// @param samples A reference to the matrix that will store the drawn
     ///     samples.

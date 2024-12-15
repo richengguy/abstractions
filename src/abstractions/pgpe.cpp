@@ -15,69 +15,10 @@ namespace {
 
 RowVector ClipUp(ConstRowVectorRef velocity, ConstRowVectorRef &x_grad, const double v_max,
                  const double momentum) {
-    const float alpha = v_max / 2.0f;
+    const double alpha = v_max / 2.0;
     RowVector velocity_next = momentum * velocity + alpha * (x_grad / x_grad.norm());
     float velocity_norm = velocity_next.norm();
     return velocity_norm > v_max ? v_max * velocity_next.normalized() : velocity_next;
-}
-
-RowVector ComputeStateVectorGradient(ConstColumnVectorRef costs, ConstRowVectorRef offsets,
-                                     ConstRowVectorRef x_current) {
-    const int random_samples = costs.rows() / 2;
-
-    ColumnVector costs_difference =
-        (costs.topRows(random_samples) - costs.bottomRows(random_samples)) / 2.0;
-    return (costs_difference.asDiagonal() * offsets).colwise().sum() /
-           static_cast<double>(random_samples);
-}
-
-RowVector ComputeStdDevVectorGradient(ConstColumnVectorRef costs, const double baseline,
-                                      ConstRowVectorRef offsets, ConstRowVectorRef sigma_current) {
-    const int random_samples = costs.rows() / 2;
-
-    const RowVector average_cost =
-        (costs.topRows(random_samples) + costs.bottomRows(random_samples)) / 2.0;
-    const RowVector gradient_weights = average_cost.array() - baseline;
-    const Matrix gradients =
-        (offsets.array().pow(2).rowwise() - sigma_current.array().pow(2)).rowwise() /
-        sigma_current.array();
-
-    return (gradient_weights.asDiagonal() * gradients).colwise().sum() /
-           static_cast<double>(random_samples);
-}
-
-std::tuple<const RowVector, const RowVector> ConstrainStateUpdate(ConstRowVectorRef state,
-                                                                  ConstRowVectorRef velocity,
-                                                                  ConstRowVectorRef x_grad,
-                                                                  const double v_max,
-                                                                  const double momentum) {
-    const RowVector update_velocity = ClipUp(velocity, x_grad, v_max, momentum);
-    const RowVector next_state = state + update_velocity;
-    return std::make_tuple(next_state, update_velocity);
-}
-
-RowVector ConstrainStdDevUpdate(ConstRowVectorRef sigma_current, ConstRowVectorRef delta,
-                                const double learning_rate, const double max_change) {
-    const RowVector sigma_upper = (1 + max_change) * sigma_current;
-    const RowVector sigma_lower = ((1 - max_change) * sigma_current).cwiseMax(1e-5);
-    return (sigma_current + learning_rate * delta).cwiseMin(sigma_upper).cwiseMax(sigma_lower);
-}
-
-ColumnVector RankLinearizeCosts(ConstColumnVectorRef costs) {
-    ColumnVector scaled_costs = ColumnVector::LinSpaced(costs.size(), 0, costs.size() - 1);
-
-    double *start_ptr = scaled_costs.data();
-    double *end_ptr = start_ptr + scaled_costs.size();
-
-    std::sort(start_ptr, end_ptr, [&costs](const double a, const double b) -> bool {
-        const int i = static_cast<int>(a);
-        const int j = static_cast<int>(b);
-        return costs(i) < costs(j);
-    });
-
-    scaled_costs = (scaled_costs / (costs.size() - 1)).array() - 0.5;
-
-    return scaled_costs;
 }
 
 }  // anonymous namespace
@@ -168,6 +109,22 @@ void PgpeOptimizer::Initialize(ConstRowVectorRef x_init) {
     _is_initialized = true;
 }
 
+void PgpeOptimizer::RankLinearize(MatrixRef samples, ColumnVectorRef costs) const
+{
+    ColumnVector scaled_costs = ColumnVector::LinSpaced(costs.size(), 0, costs.size() - 1);
+
+    double *start_ptr = scaled_costs.data();
+    double *end_ptr = start_ptr + scaled_costs.size();
+
+    std::sort(start_ptr, end_ptr, [&costs](const double a, const double b) -> bool {
+        const int i = static_cast<int>(a);
+        const int j = static_cast<int>(b);
+        return costs(i) < costs(j);
+    });
+
+    scaled_costs = (scaled_costs / (costs.size() - 1)).array() - 0.5;
+}
+
 Error PgpeOptimizer::Sample(MatrixRef samples) const {
     auto err = errors::find_any({CheckInitialized(), ValidateSamples(samples)});
     if (err) {
@@ -197,31 +154,46 @@ Error PgpeOptimizer::Sample(MatrixRef samples) const {
 }
 
 Error PgpeOptimizer::Update(ConstMatrixRef samples, ConstColumnVectorRef costs) {
-    const int num_samples = samples.rows();
     auto err = errors::find_any(
-        {CheckInitialized(), ValidateSamples(samples), ValidateCosts(num_samples, costs)});
+        {CheckInitialized(), ValidateSamples(samples), ValidateCosts(samples.rows(), costs)});
 
-    const ColumnVector scaled_costs = _settings.costs_ranking
-                                          ? RankLinearizeCosts(costs)
-                                          : static_cast<const ColumnVector>(costs);
+    // Now we can do the parameter updates.  This follows Algorithm 1 from the
+    // ClipUp paper.  Step 2 (build the population) is accomplished in the
+    // Sample() method.  The gradient computation is the remaining steps.
+    const int num_samples = samples.rows() / 2;
 
-    const Matrix offsets = samples.topRows(samples.rows() / 2).rowwise() - _current_state;
-    const float baseline = scaled_costs.mean();
+    // The "d+ - x_k" is common to both the solution and standard deviation
+    // gradients so it can be factored out and computed first.  This is equal
+    // to pertubation added to x_k since "d+ = x_k + sigma" and
+    // "d- = x_k - sigma".  The mean fitness can also be computed.
 
-    const auto x_grad = ComputeStateVectorGradient(scaled_costs, offsets, _current_state);
-    const auto sigma_grad =
-        ComputeStdDevVectorGradient(scaled_costs, baseline, offsets, _current_standard_deviation);
+    const Matrix perturbations = samples.topRows(num_samples).rowwise() - _current_state;
+    const double baseline_cost = costs.mean();
 
-    const auto [state_next, velocity_next] = ConstrainStateUpdate(
-        _current_state, _current_velocity, x_grad, _settings.max_speed, _settings.momentum);
+    // Compute what's needed for getting the solution gradient
+    const ColumnVector delta_cost = (costs.topRows(num_samples) - costs.bottomRows(num_samples)) / 2.0;
 
-    const auto sigma_next =
-        ConstrainStdDevUpdate(_current_standard_deviation, sigma_grad,
-                              _settings.stddev_learning_rate, _settings.stddev_max_change);
+    // Compute what's needed for getting the standard deviation gradient
+    const ColumnVector stddev_weights = ((costs.topRows(num_samples) + costs.bottomRows(num_samples)) / 2.0).array() - baseline_cost;
+    const Matrix stddev_directions = (perturbations.array().pow(2).rowwise() - _current_standard_deviation.array().pow(2)).rowwise() / _current_standard_deviation.array();
 
-    _current_state = state_next;
-    _current_standard_deviation = sigma_next;
-    _current_velocity = velocity_next;
+    // Finally, compute the gradients
+    const RowVector grad_solution = (delta_cost.asDiagonal() * perturbations).colwise().sum() / num_samples;
+    const RowVector grad_stddev = (stddev_weights.asDiagonal() * stddev_directions).colwise().sum() / num_samples;
+
+    // Use ClipUp to compute the updated velocity and state
+    const RowVector updated_velocity = ClipUp(_current_velocity, grad_solution, _settings.max_speed, _settings.momentum);
+    const RowVector updated_state = _current_state + updated_velocity;
+
+    // Find the next standard deviation estimation, clamping the estimate so
+    // that it never goes to zero or gets too large
+    const RowVector stddev_upper = (1 + _settings.stddev_max_change) * _current_standard_deviation;
+    const RowVector stddev_lower = ((1 - _settings.stddev_max_change) * _current_standard_deviation).cwiseMax(1e-5);
+    const RowVector updated_stddev = (_current_standard_deviation + _settings.stddev_learning_rate * grad_stddev).cwiseMin(stddev_upper).cwiseMax(stddev_lower);
+
+    _current_state = updated_state;
+    _current_standard_deviation = updated_stddev;
+    _current_velocity = updated_velocity;
 
     return {};
 }
