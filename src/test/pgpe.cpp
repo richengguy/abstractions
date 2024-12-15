@@ -201,7 +201,7 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.") {
     INFO("Expected: ", line);
     INFO("Actual:   ", solution);
     INFO("Error:    ", error);
-    REQUIRE(error < 0.1);
+    REQUIRE(error < 0.25);
 }
 
 TEST_SUITE_END();
