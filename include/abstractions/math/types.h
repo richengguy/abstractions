@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Eigen/Core>
-
 #include <fmt/ostream.h>
+
+#include <Eigen/Core>
 
 namespace abstractions {
 /// @brief Basic definition of an `MxN` matrix.
@@ -46,5 +46,5 @@ using ConstRowVectorRef = const Eigen::Ref<const RowVector>&;
 
 }  // namespace abstractions
 
-template<>
-struct fmt::formatter<abstractions::Matrix> : fmt::ostream_formatter { };
+template <>
+struct fmt::formatter<abstractions::Matrix> : fmt::ostream_formatter {};

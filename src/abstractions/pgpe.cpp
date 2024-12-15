@@ -6,10 +6,10 @@
 
 #include <cmath>
 #include <expected>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <vector>
-#include <numeric>
 
 namespace abstractions {
 
@@ -111,19 +111,15 @@ void PgpeOptimizer::Initialize(ConstRowVectorRef x_init) {
     _is_initialized = true;
 }
 
-void PgpeOptimizer::RankLinearize(ColumnVectorRef costs) const
-{
+void PgpeOptimizer::RankLinearize(ColumnVectorRef costs) const {
     const int num_costs = costs.rows();
     std::vector<int> indices(num_costs);
 
     std::iota(std::begin(indices), std::end(indices), 0);
-    std::sort(std::begin(indices), std::end(indices), [costs](const int &a, const int &b) -> bool
-    {
-        return costs(a) < costs(b);
-    });
+    std::sort(std::begin(indices), std::end(indices),
+              [costs](const int &a, const int &b) -> bool { return costs(a) < costs(b); });
 
-    for (int i = 0; i < num_costs; i++)
-    {
+    for (int i = 0; i < num_costs; i++) {
         costs(indices[i]) = static_cast<double>(i) / (num_costs - 1) - 0.5;
     }
 }
@@ -174,25 +170,38 @@ Error PgpeOptimizer::Update(ConstMatrixRef samples, ConstColumnVectorRef costs) 
     const double baseline_cost = costs.mean();
 
     // Compute what's needed for getting the solution gradient
-    const ColumnVector delta_cost = (costs.topRows(num_samples) - costs.bottomRows(num_samples)) / 2.0;
+    const ColumnVector delta_cost =
+        (costs.topRows(num_samples) - costs.bottomRows(num_samples)) / 2.0;
 
     // Compute what's needed for getting the standard deviation gradient
-    const ColumnVector stddev_weights = ((costs.topRows(num_samples) + costs.bottomRows(num_samples)) / 2.0).array() - baseline_cost;
-    const Matrix stddev_directions = (perturbations.array().pow(2).rowwise() - _current_standard_deviation.array().pow(2)).rowwise() / _current_standard_deviation.array();
+    const ColumnVector stddev_weights =
+        ((costs.topRows(num_samples) + costs.bottomRows(num_samples)) / 2.0).array() -
+        baseline_cost;
+    const Matrix stddev_directions =
+        (perturbations.array().pow(2).rowwise() - _current_standard_deviation.array().pow(2))
+            .rowwise() /
+        _current_standard_deviation.array();
 
     // Finally, compute the gradients
-    const RowVector grad_solution = (delta_cost.asDiagonal() * perturbations).colwise().sum() / num_samples;
-    const RowVector grad_stddev = (stddev_weights.asDiagonal() * stddev_directions).colwise().sum() / num_samples;
+    const RowVector grad_solution =
+        (delta_cost.asDiagonal() * perturbations).colwise().sum() / num_samples;
+    const RowVector grad_stddev =
+        (stddev_weights.asDiagonal() * stddev_directions).colwise().sum() / num_samples;
 
     // Use ClipUp to compute the updated velocity and state
-    const RowVector updated_velocity = ClipUp(_current_velocity, grad_solution, _settings.max_speed, _settings.momentum);
+    const RowVector updated_velocity =
+        ClipUp(_current_velocity, grad_solution, _settings.max_speed, _settings.momentum);
     const RowVector updated_state = _current_state + updated_velocity;
 
     // Find the next standard deviation estimation, clamping the estimate so
     // that it never goes to zero or gets too large
     const RowVector stddev_upper = (1 + _settings.stddev_max_change) * _current_standard_deviation;
-    const RowVector stddev_lower = ((1 - _settings.stddev_max_change) * _current_standard_deviation).cwiseMax(1e-5);
-    const RowVector updated_stddev = (_current_standard_deviation + _settings.stddev_learning_rate * grad_stddev).cwiseMin(stddev_upper).cwiseMax(stddev_lower);
+    const RowVector stddev_lower =
+        ((1 - _settings.stddev_max_change) * _current_standard_deviation).cwiseMax(1e-5);
+    const RowVector updated_stddev =
+        (_current_standard_deviation + _settings.stddev_learning_rate * grad_stddev)
+            .cwiseMin(stddev_upper)
+            .cwiseMax(stddev_lower);
 
     _current_state = updated_state;
     _current_standard_deviation = updated_stddev;

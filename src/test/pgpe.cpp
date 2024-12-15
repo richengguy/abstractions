@@ -1,10 +1,9 @@
+#include <abstractions/math/matrices.h>
 #include <abstractions/math/random.h>
 #include <abstractions/pgpe.h>
 #include <doctest/doctest.h>
 
-#include <abstractions/math/matrices.h>
 #include <Eigen/Core>
-
 #include <numbers>
 
 TEST_SUITE_BEGIN("pgpe");
@@ -80,9 +79,7 @@ TEST_CASE("Costs can be correctly rank-linearized.") {
     ColumnVector expected(5);
     expected << 0.25, 0.0, -0.5, 0.5, -0.25;
 
-    auto optimizer = PgpeOptimizer::Create(PgpeOptimizerSettings{
-        .max_speed = 1.0
-    });
+    auto optimizer = PgpeOptimizer::Create(PgpeOptimizerSettings{.max_speed = 1.0});
     optimizer->RankLinearize(costs);
 
     INFO("Linearized Costs: ", costs.transpose());
@@ -90,10 +87,9 @@ TEST_CASE("Costs can be correctly rank-linearized.") {
     REQUIRE(costs == expected);
 }
 
-TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
-{
-    using abstractions::Matrix;
+TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.") {
     using abstractions::ColumnVector;
+    using abstractions::Matrix;
     using abstractions::NormalDistribution;
     using abstractions::PgpeOptimizer;
     using abstractions::PgpeOptimizerSettings;
@@ -105,10 +101,10 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
     constexpr int kNumPoints = 100;
     constexpr int kSamples = 16;
     constexpr double kNoiseMagnitude = 0.1;
-    constexpr double kInvSqrt2 = 1.0/std::numbers::sqrt2;
+    constexpr double kInvSqrt2 = 1.0 / std::numbers::sqrt2;
 
-    auto estimate_costs = [&](const Eigen::Matrix<double, kNumPoints, 2> &points, const Eigen::Matrix<double, kSamples, 3> &solutions) -> ColumnVector
-    {
+    auto estimate_costs = [&](const Eigen::Matrix<double, kNumPoints, 2> &points,
+                              const Eigen::Matrix<double, kSamples, 3> &solutions) -> ColumnVector {
         // The solution costs are calculated from the perpendicular point-line
         // distances.  First, the solutions are converted into Hesse-normal form
         // to make the calculation easy.  Then, the costs are found for each
@@ -123,8 +119,7 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
         points_augmented.leftCols(2) = points;
 
         ColumnVector costs(solutions.rows());
-        for (int i = 0; i < solutions.rows(); i++)
-        {
+        for (int i = 0; i < solutions.rows(); i++) {
             costs(i) = (lines.row(i) * points_augmented.transpose()).cwiseAbs().sum();
         }
 
@@ -145,16 +140,16 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
 
     // The expression below is just 'direction * t + line_pt + noise'.  The
     // reason it looks like this is just from the Eigen broadcasting operations.
-    const Eigen::Matrix<double, kNumPoints, 1> t = Eigen::Matrix<double, kNumPoints, 1>::LinSpaced(-5, 5);
-    const Eigen::Matrix<double, kNumPoints, 2> points = (direction.replicate(kNumPoints, 1).array() * t.replicate(1, 2).array() + noise.array()).rowwise() + line_pt.array();
+    const Eigen::Matrix<double, kNumPoints, 1> t =
+        Eigen::Matrix<double, kNumPoints, 1>::LinSpaced(-5, 5);
+    const Eigen::Matrix<double, kNumPoints, 2> points =
+        (direction.replicate(kNumPoints, 1).array() * t.replicate(1, 2).array() + noise.array())
+            .rowwise() +
+        line_pt.array();
 
     // Construct the optimizer and try to find a "good" solution
-    auto optimizer = PgpeOptimizer::Create(PgpeOptimizerSettings
-    {
-        .max_speed = 0.2,
-        .costs_ranking = false,
-        .seed = 3
-    });
+    auto optimizer = PgpeOptimizer::Create(
+        PgpeOptimizerSettings{.max_speed = 0.2, .costs_ranking = false, .seed = 3});
 
     INFO("Ensure optimizer is created.");
     REQUIRE(optimizer);
@@ -165,17 +160,16 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
 
     // Initialize the optimizer with the line 'y = 0'
     Eigen::RowVector3<double> solution(0, 1, 0);
-    auto msg_solution = fmt::format("Initial Solution: {} {} {}", solution.x(), solution.y(), solution.z());
+    auto msg_solution =
+        fmt::format("Initial Solution: {} {} {}", solution.x(), solution.y(), solution.z());
     INFO(msg_solution);
 
     optimizer->Initialize(solution);
 
     // Run the optimization loop
-    for (int i = 0; i < kIterations; i++)
-    {
+    for (int i = 0; i < kIterations; i++) {
         auto err = optimizer->Sample(samples);
-        if (err)
-        {
+        if (err) {
             INFO("Sample Error: ", err.value());
             REQUIRE(false);
         }
@@ -183,8 +177,7 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
         ColumnVector costs = estimate_costs(points, samples);
 
         err = optimizer->Update(samples, costs);
-        if (err)
-        {
+        if (err) {
             INFO("Update Error: ", err.value());
             REQUIRE(false);
         }
@@ -197,8 +190,7 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.")
     // Convert it into Hesse-normal form
     solution = *estimate;
     solution.array() /= solution.head<2>().norm();
-    if (solution(2) > 0)
-    {
+    if (solution(2) > 0) {
         solution = -solution;
     }
 
