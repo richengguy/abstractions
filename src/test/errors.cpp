@@ -1,3 +1,4 @@
+// Silence the assert output for this set of tests
 #define ABSTRACTIONS_ASSERTS_THROW_ONLY
 
 #include <abstractions/errors.h>

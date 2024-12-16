@@ -41,7 +41,7 @@ Expected<Image> Image::Load(const std::filesystem::path &path) {
     BLImage buffer;
     auto err = buffer.readFromFile(path.c_str());
     if (err != BL_SUCCESS) {
-        return errors::report<Image>(fmt::format("Failed to load {} ({})", path, err));
+        return errors::report<Image>(fmt::format("Failed to load {} (Error Code: {})", path, err));
     }
 
     auto format = buffer.format();

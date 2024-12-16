@@ -5,6 +5,7 @@ find_package(fmt REQUIRED)
 set(ABSTRACTIONS_TESTS
     library-tests.cpp
     errors.cpp
+    image.cpp
     math.cpp
     pgpe.cpp
     profile.cpp

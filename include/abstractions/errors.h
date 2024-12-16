@@ -10,6 +10,9 @@
 
 namespace abstractions {
 
+// The asserts can have their debug message silenced by defining
+// ABSTRACTIONS_ASSERTS_THROW_ONLY before including this header.
+
 #ifndef ABSTRACTIONS_ASSERTS_THROW_ONLY
 #define __ABSTRACTIONS_THROW_ONLY true
 #else
