@@ -31,7 +31,8 @@ void _assert(const bool cond, const std::string &cond_str, const std::source_loc
     fmt::println(std::cerr, "Location         ->  {}", assert_loc);
     fmt::println(std::cerr, "");
 
-    std::abort();
+    throw errors::AbstractionsError("Assert failed.");
+    // std::abort();
 }
 
 #endif // ABSTRACTIONS_ENABLE_ASSERTS

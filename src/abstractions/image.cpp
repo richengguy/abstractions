@@ -12,14 +12,20 @@ PixelData::PixelData(const BLImageData &surface) : _surface{surface} { }
 
 const uint32_t *PixelData::Row(const int y) const
 {
+    abstractions_assert(y >= 0 && y < _surface.size.h);
+
     const uint8_t *buffer = static_cast<const uint8_t *>(_surface.pixelData);
     return reinterpret_cast<const uint32_t *>(&buffer[y * _surface.stride]);
 }
 
 Pixel PixelData::Get(const int x, const int y) const
 {
+    abstractions_assert(x >= 0 && x < _surface.size.w);
+    abstractions_assert(y >= 0 && y < _surface.size.h);
+
     const uint8_t *buffer = static_cast<const uint8_t *>(_surface.pixelData);
     const uint32_t *row = reinterpret_cast<const uint32_t *>(&buffer[y * _surface.stride]);
+
     return Pixel(row[x]);
 }
 
@@ -51,7 +57,7 @@ Expected<Image> Image::Load(const std::filesystem::path &path)
     auto format = buffer.format();
     if (format != BL_FORMAT_XRGB32 && format != BL_FORMAT_PRGB32)
     {
-        return errors::report<Image>(fmt::format("Image must be 32-bit RGB or RGBA."));
+        return errors::report<Image>("Image must be 32-bit RGB or RGBA.");
     }
 
     return Image(buffer);

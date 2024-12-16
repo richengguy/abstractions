@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include <exception>
+#include <stdexcept>
 #include <initializer_list>
 #include <string>
 #include <source_location>
@@ -21,6 +21,18 @@ void _assert(const bool cond, const std::string &cond_str, const std::source_loc
 #endif
 
 namespace errors {
+
+/// @brief Exception thrown when the abstractions library encounters a
+///     non-recoverable error.
+///
+/// This should only be caught in a program's `main()` function to perform any
+/// last minute clean-up before terminating the program.
+class AbstractionsError : public std::runtime_error
+{
+public:
+    AbstractionsError(const std::string &what):
+        std::runtime_error(what) { }
+};
 
 /// @brief Creates an error when an expected value could not be returned.
 /// @tparam T expected result type
