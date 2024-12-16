@@ -11,11 +11,17 @@
 
 namespace abstractions {
 
+#ifndef ABSTRACTIONS_ASSERTS_THROW_ONLY
+#define __ABSTRACTIONS_THROW_ONLY true
+#else
+#define __ABSTRACTIONS_THROW_ONLY false
+#endif
+
 #ifdef ABSTRACTIONS_ENABLE_ASSERTS
 #define abstractions_assert(cond) \
-    ::abstractions::_assert((cond), #cond)
+    ::abstractions::_assert((cond), #cond, __ABSTRACTIONS_THROW_ONLY)
 
-void _assert(const bool cond, const std::string &cond_str, const std::source_location loc = std::source_location::current());
+void _assert(const bool cond, const std::string &cond_str, const bool throw_only, const std::source_location loc = std::source_location::current());
 #else
 #define abstractions_assert(cond)
 #endif

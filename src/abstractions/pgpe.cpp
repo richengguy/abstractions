@@ -1,7 +1,7 @@
 #include <abstractions/math/matrices.h>
 #include <abstractions/math/random.h>
 #include <abstractions/pgpe.h>
-#include <abstractions/utilities.h>
+#include <abstractions/errors.h>
 #include <fmt/format.h>
 
 #include <cmath>

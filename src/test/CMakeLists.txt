@@ -4,10 +4,10 @@ find_package(fmt REQUIRED)
 # Top-level Tests
 set(ABSTRACTIONS_TESTS
     library-tests.cpp
+    errors.cpp
     math.cpp
     pgpe.cpp
     profile.cpp
-    utilities.cpp
 )
 
 add_executable(library-tests ${ABSTRACTIONS_TESTS})

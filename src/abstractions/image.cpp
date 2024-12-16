@@ -1,6 +1,6 @@
 #include <abstractions/image.h>
 
-#include <abstractions/utilities.h>
+#include <abstractions/errors.h>
 
 #include <fmt/format.h>
 #include <fmt/std.h>
