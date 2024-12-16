@@ -2,12 +2,11 @@
 
 #include <abstractions/types.h>
 
-#include <iostream>
-
-#include <stdexcept>
 #include <initializer_list>
-#include <string>
+#include <iostream>
 #include <source_location>
+#include <stdexcept>
+#include <string>
 
 namespace abstractions {
 
@@ -18,10 +17,10 @@ namespace abstractions {
 #endif
 
 #ifdef ABSTRACTIONS_ENABLE_ASSERTS
-#define abstractions_assert(cond) \
-    ::abstractions::_assert((cond), #cond, __ABSTRACTIONS_THROW_ONLY)
+#define abstractions_assert(cond) ::abstractions::_assert((cond), #cond, __ABSTRACTIONS_THROW_ONLY)
 
-void _assert(const bool cond, const std::string &cond_str, const bool throw_only, const std::source_location loc = std::source_location::current());
+void _assert(const bool cond, const std::string &cond_str, const bool throw_only,
+             const std::source_location loc = std::source_location::current());
 #else
 #define abstractions_assert(cond)
 #endif
@@ -33,11 +32,10 @@ namespace errors {
 ///
 /// This should only be caught in a program's `main()` function to perform any
 /// last minute clean-up before terminating the program.
-class AbstractionsError : public std::runtime_error
-{
+class AbstractionsError : public std::runtime_error {
 public:
-    AbstractionsError(const std::string &what):
-        std::runtime_error(what) { }
+    AbstractionsError(const std::string &what) :
+        std::runtime_error(what) {}
 };
 
 /// @brief Creates an error when an expected value could not be returned.

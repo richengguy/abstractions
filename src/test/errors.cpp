@@ -1,7 +1,7 @@
 #define ABSTRACTIONS_ASSERTS_THROW_ONLY
 
-#include <abstractions/types.h>
 #include <abstractions/errors.h>
+#include <abstractions/types.h>
 #include <doctest/doctest.h>
 
 using int_expected_t = abstractions::Expected<int>;
@@ -50,8 +50,7 @@ TEST_CASE("Able to find the first error with errors::find_any.") {
     }
 }
 
-TEST_CASE("Asserts detect and throw errors correctly.")
-{
+TEST_CASE("Asserts detect and throw errors correctly.") {
     using abstractions::errors::AbstractionsError;
 
     REQUIRE_THROWS_AS(abstractions_assert(1 == 2), AbstractionsError);
