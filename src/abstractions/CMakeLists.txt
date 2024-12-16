@@ -6,8 +6,10 @@ set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
 
 set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/abstractions.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/image.h
     ${ABSTRACTIONS_INCLUDE_DIR}/pgpe.h
     ${ABSTRACTIONS_INCLUDE_DIR}/profile.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/render.h
     ${ABSTRACTIONS_INCLUDE_DIR}/types.h
     ${ABSTRACTIONS_INCLUDE_DIR}/utilities.h
 
@@ -18,7 +20,10 @@ set(ABSTRACTIONS_INCLUDES
 
 set (ABSTRACTIONS_SOURCES
     abstractions.cpp
+    image.cpp
     pgpe.cpp
+    render.cpp
+    utilities.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})

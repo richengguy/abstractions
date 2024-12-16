@@ -2,10 +2,23 @@
 
 #include <abstractions/types.h>
 
+#include <iostream>
+
 #include <exception>
 #include <initializer_list>
+#include <string>
+#include <source_location>
 
 namespace abstractions {
+
+#ifdef ABSTRACTIONS_ENABLE_ASSERTS
+#define abstractions_assert(cond) \
+    ::abstractions::_assert((cond), #cond)
+
+void _assert(const bool cond, const std::string &cond_str, const std::source_location loc = std::source_location::current());
+#else
+#define abstractions_assert(cond)
+#endif
 
 namespace errors {
 
