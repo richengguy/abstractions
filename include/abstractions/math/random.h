@@ -9,11 +9,14 @@
 
 namespace abstractions {
 
+/// @brief The default random number generator type.
+using DefaultRngType = std::mt19937;
+
 /// @brief A lightweight adapter to a random number engine to make it easier to
 ///     keep track of what seed it used.  This complies with the
 ///     *UniformRandomBitGenerator* named requirement.
 /// @tparam G an object that meets the *RandomNumberEngine* requirements
-template <typename G = std::mt19937>
+template <typename G = DefaultRngType>
 class Prng {
 public:
     /// @brief The wrapped bit generator's result type.
@@ -24,6 +27,9 @@ public:
     Prng(result_type seed) :
         _generator{seed},
         _seed{seed} {}
+
+    Prng(const Prng<G> &other) :
+        Prng(other.seed()) {}
 
     /// @brief The smallest value that the generator will return.
     static constexpr result_type min() {
@@ -61,7 +67,7 @@ private:
 ///
 /// The generator is explicitly designed to be "immovable" so that it's created
 /// only in one spot and then can distribute PRNGs as needed.
-template <typename G = std::mt19937>
+template <typename G = DefaultRngType>
 class PrngGenerator {
 public:
     /// @brief Draw a random see from some random source.
@@ -147,7 +153,7 @@ private:
 
 /// @brief Generate a sequence of normally distributed random numbers.
 /// @tparam G an object that meets the *RandomNumberEngine* named requirement
-template <typename G = std::mt19937>
+template <typename G = DefaultRngType>
 class NormalDistribution : public Distribution<G, std::normal_distribution<double>> {
 public:
     /// @brief Create a new normal distribution instance.
@@ -161,7 +167,7 @@ public:
 
 /// @brief Generate a sequence of uniformally distributed random numbers on [0,1).
 /// @tparam G an object that meets the *RandomNumberEngine* named requirement
-template <typename G = std::mt19937>
+template <typename G = DefaultRngType>
 class UniformDistribution : public Distribution<G, std::uniform_real_distribution<double>> {
 public:
     /// @brief Create a new uniform distribution instance.
