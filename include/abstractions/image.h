@@ -77,6 +77,10 @@ constexpr uint32_t PackComponents(const uint8_t r, const uint8_t g, const uint8_
 }  // namespace detail
 
 /// @brief Provides easy access to the contents of a 32-bit ABGR pixel value.
+///
+/// The Pixel class is interchangeable with a `uint32_t`.  A Pixel instance can
+/// be compared to an unsigned integer and vice-versa.  There is also suppport
+/// for direct conversion.
 class Pixel {
 public:
     /// @brief Create a new pixel instance.
@@ -96,6 +100,20 @@ public:
     Pixel(Pixel &&) = default;
     Pixel &operator=(const Pixel &) = default;
     Pixel &operator=(Pixel &&) = default;
+
+    bool operator==(const Pixel &other) const
+    {
+        return _pixel == other._pixel;
+    }
+
+    bool operator==(const uint32_t other) const
+    {
+        return _pixel == other;
+    }
+
+    operator uint32_t() const { return _pixel; }
+
+    operator int() const { return _pixel; }
 
     uint8_t Red() const {
         return detail::GetRedValue(_pixel);
