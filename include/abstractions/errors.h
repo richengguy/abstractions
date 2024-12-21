@@ -30,6 +30,9 @@ void _assert(const bool cond, const std::string &cond_str, const bool throw_only
 
 namespace errors {
 
+/// @brief Use this as the return value when a operation suceeds.
+static constexpr Error no_error = std::nullopt;
+
 /// @brief Exception thrown when the abstractions library encounters a
 ///     non-recoverable error.
 ///
