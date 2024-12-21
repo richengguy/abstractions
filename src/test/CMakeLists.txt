@@ -1,6 +1,11 @@
 find_package(doctest REQUIRED)
 find_package(fmt REQUIRED)
 
+configure_file(
+    samples-path.h.in
+    ${abstractions_BINARY_DIR}/tests/samples-path.h
+)
+
 # Top-level Tests
 set(ABSTRACTIONS_TESTS
     library-tests.cpp
@@ -9,9 +14,17 @@ set(ABSTRACTIONS_TESTS
     math.cpp
     pgpe.cpp
     profile.cpp
+
+    ${abstractions_BINARY_DIR}/tests/samples-path.h
 )
 
-add_executable(library-tests ${ABSTRACTIONS_TESTS})
+add_executable(library-tests
+    ${ABSTRACTIONS_TESTS}
+    ${abstractions_BINARY_DIR}/tests/samples
+)
+target_include_directories(library-tests
+    PRIVATE ${abstractions_BINARY_DIR}/tests
+)
 target_link_libraries(library-tests
     PRIVATE
     abstractions
@@ -20,6 +33,12 @@ target_link_libraries(library-tests
 set_target_properties(library-tests
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/tests
+)
+add_custom_command(
+    OUTPUT ${abstractions_BINARY_DIR}/tests/samples
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/samples
+        ${abstractions_BINARY_DIR}/tests/samples
 )
 
 include(doctest)

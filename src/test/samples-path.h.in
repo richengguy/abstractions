@@ -1,0 +1,5 @@
+#pragma once
+
+#include <filesystem>
+
+static const std::filesystem::path kSamplesPath = "@abstractions_BINARY_DIR@/tests/samples";

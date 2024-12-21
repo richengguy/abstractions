@@ -1,6 +1,12 @@
 #include <abstractions/image.h>
 
+#include <filesystem>
+#include <string>
+#include <array>
+
 #include <doctest/doctest.h>
+
+#include "samples-path.h"
 
 TEST_SUITE_BEGIN("image");
 
@@ -13,6 +19,27 @@ TEST_CASE("Errors reported correctly when loading images.")
     INFO(image.error().value_or("No error"));
     REQUIRE_FALSE(image.has_value());
     REQUIRE(image.error().has_value());
+}
+
+TEST_CASE("Can load supported image formats.")
+{
+    using abstractions::Image;
+
+    const std::array<std::filesystem::path, 2> kFiles
+    {
+        kSamplesPath / "triangles.jpg",
+        kSamplesPath / "triangles.png"
+    };
+
+    for (auto &file : kFiles)
+    {
+        auto image = Image::Load(file);
+
+        INFO(image.error().value_or("Successfully loaded image."));
+        REQUIRE(image);
+        REQUIRE(image->Width() == 256);
+        REQUIRE(image->Height() == 512);
+    }
 }
 
 TEST_CASE("Can pack and unpack pixels into a 32-bit integer.")
