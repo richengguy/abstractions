@@ -1,17 +1,15 @@
 #include <abstractions/image.h>
+#include <doctest/doctest.h>
 
+#include <array>
 #include <filesystem>
 #include <string>
-#include <array>
-
-#include <doctest/doctest.h>
 
 #include "samples-path.h"
 
 TEST_SUITE_BEGIN("image");
 
-TEST_CASE("Errors reported correctly when loading images.")
-{
+TEST_CASE("Errors reported correctly when loading images.") {
     using abstractions::Image;
 
     auto image = Image::Load("unknown.jpg");
@@ -21,18 +19,15 @@ TEST_CASE("Errors reported correctly when loading images.")
     REQUIRE(image.error().has_value());
 }
 
-TEST_CASE("Can load supported image formats.")
-{
+TEST_CASE("Can load supported image formats.") {
     using abstractions::Image;
 
-    const std::array<std::filesystem::path, 2> kFiles
-    {
+    const std::array<std::filesystem::path, 2> kFiles{
         kSamplesPath / "triangles.jpg",
-        kSamplesPath / "triangles.png"
+        kSamplesPath / "triangles.png",
     };
 
-    for (auto &file : kFiles)
-    {
+    for (auto &file : kFiles) {
         auto image = Image::Load(file);
 
         INFO(image.error().value_or("Successfully loaded image."));
@@ -42,8 +37,7 @@ TEST_CASE("Can load supported image formats.")
     }
 }
 
-TEST_CASE("Can pack and unpack pixels into a 32-bit integer.")
-{
+TEST_CASE("Can pack and unpack pixels into a 32-bit integer.") {
     using abstractions::Pixel;
 
     const uint8_t red = 0xA0;

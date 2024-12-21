@@ -101,19 +101,21 @@ public:
     Pixel &operator=(const Pixel &) = default;
     Pixel &operator=(Pixel &&) = default;
 
-    bool operator==(const Pixel &other) const
-    {
+    bool operator==(const Pixel &other) const {
         return _pixel == other._pixel;
     }
 
-    bool operator==(const uint32_t other) const
-    {
+    bool operator==(const uint32_t other) const {
         return _pixel == other;
     }
 
-    operator uint32_t() const { return _pixel; }
+    operator uint32_t() const {
+        return _pixel;
+    }
 
-    operator int() const { return _pixel; }
+    operator int() const {
+        return _pixel;
+    }
 
     uint8_t Red() const {
         return detail::GetRedValue(_pixel);
