@@ -12,7 +12,7 @@ namespace detail {
 
 /// @brief Get an individual pixel component in a packed 32-bit pixel.
 /// @tparam N component channel
-/// @param pixel a packed, e.g., RGBA, 32-bit pixel value
+/// @param pixel a packed, e.g., ARGB, 32-bit pixel value
 /// @return the indiviual 8-bit component value
 template <int N>
 constexpr uint8_t GetComponent(const uint32_t pixel) {
