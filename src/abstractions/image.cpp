@@ -73,4 +73,26 @@ PixelData Image::Pixels() const {
     return PixelData(surface);
 }
 
+Error Image::Save(const std::filesystem::path &path) const {
+    if (!path.has_extension()) {
+        return Error("File name must have an extension.");
+    }
+
+    auto format = path.extension().string().substr(1);
+    BLImageCodec codec;
+    BLResult err;
+
+    err = codec.findByName(format.c_str());
+    if (err != BL_SUCCESS) {
+        return Error(fmt::format("Could not find a '{}' codec (error {}).", format, err));
+    }
+
+    err = _buffer.writeToFile(path.c_str());
+    if (err != BL_SUCCESS) {
+        return Error(fmt::format("Could not write to '{}' (error {})", path, err));
+    }
+
+    return errors::no_error;
+}
+
 }  // namespace abstractions

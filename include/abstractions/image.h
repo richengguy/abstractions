@@ -179,7 +179,7 @@ private:
 class Image {
 public:
     /// @brief Load an image from a file.
-    /// @param path File path.
+    /// @param path file path
     /// @return The loaded image or an error if it failed to load.
     static Expected<Image> Load(const std::filesystem::path &path);
 
@@ -201,6 +201,11 @@ public:
     /// @brief Get read-only access to the underlying pixel data.
     /// @return An object for accessing the pixel data.
     PixelData Pixels() const;
+
+    /// @brief Save the image to a file.
+    /// @param path file path
+    /// @return an Error if the save operation failed
+    Error Save(const std::filesystem::path &path) const;
 
     /// @brief Convert the image to its underlying `BLImage` buffer.
     operator BLImage &() {
