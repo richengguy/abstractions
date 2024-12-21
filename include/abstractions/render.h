@@ -16,6 +16,14 @@ enum CompositeMode
     kCompositeModeSrcOver,
 };
 
+/// @brief Perform rendering operations.
+///
+/// The context cannot be created directly.  It's lifetime is managed by a
+/// Renderer.
+///
+/// The context uses a scaled, anisotropic coordinate system such that the
+/// height of the render surface is `[0, 1]` while the width is `[0, aspect]`,
+/// with `aspect` being the surface aspect ratio.
 class RenderContext
 {
 public:
@@ -43,9 +51,9 @@ public:
     /// @param params rectangles and their colours represeted as an `Nx8` matrix
     ///
     /// Each rectangle is represented as a `(x1,y1,x2,y2,r,g,b,a)` tuple packed
-    /// into a `Nx8` matrix.  `(x1,y1)` is the bottom-left corner and `(x2,y2)`
-    /// is the top-right corner.
-    void DrawFillRectangles(ConstMatrixRef params);
+    /// into a `Nx8` matrix.  `(x1,y1)` and `(x2,y2)` are the two corners of the
+    /// rectangle.  The width is `|x1 - x2|` and the height is `|y1 - y2|`.
+    void DrawFilledRectangles(ConstMatrixRef params);
 
     /// @brief Draw a set of filled triangles.
     /// @param params triangles and their colours presented as an `Nx10` matrix
