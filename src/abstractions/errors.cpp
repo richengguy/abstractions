@@ -38,8 +38,7 @@ void _assert(const bool cond, const std::string &cond_str, const bool throw_only
     // std::abort();
 }
 
-void _assert(const Error &error, const bool throw_only, const std::source_location loc)
-{
+void _check(const Error &error, const bool throw_only, const std::source_location loc) {
     _assert(!error.has_value(), error.value_or("No error"), throw_only, loc);
 }
 

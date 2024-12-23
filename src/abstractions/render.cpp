@@ -39,7 +39,7 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
             fmt::format("Expected a Nx7 array, got an {}x{}.", num_circles, num_dimensions));
     }
 
-    // Scaling is anisotropic, so vertical is [0,1] while horizontal is
+    // Scaling is isotropic, so vertical is [0,1] while horizontal is
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 
@@ -71,7 +71,7 @@ Error Canvas::DrawFilledTriangles(ConstMatrixRef params) {
             fmt::format("Expected a Nx10 array, got an {}x{}.", num_triangles, num_dimensions));
     }
 
-    // Scaling is anisotropic, so vertical is [0,1] while horizontal is
+    // Scaling is isotropic, so vertical is [0,1] while horizontal is
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 
@@ -101,7 +101,7 @@ Error Canvas::DrawFilledRectangles(ConstMatrixRef params) {
         return Error(fmt::format("Expected a Nx8 array, got an {}x{}.", num_rects, num_dimensions));
     }
 
-    // Scaling is anisotropic, so vertical is [0,1] while horizontal is
+    // Scaling is isotropic, so vertical is [0,1] while horizontal is
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 

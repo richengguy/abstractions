@@ -21,15 +21,25 @@ namespace abstractions {
 
 #ifdef ABSTRACTIONS_ENABLE_ASSERTS
 #define abstractions_assert(cond) ::abstractions::_assert((cond), #cond, __ABSTRACTIONS_THROW_ONLY)
-#define abstractions_succeeded(err) ::abstractions::_assert(err, __ABSTRACTIONS_THROW_ONLY)
+#define abstractions_check(err) ::abstractions::_check(err, __ABSTRACTIONS_THROW_ONLY)
 
 void _assert(const bool cond, const std::string &cond_str, const bool throw_only,
              const std::source_location loc = std::source_location::current());
 
-void _assert(const abstractions::Error &error, const bool throw_only, const std::source_location loc = std::source_location::current());
+void _check(const Error &error, const bool throw_only,
+            const std::source_location loc = std::source_location::current());
+
+template <typename T>
+void _check(const Expected<T> &output, const bool throw_only,
+            const std::source_location loc = std::source_location::current()) {
+    if (output.has_value()) {
+        return;
+    }
+    _check(output.error(), throw_only, loc);
+}
 #else
 #define abstractions_assert(cond)
-#define abstractions_succeeded(err) err
+#define abstractions_check(err) err
 #endif
 
 namespace errors {
