@@ -10,9 +10,9 @@
 namespace abstractions {
 
 /// @brief Compositing modes used by the renderer.
-enum CompositeMode {
-    kCompositeModeSrcCopy,
-    kCompositeModeSrcOver,
+enum class CompositeMode {
+    SrcCopy,
+    SrcOver,
 };
 
 /// @brief A drawing surface for geometric shapes.

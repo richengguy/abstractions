@@ -76,6 +76,21 @@ constexpr uint32_t PackComponents(const uint8_t r, const uint8_t g, const uint8_
 
 }  // namespace detail
 
+/// @brief Supported image pixel storage formats.
+enum class PixelFormat {
+    /// @brief Pixels only contain RGB data.
+    /// @note The internal image storage will *always* have room for an alpha
+    ///     channel.
+    RGB,
+
+    /// @brief Pixels contain premultiplied ARGB data.
+    RGBWithPremultAlpha,
+
+    /// @brief The internal Blend2D representation isn't one that abstractions
+    ///     supports
+    Unknown
+};
+
 /// @brief Provides easy access to the contents of a 32-bit ABGR pixel value.
 ///
 /// The Pixel class is interchangeable with a `uint32_t`.  A Pixel instance can
@@ -180,8 +195,15 @@ class Image {
 public:
     /// @brief Load an image from a file.
     /// @param path file path
-    /// @return The loaded image or an error if it failed to load.
+    /// @return the loaded image or an error if it failed to load
     static Expected<Image> Load(const std::filesystem::path &path);
+
+    /// @brief Create a new image with the given size.
+    /// @param width width, in pixels
+    /// @param height height, in pixels
+    /// @param with_alpha if `true` the alpha channel will not be ignored
+    /// @return the new image or an error if it could not be created
+    static Expected<Image> New(const int width, const int height, const bool with_alpha = false);
 
     /// @brief Create a new Image from an existing Blend2D `BLImage` instance.
     /// @param image a `BLImage` instance
@@ -194,9 +216,13 @@ public:
     int Width() const;
 
     /// @brief The total number of bits per pixel.
-    /// @note This will either be 24 (RGB) or 32 (RGBA), with the internal
-    ///     storage *always* being equivalent to `uint32_t`.
     int Depth() const;
+
+    /// @brief The pixel format.
+    /// @note This is different from the value returned by Depth().  The Depth()
+    ///     method returns the number of bits used for *storage* while the
+    ///     Format() method returns how the bits are *interpreted*.
+    PixelFormat Format() const;
 
     /// @brief Get read-only access to the underlying pixel data.
     /// @return An object for accessing the pixel data.

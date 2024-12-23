@@ -52,6 +52,18 @@ Expected<Image> Image::Load(const std::filesystem::path &path) {
     return Image(buffer);
 }
 
+Expected<Image> Image::New(const int width, const int height, const bool with_alpha) {
+    if (width <= 0 || height <= 0) {
+        return errors::report<Image>(fmt::format(
+            "The width and height cannot less than zero (width: {}, height: {})", width, height));
+    }
+
+    auto format = with_alpha ? BL_FORMAT_PRGB32 : BL_FORMAT_XRGB32;
+    BLImage buffer(width, height, format);
+    abstractions_assert(!buffer.empty());
+    return Image(buffer);
+}
+
 Image::Image(const BLImage &buffer) :
     _buffer{buffer} {}
 
@@ -67,6 +79,17 @@ int Image::Depth() const {
     return _buffer.depth();
 }
 
+PixelFormat Image::Format() const {
+    switch (_buffer.format()) {
+        case BL_FORMAT_PRGB32:
+            return PixelFormat::RGBWithPremultAlpha;
+        case BL_FORMAT_XRGB32:
+            return PixelFormat::RGB;
+        default:
+            return PixelFormat::Unknown;
+    }
+}
+
 PixelData Image::Pixels() const {
     BLImageData surface;
     _buffer.getData(&surface);
@@ -74,19 +97,7 @@ PixelData Image::Pixels() const {
 }
 
 Error Image::Save(const std::filesystem::path &path) const {
-    if (!path.has_extension()) {
-        return Error("File name must have an extension.");
-    }
-
-    auto format = path.extension().string().substr(1);
-    BLImageCodec codec;
     BLResult err;
-
-    err = codec.findByName(format.c_str());
-    if (err != BL_SUCCESS) {
-        return Error(fmt::format("Could not find a '{}' codec (error {}).", format, err));
-    }
-
     err = _buffer.writeToFile(path.c_str());
     if (err != BL_SUCCESS) {
         return Error(fmt::format("Could not write to '{}' (error {})", path, err));

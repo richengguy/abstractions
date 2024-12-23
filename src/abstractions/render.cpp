@@ -144,10 +144,10 @@ void Canvas::RandomFill() {
 Error Canvas::SetCompositeMode(const CompositeMode mode) {
     BLCompOp op;
     switch (mode) {
-        case kCompositeModeSrcCopy:
+        case CompositeMode::SrcCopy:
             op = BL_COMP_OP_SRC_COPY;
             break;
-        case kCompositeModeSrcOver:
+        case CompositeMode::SrcOver:
             op = BL_COMP_OP_SRC_OVER;
             break;
         default:
