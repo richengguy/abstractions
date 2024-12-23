@@ -3,3 +3,4 @@
 #include <filesystem>
 
 static const std::filesystem::path kSamplesPath = "@abstractions_BINARY_DIR@/tests/samples";
+static const std::filesystem::path kResultsPath = "@abstractions_BINARY_DIR@/tests/results";

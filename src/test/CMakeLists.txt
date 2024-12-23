@@ -2,8 +2,8 @@ find_package(doctest REQUIRED)
 find_package(fmt REQUIRED)
 
 configure_file(
-    samples-path.h.in
-    ${abstractions_BINARY_DIR}/tests/samples-path.h
+    test-paths.h.in
+    ${abstractions_BINARY_DIR}/tests/test-paths.h
 )
 
 # Top-level Tests
@@ -16,6 +16,7 @@ set(ABSTRACTIONS_TESTS
     profile.cpp
 
     ${abstractions_BINARY_DIR}/tests/samples-path.h
+    ${abstractions_SOURCE_DIR}/src/test/support.h
 )
 
 add_executable(library-tests
