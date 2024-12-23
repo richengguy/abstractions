@@ -6,16 +6,16 @@ configure_file(
     ${abstractions_BINARY_DIR}/tests/test-paths.h
 )
 
-# Top-level Tests
+# 'abstractions' library tests
 set(ABSTRACTIONS_TESTS
-    library-tests.cpp
-    errors.cpp
-    image.cpp
-    math.cpp
-    pgpe.cpp
-    profile.cpp
+    library/main.cpp
+    library/errors.cpp
+    library/image.cpp
+    library/math.cpp
+    library/pgpe.cpp
+    library/profile.cpp
 
-    ${abstractions_BINARY_DIR}/tests/samples-path.h
+    ${abstractions_BINARY_DIR}/tests/test-paths.h
     ${abstractions_SOURCE_DIR}/src/test/support.h
 )
 
@@ -24,7 +24,9 @@ add_executable(library-tests
     ${abstractions_BINARY_DIR}/tests/samples
 )
 target_include_directories(library-tests
-    PRIVATE ${abstractions_BINARY_DIR}/tests
+    PRIVATE
+    ${abstractions_SOURCE_DIR}/src/test
+    ${abstractions_BINARY_DIR}/tests
 )
 target_link_libraries(library-tests
     PRIVATE
@@ -46,7 +48,7 @@ include(doctest)
 doctest_discover_tests(library-tests)
 
 # Specific feature tests
-add_executable(assert-test assert-test.cpp)
+add_executable(assert-test feature/assert.cpp)
 target_link_libraries(assert-test
     PRIVATE
     abstractions
