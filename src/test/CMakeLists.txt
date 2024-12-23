@@ -1,3 +1,4 @@
+find_package(CLI11 REQUIRED)
 find_package(doctest REQUIRED)
 find_package(fmt REQUIRED)
 
@@ -16,7 +17,7 @@ set(ABSTRACTIONS_TESTS
     library/profile.cpp
 
     ${abstractions_BINARY_DIR}/tests/test-paths.h
-    ${abstractions_SOURCE_DIR}/src/test/support.h
+    ${abstractions_SOURCE_DIR}/src/test/library/support.h
 )
 
 add_executable(library-tests
@@ -25,7 +26,7 @@ add_executable(library-tests
 )
 target_include_directories(library-tests
     PRIVATE
-    ${abstractions_SOURCE_DIR}/src/test
+    ${abstractions_SOURCE_DIR}/src/test/library
     ${abstractions_BINARY_DIR}/tests
 )
 target_link_libraries(library-tests
@@ -48,12 +49,27 @@ include(doctest)
 doctest_discover_tests(library-tests)
 
 # Specific feature tests
-add_executable(assert-test feature/assert.cpp)
-target_link_libraries(assert-test
-    PRIVATE
-    abstractions
-)
-set_target_properties(assert-test
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/tests
-)
+function(add_feature_test featureName)
+    log_message("Adding feature test - ${featureName}")
+    add_executable(${featureName}-test
+        feature/${featureName}.cpp
+        ${abstractions_SOURCE_DIR}/src/test/feature/support.h
+    )
+    target_include_directories(${featureName}-test
+        PRIVATE
+        ${abstractions_SOURCE_DIR}/src/test/feature
+        ${abstractions_BINARY_DIR}/tests
+    )
+    target_link_libraries(${featureName}-test
+        PRIVATE
+        abstractions
+        CLI11::CLI11
+    )
+    set_target_properties(${featureName}-test
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/tests
+    )
+endfunction()
+
+add_feature_test(assert)
+add_feature_test(canvas)
