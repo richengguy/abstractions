@@ -146,6 +146,11 @@ public:
         return _distribution(_generator);
     }
 
+    /// @brief Seed used by the internal PRNG.
+    G::result_type Seed() const {
+        return _generator.seed();
+    }
+
 private:
     Prng<G> _generator;
     D _distribution;

@@ -64,6 +64,14 @@ TEST_CASE("A configured PRNG can be used with a Distribution<> object.") {
     CHECK(sum == doctest::Approx(1.0).epsilon(0.01));
 }
 
+TEST_CASE("Distribution object can return the Prng<> seed.") {
+    std::normal_distribution normal_dist(1.0);
+    abstractions::Prng prng(123);
+    abstractions::Distribution abs_dist(prng, normal_dist);
+
+    REQUIRE(abs_dist.Seed() == 123);
+}
+
 TEST_CASE("Can create a matrix of normally distributed random values.") {
     abstractions::Prng prng(1);
     abstractions::NormalDistribution normal_dist(prng, 2.5, 1.0);

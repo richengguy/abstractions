@@ -11,6 +11,7 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/pgpe.h
     ${ABSTRACTIONS_INCLUDE_DIR}/profile.h
     ${ABSTRACTIONS_INCLUDE_DIR}/render.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/shapes.h
     ${ABSTRACTIONS_INCLUDE_DIR}/types.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/math/matrices.h
@@ -24,6 +25,7 @@ set (ABSTRACTIONS_SOURCES
     image.cpp
     pgpe.cpp
     render.cpp
+    shapes.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})
