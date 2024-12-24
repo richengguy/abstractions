@@ -12,19 +12,6 @@
 
 #include "test-paths.h"
 
-/// @brief Creates the objects needed for a feature test.
-/// @param test_name the feature test name
-///
-/// Two objects will be created in the local scope.  `console` is used to print
-/// messages to the console in a standard format.  `test_folder` is an object
-/// that represents the local working space for the test.  It will clean the
-/// folder contents before the test runs.
-#define ABSTRACTIONS_INIT_FEATURE_TEST(test_name)                   \
-    ::abstractions::tests::Console console(test_name);              \
-    console.Print("Initializing feature test.");                    \
-    ::abstractions::tests::TestOutputFolder test_folder(test_name); \
-    console.Separator()
-
 /// @brief Use this to specify what the feature test actually does.
 ///
 /// The feature test will have access to the following objects:
