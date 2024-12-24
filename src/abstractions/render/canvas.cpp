@@ -1,5 +1,6 @@
+#include "abstractions/render/canvas.h"
+
 #include <abstractions/errors.h>
-#include <abstractions/render.h>
 #include <fmt/format.h>
 
 #include <algorithm>

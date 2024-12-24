@@ -1,4 +1,4 @@
-#include <abstractions/shapes.h>
+#include <abstractions/render/shapes.h>
 #include <doctest/doctest.h>
 
 TEST_SUITE_BEGIN("shapes");

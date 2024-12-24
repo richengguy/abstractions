@@ -10,13 +10,14 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/image.h
     ${ABSTRACTIONS_INCLUDE_DIR}/pgpe.h
     ${ABSTRACTIONS_INCLUDE_DIR}/profile.h
-    ${ABSTRACTIONS_INCLUDE_DIR}/render.h
-    ${ABSTRACTIONS_INCLUDE_DIR}/shapes.h
     ${ABSTRACTIONS_INCLUDE_DIR}/types.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/math/matrices.h
     ${ABSTRACTIONS_INCLUDE_DIR}/math/random.h
     ${ABSTRACTIONS_INCLUDE_DIR}/math/types.h
+
+    ${ABSTRACTIONS_INCLUDE_DIR}/render/canvas.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/render/shapes.h
 )
 
 set (ABSTRACTIONS_SOURCES
@@ -24,8 +25,9 @@ set (ABSTRACTIONS_SOURCES
     errors.cpp
     image.cpp
     pgpe.cpp
-    render.cpp
-    shapes.cpp
+
+    render/canvas.cpp
+    render/shapes.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})

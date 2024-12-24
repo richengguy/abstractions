@@ -1,8 +1,8 @@
 #include <abstractions/errors.h>
 #include <abstractions/image.h>
 #include <abstractions/math/matrices.h>
-#include <abstractions/render.h>
-#include <abstractions/shapes.h>
+#include <abstractions/render/canvas.h>
+#include <abstractions/render/shapes.h>
 #include <fmt/format.h>
 
 #include <CLI/CLI.hpp>
