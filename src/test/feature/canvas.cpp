@@ -2,9 +2,8 @@
 #include <abstractions/image.h>
 #include <abstractions/math/matrices.h>
 #include <abstractions/render.h>
-#include <fmt/format.h>
-
 #include <abstractions/shapes.h>
+#include <fmt/format.h>
 
 #include <CLI/CLI.hpp>
 #include <string>

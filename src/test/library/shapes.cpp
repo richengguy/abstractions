@@ -1,10 +1,9 @@
-#include <doctest/doctest.h>
 #include <abstractions/shapes.h>
+#include <doctest/doctest.h>
 
 TEST_SUITE_BEGIN("shapes");
 
-TEST_CASE("Shape collections are initialized correctly.")
-{
+TEST_CASE("Shape collections are initialized correctly.") {
     using abstractions::ShapeCollection;
 
     ShapeCollection<2> collection(5);
@@ -13,8 +12,7 @@ TEST_CASE("Shape collections are initialized correctly.")
     REQUIRE(ShapeCollection<2>::TotalDimensions == 6);
 }
 
-TEST_CASE("Can get the individual parts of the parameters matrix.")
-{
+TEST_CASE("Can get the individual parts of the parameters matrix.") {
     using abstractions::Matrix;
     using abstractions::ShapeCollection;
 
@@ -33,8 +31,8 @@ TEST_CASE("Can get the individual parts of the parameters matrix.")
     Matrix shape = collection.ShapeParameters();
     REQUIRE(shape.cols() == 1);
     REQUIRE(shape.rows() == 2);
-    CHECK(shape(0,0) == 1);
-    CHECK(shape(1,0) == 0);
+    CHECK(shape(0, 0) == 1);
+    CHECK(shape(1, 0) == 0);
 
     Matrix colour = collection.ColourValues();
     REQUIRE(colour.cols() == 4);
@@ -47,7 +45,6 @@ TEST_CASE("Can get the individual parts of the parameters matrix.")
     CHECK(colour(1, 1) == 0);
     CHECK(colour(1, 2) == 0);
     CHECK(colour(1, 3) == 0);
-
 }
 
 TEST_SUITE_END();

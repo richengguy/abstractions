@@ -104,8 +104,7 @@ TEST_CASE("Can create a matrix of normally distributed random values.") {
     abstractions::Prng prng(1);
     abstractions::NormalDistribution normal_dist(prng, 2.5, 1.0);
 
-    SUBCASE("Returning a new matrix.")
-    {
+    SUBCASE("Returning a new matrix.") {
         abstractions::Matrix matrix = abstractions::RandomMatrix(25, 30, normal_dist);
 
         double mean = matrix.mean();
@@ -115,8 +114,7 @@ TEST_CASE("Can create a matrix of normally distributed random values.") {
         CHECK(variance == doctest::Approx(1.0).epsilon(0.05));
     }
 
-    SUBCASE("In-place creation.")
-    {
+    SUBCASE("In-place creation.") {
         abstractions::Matrix matrix = abstractions::Matrix::Zero(25, 30);
         abstractions::RandomMatrix(matrix, normal_dist);
 
@@ -132,14 +130,12 @@ TEST_CASE("Can create a matrix of uniformally distributed random values.") {
     abstractions::Prng prng(1);
     abstractions::UniformDistribution uniform_dist(prng);
 
-    SUBCASE("Returning a new matrix.")
-    {
+    SUBCASE("Returning a new matrix.") {
         abstractions::Matrix matrix = abstractions::RandomMatrix(30, 20, uniform_dist);
         CHECK(matrix.mean() == doctest::Approx(0.5).epsilon(0.05));
     }
 
-    SUBCASE("In-place creation.")
-    {
+    SUBCASE("In-place creation.") {
         abstractions::Matrix matrix = abstractions::Matrix::Zero(30, 20);
         abstractions::RandomMatrix(matrix, uniform_dist);
         CHECK(matrix.mean() == doctest::Approx(0.5).epsilon(0.05));

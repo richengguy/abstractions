@@ -1,8 +1,8 @@
 #pragma once
 
+#include <abstractions/errors.h>
 #include <abstractions/math/random.h>
 #include <abstractions/math/types.h>
-#include <abstractions/errors.h>
 
 #include <tuple>
 
@@ -10,9 +10,8 @@ namespace abstractions {
 
 /// @brief A collection of shape parameter vectors.
 /// @tparam D number of dimensions needed to describe a shape
-template<int D>
-struct ShapeCollection
-{
+template <int D>
+struct ShapeCollection {
     static_assert(D > 0, "Shape dimensions must be greater than zero.");
 
     /// @brief Number of dimensions just to represent the shape.
@@ -23,8 +22,7 @@ struct ShapeCollection
 
     /// @brief Create a new ShapeCollection instance.
     /// @param num_shapes number of shapes in the collection
-    ShapeCollection(int num_shapes)
-    {
+    ShapeCollection(int num_shapes) {
         abstractions_assert(num_shapes > 0);
         Params = Matrix::Zero(num_shapes, TotalDimensions);
     }
@@ -34,27 +32,23 @@ struct ShapeCollection
     Matrix Params;
 
     /// @brief Get a view of the parameters matrix as a single vector.
-    auto AsVector() const
-    {
+    auto AsVector() const {
         return Params.reshaped();
     }
 
     /// @brief Only get the submatrix containing the shape parameters.
-    auto ShapeParameters()
-    {
+    auto ShapeParameters() {
         return Params.leftCols<D>();
     }
 
     /// @brief Only get the submatrix containing the shape colours.
-    auto ColourValues()
-    {
+    auto ColourValues() {
         return Params.rightCols<4>();
     }
 
     /// @brief Get the number of shapes in the collection.
     /// @return
-    int NumShapes() const
-    {
+    int NumShapes() const {
         return Params.rows();
     }
 };
