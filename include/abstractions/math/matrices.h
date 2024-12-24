@@ -38,4 +38,21 @@ Matrix RandomMatrix(int rows, int cols, Distribution<G, D> &distribution) {
     return Matrix::NullaryExpr(rows, cols, sampler);
 }
 
+/// @brief Initialize a matrix with random values, in-place.
+/// @tparam G Prng generator type
+/// @tparam D statistical distribution type
+/// @param[out] matrix matrix to initialize
+/// @param distribution the statistical distribution to use
+/// @see NormalDistribution
+/// @see UniformDistribution
+template <typename G, typename D>
+void RandomMatrix(MatrixRef matrix, Distribution<G, D> &distribution) {
+    static_assert(std::is_same<Matrix::Scalar, typename D::result_type>::value,
+                  "Matrix type and distribution type must match.");
+    const int rows = matrix.rows();
+    const int cols = matrix.cols();
+    auto sampler = [&]() { return distribution.Sample(); };
+    matrix = Matrix::NullaryExpr(rows, cols, sampler);
+}
+
 }  // namespace abstractions

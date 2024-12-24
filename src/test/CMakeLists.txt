@@ -15,6 +15,7 @@ set(ABSTRACTIONS_TESTS
     library/math.cpp
     library/pgpe.cpp
     library/profile.cpp
+    library/shapes.cpp
 
     ${abstractions_BINARY_DIR}/tests/test-paths.h
     ${abstractions_SOURCE_DIR}/src/test/library/support.h
