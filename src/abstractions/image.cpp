@@ -6,6 +6,57 @@
 
 namespace abstractions {
 
+namespace {
+
+struct PixelDiff
+{
+    const int red;
+    const int green;
+    const int blue;
+
+    PixelDiff(uint32_t a, uint32_t b)
+        : red{detail::GetRedValue(a) - detail::GetRedValue(b)},
+          green{detail::GetGreenValue(a) - detail::GetGreenValue(b)},
+          blue{detail::GetBlueValue(a) - detail::GetBlueValue(b)}
+    {
+
+    }
+};
+
+template <typename AccFn>
+Expected<double> PixelwiseComparison(const Image &first, const Image &second, AccFn fn)
+{
+    const bool same_width = first.Width() == second.Width();
+    const bool same_height = first.Height() == second.Height();
+
+    if (!(same_width && same_height)) {
+        return errors::report<double>(fmt::format("Cannot compare images; first image is {}x{} and second is {}x{}.", first.Width(), first.Height(), second.Width(), second.Height()));
+    }
+
+    const int width = first.Width();
+    const int height = first.Height();
+
+    PixelData ref = first.Pixels();
+    PixelData tgt = second.Pixels();
+
+    uint64_t sum = 0;
+    for (int y = 0; y < height; y++)
+    {
+        auto row_ref = ref.Row(y);
+        auto row_tgt = tgt.Row(y);
+
+        for (int x = 0; x < width; x++)
+        {
+            PixelDiff diff(row_ref[x], row_tgt[x]);
+            sum += fn(diff);
+        }
+    }
+
+    return static_cast<double>(sum) / (width * height);
+}
+
+}
+
 PixelData::PixelData(const BLImageData &surface) :
     _surface{surface} {}
 
@@ -105,6 +156,20 @@ Error Image::Save(const std::filesystem::path &path) const {
     }
 
     return errors::no_error;
+}
+
+Expected<double> CompareImagesAbsDiff(const Image &first, const Image &second)
+{
+    return PixelwiseComparison(first, second, [](PixelDiff &diff) {
+        return std::abs(diff.red) + std::abs(diff.green) + std::abs(diff.blue);
+    });
+}
+
+Expected<double> CompareImagesSquaredDiff(const Image &first, const Image &second)
+{
+    return PixelwiseComparison(first, second, [](PixelDiff &diff) {
+        return diff.red*diff.red + diff.green*diff.green + diff.blue*diff.blue;
+    });
 }
 
 }  // namespace abstractions
