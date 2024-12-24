@@ -8,6 +8,34 @@
 
 TEST_SUITE_BEGIN("math");
 
+TEST_CASE("Can clamp a matrix to some set range.") {
+    using abstractions::ClampValues;
+    using abstractions::Matrix;
+
+    Matrix matrix = Matrix::Zero(2, 2);
+    matrix(0, 0) = 0;
+    matrix(0, 1) = 0.5;
+    matrix(1, 0) = 1.0;
+    matrix(1, 1) = 1.5;
+
+    SUBCASE("Clamp the entire matrix.") {
+        Matrix result = ClampValues(matrix, 0.5, 1.25);
+        CHECK(result(0, 0) == 0.5);
+        CHECK(result(0, 1) == 0.5);
+        CHECK(result(1, 0) == 1.0);
+        CHECK(result(1, 1) == 1.25);
+    }
+
+    SUBCASE("Clamp just the bottom row.") {
+        Matrix result = matrix;
+        result.bottomRows(1) = ClampValues(result.bottomRows(1), 0.5, 1.25);
+        CHECK(result(0, 0) == 0.0);
+        CHECK(result(0, 1) == 0.5);
+        CHECK(result(1, 0) == 1.0);
+        CHECK(result(1, 1) == 1.25);
+    }
+}
+
 TEST_CASE("PRNG with same seed produces the same sequence.") {
     abstractions::Prng first_prng(1);
     abstractions::Prng second_prng(1);
@@ -64,24 +92,54 @@ TEST_CASE("A configured PRNG can be used with a Distribution<> object.") {
     CHECK(sum == doctest::Approx(1.0).epsilon(0.01));
 }
 
+TEST_CASE("Distribution object can return the Prng<> seed.") {
+    std::normal_distribution normal_dist(1.0);
+    abstractions::Prng prng(123);
+    abstractions::Distribution abs_dist(prng, normal_dist);
+
+    REQUIRE(abs_dist.Seed() == 123);
+}
+
 TEST_CASE("Can create a matrix of normally distributed random values.") {
     abstractions::Prng prng(1);
     abstractions::NormalDistribution normal_dist(prng, 2.5, 1.0);
-    abstractions::Matrix matrix = abstractions::RandomMatrix(25, 30, normal_dist);
 
-    double mean = matrix.mean();
-    double variance = (matrix.array() - mean).pow(2.0).mean();
+    SUBCASE("Returning a new matrix.") {
+        abstractions::Matrix matrix = abstractions::RandomMatrix(25, 30, normal_dist);
 
-    CHECK(mean == doctest::Approx(2.5).epsilon(0.05));
-    CHECK(variance == doctest::Approx(1.0).epsilon(0.05));
+        double mean = matrix.mean();
+        double variance = (matrix.array() - mean).pow(2.0).mean();
+
+        CHECK(mean == doctest::Approx(2.5).epsilon(0.05));
+        CHECK(variance == doctest::Approx(1.0).epsilon(0.05));
+    }
+
+    SUBCASE("In-place creation.") {
+        abstractions::Matrix matrix = abstractions::Matrix::Zero(25, 30);
+        abstractions::RandomMatrix(matrix, normal_dist);
+
+        double mean = matrix.mean();
+        double variance = (matrix.array() - mean).pow(2.0).mean();
+
+        CHECK(mean == doctest::Approx(2.5).epsilon(0.05));
+        CHECK(variance == doctest::Approx(1.0).epsilon(0.05));
+    }
 }
 
 TEST_CASE("Can create a matrix of uniformally distributed random values.") {
     abstractions::Prng prng(1);
     abstractions::UniformDistribution uniform_dist(prng);
-    abstractions::Matrix matrix = abstractions::RandomMatrix(30, 20, uniform_dist);
 
-    CHECK(matrix.mean() == doctest::Approx(0.5).epsilon(0.05));
+    SUBCASE("Returning a new matrix.") {
+        abstractions::Matrix matrix = abstractions::RandomMatrix(30, 20, uniform_dist);
+        CHECK(matrix.mean() == doctest::Approx(0.5).epsilon(0.05));
+    }
+
+    SUBCASE("In-place creation.") {
+        abstractions::Matrix matrix = abstractions::Matrix::Zero(30, 20);
+        abstractions::RandomMatrix(matrix, uniform_dist);
+        CHECK(matrix.mean() == doctest::Approx(0.5).epsilon(0.05));
+    }
 }
 
 TEST_SUITE_END();

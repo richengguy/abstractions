@@ -1,7 +1,8 @@
+#include "abstractions/pgpe.h"
+
+#include <abstractions/errors.h>
 #include <abstractions/math/matrices.h>
 #include <abstractions/math/random.h>
-#include <abstractions/pgpe.h>
-#include <abstractions/utilities.h>
 #include <fmt/format.h>
 
 #include <cmath>
@@ -45,7 +46,7 @@ Error PgpeOptimizerSettings::Validate() const {
         return "Standard deviation maximum change cannot be negative.";
     }
 
-    return {};
+    return errors::no_error;
 }
 
 Expected<PgpeOptimizer> PgpeOptimizer::Create(const PgpeOptimizerSettings &settings) {
@@ -149,7 +150,7 @@ Error PgpeOptimizer::Sample(MatrixRef samples) const {
     // Now add the current state estimate to get the final set of samples.
     samples.rowwise() += _current_state;
 
-    return {};
+    return errors::no_error;
 }
 
 Error PgpeOptimizer::Update(ConstMatrixRef samples, ConstColumnVectorRef costs) {
@@ -207,7 +208,7 @@ Error PgpeOptimizer::Update(ConstMatrixRef samples, ConstColumnVectorRef costs) 
     _current_standard_deviation = updated_stddev;
     _current_velocity = updated_velocity;
 
-    return {};
+    return errors::no_error;
 }
 
 Error PgpeOptimizer::CheckInitialized() const {
@@ -215,7 +216,7 @@ Error PgpeOptimizer::CheckInitialized() const {
         return "Cannot perform operation; pptimizer has not been initialized.";
     }
 
-    return {};
+    return errors::no_error;
 }
 
 Error PgpeOptimizer::ValidateCosts(int num_samples, ConstColumnVectorRef costs) const {
@@ -224,7 +225,7 @@ Error PgpeOptimizer::ValidateCosts(int num_samples, ConstColumnVectorRef costs) 
                            costs.rows(), num_samples);
     }
 
-    return {};
+    return errors::no_error;
 }
 
 Error PgpeOptimizer::ValidateSamples(ConstMatrixRef samples) const {
@@ -243,7 +244,7 @@ Error PgpeOptimizer::ValidateSamples(ConstMatrixRef samples) const {
             num_params, _current_state.cols());
     }
 
-    return {};
+    return errors::no_error;
 }
 
 }  // namespace abstractions

@@ -1,5 +1,8 @@
+// Silence the assert output for this set of tests
+#define ABSTRACTIONS_ASSERTS_THROW_ONLY
+
+#include <abstractions/errors.h>
 #include <abstractions/types.h>
-#include <abstractions/utilities.h>
 #include <doctest/doctest.h>
 
 using int_expected_t = abstractions::Expected<int>;
@@ -46,6 +49,13 @@ TEST_CASE("Able to find the first error with errors::find_any.") {
         REQUIRE(err);
         CHECK(err == "error");
     }
+}
+
+TEST_CASE("Asserts detect and throw errors correctly.") {
+    using abstractions::errors::AbstractionsError;
+
+    REQUIRE_THROWS_AS(abstractions_assert(1 == 2), AbstractionsError);
+    REQUIRE_NOTHROW(abstractions_assert(1 == 1));
 }
 
 TEST_SUITE_END();

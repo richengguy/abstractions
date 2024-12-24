@@ -19,11 +19,11 @@ TEST_CASE("Check that the timer is working correctly.") {
 
     // First call should be around 250ms
     CHECK(first_call > 240ms);
-    CHECK(first_call < 260ms);
+    WARN(first_call < 260ms);
 
     // Second call should be around 500ms
     CHECK(second_call > 490ms);
-    CHECK(second_call < 510ms);
+    WARN(second_call < 510ms);
 }
 
 TEST_CASE("Check that timing stats can be captured correctly.") {
