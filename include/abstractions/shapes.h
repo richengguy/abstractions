@@ -55,7 +55,7 @@ struct ShapeCollection
     /// @return
     int NumShapes() const
     {
-        return Params.cols();
+        return Params.rows();
     }
 };
 

@@ -39,14 +39,14 @@ TEST_CASE("Can get the individual parts of the parameters matrix.")
     Matrix colour = collection.ColourValues();
     REQUIRE(colour.cols() == 4);
     REQUIRE(colour.rows() == 2);
-    CHECK(shape(0, 0) == 2);
-    CHECK(shape(0, 1) == 3);
-    CHECK(shape(0, 2) == 4);
-    CHECK(shape(0, 3) == 5);
-    CHECK(shape(1, 0) == 0);
-    CHECK(shape(1, 1) == 0);
-    CHECK(shape(1, 2) == 0);
-    CHECK(shape(1, 3) == 0);
+    CHECK(colour(0, 0) == 2);
+    CHECK(colour(0, 1) == 3);
+    CHECK(colour(0, 2) == 4);
+    CHECK(colour(0, 3) == 5);
+    CHECK(colour(1, 0) == 0);
+    CHECK(colour(1, 1) == 0);
+    CHECK(colour(1, 2) == 0);
+    CHECK(colour(1, 3) == 0);
 
 }
 
