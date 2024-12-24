@@ -1,14 +1,16 @@
 #include <abstractions/errors.h>
 #include <fmt/format.h>
 
-int main(int nargs, const char **args) {
+#include "support.h"
+
+ABSTRACTIONS_FEATURE_TEST() {
     try {
         const int x = 5;
         abstractions_assert(x != 5);
-        fmt::println("'x' = {}", x);
-    } catch (const abstractions::errors::AbstractionsError &e) {
-        return 0;
+        console.Print(fmt::format("'x' = {}", x));
+    } catch (const abstractions::errors::AbstractionsError &) {
+        console.Print("Hit expected assert.");
     }
-
-    return 1;
 }
+
+ABSTRACTIONS_FEATURE_TEST_MAIN("assert", "Test out the 'assert' functions.")

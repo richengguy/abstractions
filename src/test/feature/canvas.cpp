@@ -63,37 +63,17 @@ void DrawRectangles(abstractions::UniformDistribution<> &dist, const std::filesy
     surface->Save(output);
 }
 
-int main(int nargs, char **args) {
-    using abstractions::Prng;
-    using abstractions::PrngGenerator;
-    using abstractions::UniformDistribution;
+ABSTRACTIONS_FEATURE_TEST() {
+    abstractions::UniformDistribution uniform_dist(prng);
 
-    CLI::App app{"Test out the canvas API by drawing some simple images."};
-    std::optional<int> seed;
-    app.add_option("-s,--seed", seed, "Random seed");
+    console.Print("Draw circles.");
+    DrawCircles(uniform_dist, output_folder.FilePath("circles.png"), 50);
 
-    app.description("Test out the canvas API by drawing some simple images.");
-    CLI11_PARSE(app, nargs, args);
+    console.Print("Draw triangles.");
+    DrawTriangles(uniform_dist, output_folder.FilePath("triangles.png"), 50);
 
-    ABSTRACTIONS_INIT_FEATURE_TEST("canvas");
-
-    Prng<> prng{0};
-    if (seed) {
-        console.Print(fmt::format("Seed: {}", seed.value()));
-        prng = Prng(*seed);
-    } else {
-        prng = Prng(PrngGenerator<>::DrawRandomSeed());
-    }
-
-    UniformDistribution uniform_dist(prng);
-
-    try {
-        DrawCircles(uniform_dist, test_folder.Path() / "circles.png", 50);
-        DrawTriangles(uniform_dist, test_folder.Path() / "triangles.png", 50);
-        DrawRectangles(uniform_dist, test_folder.Path() / "rectangles.png", 50);
-    } catch (const abstractions::errors::AbstractionsError &) {
-        return 1;
-    }
-
-    return 0;
+    console.Print("Draw rectangles.");
+    DrawRectangles(uniform_dist, output_folder.FilePath("rectangles.png"), 50);
 }
+
+ABSTRACTIONS_FEATURE_TEST_MAIN("canvas", "Test out the canvas API by drawing some simple images");
