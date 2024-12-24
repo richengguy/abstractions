@@ -32,7 +32,8 @@
 /// * `console` - Method for providing logging output.
 /// * `output_folder` - An object that provides some scratch space for the test.
 /// * `prng` - A PRNG instance the test can use.
-#define ABSTRACTIONS_FEATURE_TEST() void ::abstractions::tests::TestFixture::Func() const
+#define ABSTRACTIONS_FEATURE_TEST() \
+    void ::abstractions::tests::TestFixture::Func(Prng<> &prng) const
 
 /// @brief Creates the "main()" function for a feature test in a standardized way.
 /// @param name test name
@@ -119,7 +120,6 @@ public:
     TestFixture(const std::string &name, const std::string &desc) :
         console{name},
         output_folder{name},
-        prng{0},
         _app{desc} {}
 
     int Run(int nargs, char **args) {
@@ -128,13 +128,13 @@ public:
         CLI11_PARSE(_app, nargs, args);
 
         console.Print(seed ? fmt::format("Seed: {}", *seed) : "Seed: N/A");
-        prng = Prng<>(seed ? *seed : PrngGenerator<>::DrawRandomSeed());
         console.Separator();
 
+        Prng<> prng{seed ? *seed : PrngGenerator<>::DrawRandomSeed()};
         OperationTiming timer;
         try {
             Profile profile{timer};
-            Func();
+            Func(prng);
         } catch (const errors::AbstractionsError &) {
             return 1;
         }
@@ -153,11 +153,10 @@ public:
     void operator=(TestFixture &&) = delete;
 
 protected:
-    void Func() const;
+    void Func(Prng<> &prng) const;
 
     Console console;
     TestOutputFolder output_folder;
-    Prng<> prng;
 
 private:
     CLI::App _app;

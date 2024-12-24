@@ -4,76 +4,81 @@
 #include <abstractions/render.h>
 #include <fmt/format.h>
 
+#include <abstractions/shapes.h>
+
 #include <CLI/CLI.hpp>
 #include <string>
 
 #include "support.h"
 
-void DrawCircles(abstractions::UniformDistribution<> &dist, const std::filesystem::path &output,
+constexpr int kWidth = 640;
+constexpr int kHeight = 480;
+
+void DrawCircles(abstractions::ShapeGenerator &generator, const std::filesystem::path &output,
                  const int num_circles) {
     using abstractions::Canvas;
     using abstractions::Image;
     using abstractions::Matrix;
 
-    auto surface = Image::New(640, 480);
+    auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
         Canvas canvas{*surface};
         canvas.Clear();
 
-        Matrix params = abstractions::RandomMatrix(num_circles, 7, dist);
-        abstractions_check(canvas.DrawFilledCircles(params));
+        auto circles = generator.RandomCircles(num_circles);
+        abstractions_check(canvas.DrawFilledCircles(circles.Params));
     }
     surface->Save(output);
 }
 
-void DrawTriangles(abstractions::UniformDistribution<> &dist, const std::filesystem::path &output,
+void DrawTriangles(abstractions::ShapeGenerator &generator, const std::filesystem::path &output,
                    const int num_triangles) {
     using abstractions::Canvas;
     using abstractions::Image;
     using abstractions::Matrix;
 
-    auto surface = Image::New(640, 480);
+    auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
         Canvas canvas{*surface};
         canvas.Clear();
 
-        Matrix params = abstractions::RandomMatrix(num_triangles, 10, dist);
-        abstractions_check(canvas.DrawFilledTriangles(params));
+        auto triangles = generator.RandomTriangles(num_triangles);
+        abstractions_check(canvas.DrawFilledTriangles(triangles.Params));
     }
     surface->Save(output);
 }
 
-void DrawRectangles(abstractions::UniformDistribution<> &dist, const std::filesystem::path &output,
+void DrawRectangles(abstractions::ShapeGenerator &generator, const std::filesystem::path &output,
                     const int num_rects) {
     using abstractions::Canvas;
     using abstractions::Image;
     using abstractions::Matrix;
 
-    auto surface = Image::New(640, 480);
+    auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
         Canvas canvas{*surface};
         canvas.Clear();
 
-        Matrix params = abstractions::RandomMatrix(num_rects, 8, dist);
-        abstractions_check(canvas.DrawFilledRectangles(params));
+        auto rects = generator.RandomRectangles(num_rects);
+        abstractions_check(canvas.DrawFilledRectangles(rects.Params));
     }
     surface->Save(output);
 }
 
 ABSTRACTIONS_FEATURE_TEST() {
-    abstractions::UniformDistribution uniform_dist(prng);
+    abstractions::ShapeGenerator generator(kWidth, kHeight, prng);
 
     console.Print("Draw circles.");
-    DrawCircles(uniform_dist, output_folder.FilePath("circles.png"), 50);
+    DrawCircles(generator, output_folder.FilePath("circles.png"), 50);
 
     console.Print("Draw triangles.");
-    DrawTriangles(uniform_dist, output_folder.FilePath("triangles.png"), 50);
+    DrawTriangles(generator, output_folder.FilePath("triangles.png"), 50);
 
     console.Print("Draw rectangles.");
-    DrawRectangles(uniform_dist, output_folder.FilePath("rectangles.png"), 50);
+    DrawRectangles(generator, output_folder.FilePath("rectangles.png"), 50);
 }
 
 ABSTRACTIONS_FEATURE_TEST_MAIN("canvas", "Test out the canvas API by drawing some simple images");
