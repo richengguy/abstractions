@@ -8,6 +8,18 @@
 
 namespace abstractions {
 
+/// @brief Clamp the values in a matrix or array to be in some range, with the
+///     default being `[0,1]`.
+/// @tparam M Eigen matrix type
+/// @param matrix matrix or matrix expression
+/// @param min minimum vlaue
+/// @param max maximum value
+/// @return clamped values
+template <typename M>
+auto ClampValues(const Eigen::MatrixBase<M> &matrix, double min = 0, double max = 1) {
+    return matrix.cwiseMin(max).cwiseMax(min);
+}
+
 /// @brief Initialize a matrix with random values.
 /// @tparam G Prng generator type
 /// @tparam D statistical distribution type

@@ -8,6 +8,34 @@
 
 TEST_SUITE_BEGIN("math");
 
+TEST_CASE("Can clamp a matrix to some set range.") {
+    using abstractions::ClampValues;
+    using abstractions::Matrix;
+
+    Matrix matrix = Matrix::Zero(2, 2);
+    matrix(0, 0) = 0;
+    matrix(0, 1) = 0.5;
+    matrix(1, 0) = 1.0;
+    matrix(1, 1) = 1.5;
+
+    SUBCASE("Clamp the entire matrix.") {
+        Matrix result = ClampValues(matrix, 0.5, 1.25);
+        CHECK(result(0, 0) == 0.5);
+        CHECK(result(0, 1) == 0.5);
+        CHECK(result(1, 0) == 1.0);
+        CHECK(result(1, 1) == 1.25);
+    }
+
+    SUBCASE("Clamp just the bottom row.") {
+        Matrix result = matrix;
+        result.bottomRows(1) = ClampValues(result.bottomRows(1), 0.5, 1.25);
+        CHECK(result(0, 0) == 0.0);
+        CHECK(result(0, 1) == 0.5);
+        CHECK(result(1, 0) == 1.0);
+        CHECK(result(1, 1) == 1.25);
+    }
+}
+
 TEST_CASE("PRNG with same seed produces the same sequence.") {
     abstractions::Prng first_prng(1);
     abstractions::Prng second_prng(1);

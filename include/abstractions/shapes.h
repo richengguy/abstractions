@@ -3,12 +3,17 @@
 #include <abstractions/math/random.h>
 #include <abstractions/math/types.h>
 
-namespace abstractions
-{
+#include <tuple>
 
-/// @brief Generate shape parameter matricies.
-class ShapeGenerator
-{
+namespace abstractions {
+
+/// @brief Generate shape parameter matrices.
+///
+/// The convention for the shape parameter matrices are for each shape to be
+/// represented by a single column in a `DxN` matrix, where `D` is a
+/// concatentation of the shape coordinates and a 4-vector containing the
+/// colour.
+class ShapeGenerator {
 public:
     /// @brief Create a new ShapeGenerator for a canvas of a particular size.
     /// @param width canvas width
@@ -37,11 +42,13 @@ public:
     Matrix RandomRectangles(const int num);
 
     /// @brief The aspect ratio the generator is configured for.
-    double AspectRatio() const { return _aspect_ratio; }
+    double AspectRatio() const {
+        return _aspect_ratio;
+    }
 
 private:
     const double _aspect_ratio;
     UniformDistribution<> _dist;
 };
 
-}
+}  // namespace abstractions
