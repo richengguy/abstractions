@@ -13,6 +13,8 @@
 constexpr int kWidth = 640;
 constexpr int kHeight = 480;
 
+namespace {
+
 void DrawCircles(abstractions::ShapeGenerator &generator, const std::filesystem::path &output,
                  const int num_circles) {
     using abstractions::Canvas;
@@ -66,6 +68,8 @@ void DrawRectangles(abstractions::ShapeGenerator &generator, const std::filesyst
     }
     surface->Save(output);
 }
+
+}  // namespace
 
 ABSTRACTIONS_FEATURE_TEST() {
     abstractions::ShapeGenerator generator(kWidth, kHeight, prng);
