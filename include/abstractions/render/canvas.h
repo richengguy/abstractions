@@ -42,8 +42,19 @@ public:
 
     /// @brief Create a new Canvas from an image.
     /// @param image image the canvas draws to
+    /// @param seed PRNG seed used for any random draw operations; it will be a
+    ///     random value if not provided
+    Canvas(Expected<Image> &image, std::optional<DefaultRngType::result_type> seed = {});
+
+    /// @brief Create a new Canvas from an image.
+    /// @param image image the canvas draws to
     /// @param prng PRNG used for all random draw operations
     Canvas(Image &image, Prng<DefaultRngType> &prng);
+
+    /// @brief Create a new Canvas from an image.
+    /// @param image image the canvas draws to
+    /// @param prng PRNG used for all random draw operations
+    Canvas(Expected<Image> &image, Prng<DefaultRngType> &prng);
 
     /// @brief Clean up the rendering canvas when it is destroyed.
     ///

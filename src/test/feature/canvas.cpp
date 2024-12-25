@@ -24,7 +24,7 @@ void DrawCircles(abstractions::ShapeGenerator &generator, const std::filesystem:
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
-        Canvas canvas{*surface};
+        Canvas canvas{surface};
         canvas.Clear();
 
         auto circles = generator.RandomCircles(num_circles);
@@ -42,7 +42,7 @@ void DrawTriangles(abstractions::ShapeGenerator &generator, const std::filesyste
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
-        Canvas canvas{*surface};
+        Canvas canvas{surface};
         canvas.Clear();
 
         auto triangles = generator.RandomTriangles(num_triangles);
@@ -60,7 +60,7 @@ void DrawRectangles(abstractions::ShapeGenerator &generator, const std::filesyst
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
-        Canvas canvas{*surface};
+        Canvas canvas{surface};
         canvas.Clear();
 
         auto rects = generator.RandomRectangles(num_rects);
