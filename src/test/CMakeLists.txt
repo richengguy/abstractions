@@ -10,11 +10,13 @@ configure_file(
 # 'abstractions' library tests
 set(ABSTRACTIONS_TESTS
     library/main.cpp
+
     library/errors.cpp
     library/image.cpp
     library/math.cpp
     library/pgpe.cpp
     library/profile.cpp
+    library/render.cpp
     library/shapes.cpp
 
     ${abstractions_BINARY_DIR}/tests/test-paths.h
