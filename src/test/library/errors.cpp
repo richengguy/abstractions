@@ -58,4 +58,16 @@ TEST_CASE("Asserts detect and throw errors correctly.") {
     REQUIRE_NOTHROW(abstractions_assert(1 == 1));
 }
 
+TEST_CASE("Checks can determine if an expected value has a value.")
+{
+    using abstractions::Expected;
+    using abstractions::errors::AbstractionsError;
+
+    auto success = Expected<int>(123);
+    auto failed = abstractions::errors::report<int>("Some operation failed.");
+
+    REQUIRE_NOTHROW(abstractions_check(success));
+    REQUIRE_THROWS_AS(abstractions_check(failed), AbstractionsError);
+}
+
 TEST_SUITE_END();

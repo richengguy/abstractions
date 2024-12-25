@@ -11,9 +11,9 @@
 namespace abstractions {
 
 // The asserts can have their debug message silenced by defining
-// ABSTRACTIONS_ASSERTS_THROW_ONLY before including this header.
+// ABSTRACTIONS_ASSERTS_THROW_ONLY.
 
-#ifndef ABSTRACTIONS_ASSERTS_THROW_ONLY
+#ifdef ABSTRACTIONS_ASSERTS_THROW_ONLY
 #define __ABSTRACTIONS_THROW_ONLY true
 #else
 #define __ABSTRACTIONS_THROW_ONLY false
@@ -54,8 +54,15 @@ static constexpr Error no_error = std::nullopt;
 /// last minute clean-up before terminating the program.
 class AbstractionsError : public std::runtime_error {
 public:
-    AbstractionsError(const std::string &what) :
-        std::runtime_error(what) {}
+    AbstractionsError(const std::string &condition, const std::source_location &location) :
+        std::runtime_error("Assert failed."),
+        condition{condition},
+        location{location} {}
+
+    void Print() const;
+
+    const std::string condition;
+    const std::source_location location;
 };
 
 /// @brief Creates an error when an expected value could not be returned.
