@@ -159,10 +159,41 @@ Expected<double> CompareImagesAbsDiff(const Image &first, const Image &second) {
     });
 }
 
+Expected<double> CompareImagesAbsDiff(const Expected<Image> &first, const Expected<Image> &second)
+{
+    if (!first.has_value())
+    {
+        return errors::report<double>("First image is invalid.");
+    }
+
+    if (!second.has_value())
+    {
+        return errors::report<double>("Second image is invalid.");
+    }
+
+    return CompareImagesAbsDiff(first.value(), second.value());
+}
+
 Expected<double> CompareImagesSquaredDiff(const Image &first, const Image &second) {
     return PixelwiseComparison(first, second, [](PixelDiff &diff) {
         return diff.red * diff.red + diff.green * diff.green + diff.blue * diff.blue;
     });
 }
+
+Expected<double> CompareImagesSquaredDiff(const Expected<Image> &first, const Expected<Image> &second)
+{
+    if (!first.has_value())
+    {
+        return errors::report<double>("First image is invalid.");
+    }
+
+    if (!second.has_value())
+    {
+        return errors::report<double>("Second image is invalid.");
+    }
+
+    return CompareImagesSquaredDiff(first.value(), second.value());
+}
+
 
 }  // namespace abstractions

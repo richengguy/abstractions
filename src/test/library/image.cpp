@@ -125,4 +125,40 @@ TEST_CASE("Can save an image.") {
     REQUIRE(loaded_image->Height() == 728);
 }
 
+TEST_CASE("Can compare images.") {
+    using abstractions::Image;
+    using abstractions::CompareImagesAbsDiff;
+    using abstractions::CompareImagesSquaredDiff;
+
+    auto test_image1 = Image::Load(kSamplesPath / "triangles.png");
+    auto test_image2 = Image::Load(kSamplesPath / "triangles.png");
+    auto blank_image = Image::New(test_image1->Width(), test_image1->Height());
+
+    SUBCASE("Comparing the same images should produce a difference of zero.")
+    {
+        auto l1_norm = CompareImagesAbsDiff(test_image1, test_image2);
+        auto l2_norm = CompareImagesSquaredDiff(test_image1, test_image2);
+        REQUIRE(l1_norm);
+        REQUIRE(l2_norm);
+        REQUIRE(*l1_norm == 0);
+        REQUIRE(*l2_norm == 0);
+    }
+
+    SUBCASE("Comparing against a blank image produces the sum (or squared sum) of the input.")
+    {
+        FAIL("Implement!!!");
+    }
+}
+
+TEST_CASE("Errors when attempting to compare images of different sizes.") {
+    using abstractions::Image;
+    using abstractions::CompareImagesAbsDiff;
+    using abstractions::CompareImagesSquaredDiff;
+
+    auto image1 = Image::New(1024, 1024);
+    auto image2 = Image::New(512, 512);
+    REQUIRE_FALSE(CompareImagesAbsDiff(image1, image2).has_value());
+    REQUIRE_FALSE(CompareImagesSquaredDiff(image1, image2).has_value());
+}
+
 TEST_SUITE_END();
