@@ -1,6 +1,10 @@
 #include <abstractions/image.h>
 #include <doctest/doctest.h>
 
+#include <abstractions/errors.h>
+
+#include <blend2d.h>
+
 #include <array>
 #include <filesystem>
 #include <string>
@@ -132,7 +136,6 @@ TEST_CASE("Can compare images.") {
 
     auto test_image1 = Image::Load(kSamplesPath / "triangles.png");
     auto test_image2 = Image::Load(kSamplesPath / "triangles.png");
-    auto blank_image = Image::New(test_image1->Width(), test_image1->Height());
 
     SUBCASE("Comparing the same images should produce a difference of zero.")
     {
@@ -144,9 +147,42 @@ TEST_CASE("Can compare images.") {
         REQUIRE(*l2_norm == 0);
     }
 
+    // Create the "blank image" using the Blend2D API to avoid using the
+    // internal 'Canvas' object as its tested separately.
+    BLImage buffer(test_image1->Width(), test_image1->Height(), BL_FORMAT_XRGB32);
+    {
+        BLContext ctx(buffer);
+        ctx.clearAll();
+        ctx.end();
+    }
+    Image blank_image(buffer);
+
     SUBCASE("Comparing against a blank image produces the sum (or squared sum) of the input.")
     {
-        FAIL("Implement!!!");
+        auto pixels = test_image1->Pixels();
+
+        int64_t sum_abs = 0;
+        int64_t sum_sq = 0;
+
+        for (int y = 0; y < pixels.Height(); y++)
+        {
+            for (int x = 0; x < pixels.Width(); x++)
+            {
+                auto pixel = pixels.Get(x, y);
+                sum_abs += (pixel.Red() + pixel.Green() + pixel.Blue());
+                sum_sq += (pixel.Red() * pixel.Red() + pixel.Green() * pixel.Green() + pixel.Blue() * pixel.Blue());
+            }
+        }
+
+        int num_pixels = pixels.Width() * pixels.Height();
+        double l1_expected = static_cast<double>(sum_abs) / num_pixels;
+        double l2_expected = static_cast<double>(sum_sq) / num_pixels;
+
+        auto l1_norm = CompareImagesAbsDiff(test_image1, blank_image);
+        auto l2_norm = CompareImagesSquaredDiff(test_image1, blank_image);
+
+        CHECK(*l1_norm == l1_expected);
+        CHECK(*l2_norm == l2_expected);
     }
 }
 
@@ -159,6 +195,21 @@ TEST_CASE("Errors when attempting to compare images of different sizes.") {
     auto image2 = Image::New(512, 512);
     REQUIRE_FALSE(CompareImagesAbsDiff(image1, image2).has_value());
     REQUIRE_FALSE(CompareImagesSquaredDiff(image1, image2).has_value());
+}
+
+TEST_CASE("Errors when provided invalid images.")
+{
+    using abstractions::Image;
+    using abstractions::CompareImagesAbsDiff;
+    using abstractions::CompareImagesSquaredDiff;
+
+    auto valid = abstractions::Expected(Image::New(1024, 1024));
+    auto invalid = abstractions::errors::report<Image>("Should return an error value.");
+
+    REQUIRE_FALSE(CompareImagesAbsDiff(valid, invalid).has_value());
+    REQUIRE_FALSE(CompareImagesAbsDiff(invalid, valid).has_value());
+    REQUIRE_FALSE(CompareImagesSquaredDiff(valid, invalid).has_value());
+    REQUIRE_FALSE(CompareImagesSquaredDiff(invalid, valid).has_value());
 }
 
 TEST_SUITE_END();

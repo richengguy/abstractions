@@ -7,10 +7,6 @@
 
 namespace abstractions {
 
-Canvas::Canvas(Image &image, std::optional<DefaultRngType::result_type> seed) :
-    _context{image},
-    _prng{seed.value_or(PrngGenerator<DefaultRngType>::DrawRandomSeed())} {}
-
 Canvas::Canvas(Expected<Image> &image, std::optional<DefaultRngType::result_type> seed) :
     _prng{seed.value_or(PrngGenerator<DefaultRngType>::DrawRandomSeed())}
 {
@@ -18,11 +14,7 @@ Canvas::Canvas(Expected<Image> &image, std::optional<DefaultRngType::result_type
     _context = BLContext(*image);
 }
 
-Canvas::Canvas(Image &image, Prng<DefaultRngType> &prng) :
-    _context{image},
-    _prng{prng} {}
-
-Canvas::Canvas(Expected<Image> &image, Prng<DefaultRngType> &prng) :
+Canvas::Canvas(Expected<Image> &image, Prng<DefaultRngType> prng) :
     _prng{prng}
 {
     abstractions_check(image);

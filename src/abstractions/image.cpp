@@ -20,21 +20,31 @@ struct PixelDiff {
 };
 
 template <typename AccFn>
-Expected<double> PixelwiseComparison(const Image &first, const Image &second, AccFn fn) {
-    const bool same_width = first.Width() == second.Width();
-    const bool same_height = first.Height() == second.Height();
+Expected<double> PixelwiseComparison(const Expected<Image> &first, const Expected<Image> &second, AccFn fn) {
+    if (!first.has_value())
+    {
+        return errors::report<double>("First image is invalid.");
+    }
+
+    if (!second.has_value())
+    {
+        return errors::report<double>("Second image is invalid.");
+    }
+
+    const bool same_width = first->Width() == second->Width();
+    const bool same_height = first->Height() == second->Height();
 
     if (!(same_width && same_height)) {
         return errors::report<double>(
             fmt::format("Cannot compare images; first image is {}x{} and second is {}x{}.",
-                        first.Width(), first.Height(), second.Width(), second.Height()));
+                        first->Width(), first->Height(), second->Width(), second->Height()));
     }
 
-    const int width = first.Width();
-    const int height = first.Height();
+    const int width = first->Width();
+    const int height = first->Height();
 
-    PixelData ref = first.Pixels();
-    PixelData tgt = second.Pixels();
+    PixelData ref = first->Pixels();
+    PixelData tgt = second->Pixels();
 
     uint64_t sum = 0;
     for (int y = 0; y < height; y++) {
@@ -153,46 +163,19 @@ Error Image::Save(const std::filesystem::path &path) const {
     return errors::no_error;
 }
 
-Expected<double> CompareImagesAbsDiff(const Image &first, const Image &second) {
+Expected<double> CompareImagesAbsDiff(const Expected<Image> &first, const Expected<Image> &second)
+{
     return PixelwiseComparison(first, second, [](PixelDiff &diff) {
         return std::abs(diff.red) + std::abs(diff.green) + std::abs(diff.blue);
     });
 }
 
-Expected<double> CompareImagesAbsDiff(const Expected<Image> &first, const Expected<Image> &second)
-{
-    if (!first.has_value())
-    {
-        return errors::report<double>("First image is invalid.");
-    }
-
-    if (!second.has_value())
-    {
-        return errors::report<double>("Second image is invalid.");
-    }
-
-    return CompareImagesAbsDiff(first.value(), second.value());
-}
-
-Expected<double> CompareImagesSquaredDiff(const Image &first, const Image &second) {
-    return PixelwiseComparison(first, second, [](PixelDiff &diff) {
-        return diff.red * diff.red + diff.green * diff.green + diff.blue * diff.blue;
-    });
-}
 
 Expected<double> CompareImagesSquaredDiff(const Expected<Image> &first, const Expected<Image> &second)
 {
-    if (!first.has_value())
-    {
-        return errors::report<double>("First image is invalid.");
-    }
-
-    if (!second.has_value())
-    {
-        return errors::report<double>("Second image is invalid.");
-    }
-
-    return CompareImagesSquaredDiff(first.value(), second.value());
+    return PixelwiseComparison(first, second, [](PixelDiff &diff) {
+        return diff.red * diff.red + diff.green * diff.green + diff.blue * diff.blue;
+    });
 }
 
 
