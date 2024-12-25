@@ -1,9 +1,7 @@
-#include <abstractions/image.h>
-#include <doctest/doctest.h>
-
 #include <abstractions/errors.h>
-
+#include <abstractions/image.h>
 #include <blend2d.h>
+#include <doctest/doctest.h>
 
 #include <array>
 #include <filesystem>
@@ -130,15 +128,14 @@ TEST_CASE("Can save an image.") {
 }
 
 TEST_CASE("Can compare images.") {
-    using abstractions::Image;
     using abstractions::CompareImagesAbsDiff;
     using abstractions::CompareImagesSquaredDiff;
+    using abstractions::Image;
 
     auto test_image1 = Image::Load(kSamplesPath / "triangles.png");
     auto test_image2 = Image::Load(kSamplesPath / "triangles.png");
 
-    SUBCASE("Comparing the same images should produce a difference of zero.")
-    {
+    SUBCASE("Comparing the same images should produce a difference of zero.") {
         auto l1_norm = CompareImagesAbsDiff(test_image1, test_image2);
         auto l2_norm = CompareImagesSquaredDiff(test_image1, test_image2);
         REQUIRE(l1_norm);
@@ -157,20 +154,18 @@ TEST_CASE("Can compare images.") {
     }
     Image blank_image(buffer);
 
-    SUBCASE("Comparing against a blank image produces the sum (or squared sum) of the input.")
-    {
+    SUBCASE("Comparing against a blank image produces the sum (or squared sum) of the input.") {
         auto pixels = test_image1->Pixels();
 
         int64_t sum_abs = 0;
         int64_t sum_sq = 0;
 
-        for (int y = 0; y < pixels.Height(); y++)
-        {
-            for (int x = 0; x < pixels.Width(); x++)
-            {
+        for (int y = 0; y < pixels.Height(); y++) {
+            for (int x = 0; x < pixels.Width(); x++) {
                 auto pixel = pixels.Get(x, y);
                 sum_abs += (pixel.Red() + pixel.Green() + pixel.Blue());
-                sum_sq += (pixel.Red() * pixel.Red() + pixel.Green() * pixel.Green() + pixel.Blue() * pixel.Blue());
+                sum_sq += (pixel.Red() * pixel.Red() + pixel.Green() * pixel.Green() +
+                           pixel.Blue() * pixel.Blue());
             }
         }
 
@@ -187,29 +182,29 @@ TEST_CASE("Can compare images.") {
 }
 
 TEST_CASE("Errors when attempting to compare images of different sizes.") {
-    using abstractions::Image;
     using abstractions::CompareImagesAbsDiff;
     using abstractions::CompareImagesSquaredDiff;
+    using abstractions::Image;
 
     auto image1 = Image::New(1024, 1024);
     auto image2 = Image::New(512, 512);
-    REQUIRE_FALSE(CompareImagesAbsDiff(image1, image2).has_value());
-    REQUIRE_FALSE(CompareImagesSquaredDiff(image1, image2).has_value());
+    CHECK_FALSE(CompareImagesAbsDiff(image1, image2).has_value());
+    CHECK_FALSE(CompareImagesSquaredDiff(image1, image2).has_value());
 }
 
-TEST_CASE("Errors when provided invalid images.")
-{
-    using abstractions::Image;
+TEST_CASE("Errors when provided invalid images.") {
     using abstractions::CompareImagesAbsDiff;
     using abstractions::CompareImagesSquaredDiff;
+    using abstractions::Image;
+    using abstractions::errors::AbstractionsError;
 
     auto valid = abstractions::Expected(Image::New(1024, 1024));
     auto invalid = abstractions::errors::report<Image>("Should return an error value.");
 
-    REQUIRE_FALSE(CompareImagesAbsDiff(valid, invalid).has_value());
-    REQUIRE_FALSE(CompareImagesAbsDiff(invalid, valid).has_value());
-    REQUIRE_FALSE(CompareImagesSquaredDiff(valid, invalid).has_value());
-    REQUIRE_FALSE(CompareImagesSquaredDiff(invalid, valid).has_value());
+    CHECK_THROWS_AS(CompareImagesAbsDiff(valid, invalid), AbstractionsError);
+    CHECK_THROWS_AS(CompareImagesAbsDiff(invalid, valid), AbstractionsError);
+    CHECK_THROWS_AS(CompareImagesSquaredDiff(valid, invalid), AbstractionsError);
+    CHECK_THROWS_AS(CompareImagesSquaredDiff(invalid, valid), AbstractionsError);
 }
 
 TEST_SUITE_END();

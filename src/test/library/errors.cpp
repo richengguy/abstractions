@@ -58,8 +58,7 @@ TEST_CASE("Asserts detect and throw errors correctly.") {
     REQUIRE_NOTHROW(abstractions_assert(1 == 1));
 }
 
-TEST_CASE("Checks can determine if an expected value has a value.")
-{
+TEST_CASE("Checks can determine if an expected value has a value.") {
     using abstractions::Expected;
     using abstractions::errors::AbstractionsError;
 

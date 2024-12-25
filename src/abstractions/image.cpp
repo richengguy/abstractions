@@ -20,16 +20,10 @@ struct PixelDiff {
 };
 
 template <typename AccFn>
-Expected<double> PixelwiseComparison(const Expected<Image> &first, const Expected<Image> &second, AccFn fn) {
-    if (!first.has_value())
-    {
-        return errors::report<double>("First image is invalid.");
-    }
-
-    if (!second.has_value())
-    {
-        return errors::report<double>("Second image is invalid.");
-    }
+Expected<double> PixelwiseComparison(const Expected<Image> &first, const Expected<Image> &second,
+                                     AccFn fn) {
+    abstractions_check(first);
+    abstractions_check(second);
 
     const bool same_width = first->Width() == second->Width();
     const bool same_height = first->Height() == second->Height();
@@ -163,20 +157,17 @@ Error Image::Save(const std::filesystem::path &path) const {
     return errors::no_error;
 }
 
-Expected<double> CompareImagesAbsDiff(const Expected<Image> &first, const Expected<Image> &second)
-{
+Expected<double> CompareImagesAbsDiff(const Expected<Image> &first, const Expected<Image> &second) {
     return PixelwiseComparison(first, second, [](PixelDiff &diff) {
         return std::abs(diff.red) + std::abs(diff.green) + std::abs(diff.blue);
     });
 }
 
-
-Expected<double> CompareImagesSquaredDiff(const Expected<Image> &first, const Expected<Image> &second)
-{
+Expected<double> CompareImagesSquaredDiff(const Expected<Image> &first,
+                                          const Expected<Image> &second) {
     return PixelwiseComparison(first, second, [](PixelDiff &diff) {
         return diff.red * diff.red + diff.green * diff.green + diff.blue * diff.blue;
     });
 }
-
 
 }  // namespace abstractions

@@ -252,6 +252,7 @@ Expected<double> CompareImagesAbsDiff(const Expected<Image> &first, const Expect
 /// @param first first image
 /// @param second second image
 /// @return the pixel-wise L1-norm, or an error if the calculation failed
-Expected<double> CompareImagesSquaredDiff(const Expected<Image> &first, const Expected<Image> &second);
+Expected<double> CompareImagesSquaredDiff(const Expected<Image> &first,
+                                          const Expected<Image> &second);
 
 }  // namespace abstractions

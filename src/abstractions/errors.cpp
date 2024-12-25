@@ -12,12 +12,10 @@ namespace abstractions {
 
 namespace {
 
-void PrintMessage(const std::source_location &loc, const std::string &cond_str)
-{
+void PrintMessage(const std::source_location &loc, const std::string &cond_str) {
     auto source_file = std::filesystem::path(loc.file_name());
     auto header = fmt::format(
-        "{}\n{}",
-        fmt::styled("Assertion Failed!", fmt::emphasis::bold | fmt::fg(fmt::color::red)),
+        "{}\n{}", fmt::styled("Assertion Failed!", fmt::emphasis::bold | fmt::fg(fmt::color::red)),
         fmt::styled("--", fmt::emphasis::faint));
     auto assert_cond = fmt::format("{}", cond_str);
     auto assert_func = fmt::format(fmt::emphasis::italic, "{}", loc.function_name());
@@ -30,10 +28,9 @@ void PrintMessage(const std::source_location &loc, const std::string &cond_str)
     fmt::println(std::cerr, "");
 }
 
-}
+}  // namespace
 
-void errors::AbstractionsError::Print() const
-{
+void errors::AbstractionsError::Print() const {
     PrintMessage(location, condition);
 }
 
