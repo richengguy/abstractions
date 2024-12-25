@@ -69,6 +69,19 @@ void DrawRectangles(abstractions::ShapeGenerator &generator, const std::filesyst
     surface->Save(output);
 }
 
+void RandomFillCanvas(const std::filesystem::path &output) {
+    using abstractions::Canvas;
+    using abstractions::Image;
+
+    auto surface = Image::New(kWidth, kHeight);
+    abstractions_check(surface);
+    {
+        Canvas canvas{surface};
+        canvas.RandomFill();
+    }
+    surface->Save(output);
+}
+
 }  // namespace
 
 ABSTRACTIONS_FEATURE_TEST() {
@@ -82,6 +95,9 @@ ABSTRACTIONS_FEATURE_TEST() {
 
     console.Print("Draw rectangles.");
     DrawRectangles(generator, output_folder.FilePath("rectangles.png"), 50);
+
+    console.Print("Fill with random values.");
+    RandomFillCanvas(output_folder.FilePath("random.png"));
 }
 
 ABSTRACTIONS_FEATURE_TEST_MAIN("canvas", "Test out the canvas API by drawing some simple images");

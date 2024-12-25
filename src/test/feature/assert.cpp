@@ -1,5 +1,3 @@
-#define ABSTRACTIONS_ASSERTS_THROW_ONLY
-
 #include <abstractions/errors.h>
 #include <fmt/format.h>
 

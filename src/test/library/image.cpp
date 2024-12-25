@@ -192,6 +192,8 @@ TEST_CASE("Errors when attempting to compare images of different sizes.") {
     CHECK_FALSE(CompareImagesSquaredDiff(image1, image2).has_value());
 }
 
+#ifdef ABSTRACTIONS_ENABLE_ASSERTS
+
 TEST_CASE("Errors when provided invalid images.") {
     using abstractions::CompareImagesAbsDiff;
     using abstractions::CompareImagesSquaredDiff;
@@ -206,5 +208,7 @@ TEST_CASE("Errors when provided invalid images.") {
     CHECK_THROWS_AS(CompareImagesSquaredDiff(valid, invalid), AbstractionsError);
     CHECK_THROWS_AS(CompareImagesSquaredDiff(invalid, valid), AbstractionsError);
 }
+
+#endif
 
 TEST_SUITE_END();

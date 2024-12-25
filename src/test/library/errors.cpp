@@ -1,6 +1,3 @@
-// Silence the assert output for this set of tests
-#define ABSTRACTIONS_ASSERTS_THROW_ONLY
-
 #include <abstractions/errors.h>
 #include <abstractions/types.h>
 #include <doctest/doctest.h>
@@ -51,6 +48,8 @@ TEST_CASE("Able to find the first error with errors::find_any.") {
     }
 }
 
+#ifdef ABSTRACTIONS_ENABLE_ASSERTS
+
 TEST_CASE("Asserts detect and throw errors correctly.") {
     using abstractions::errors::AbstractionsError;
 
@@ -67,6 +66,32 @@ TEST_CASE("Checks can determine if an expected value has a value.") {
 
     REQUIRE_NOTHROW(abstractions_check(success));
     REQUIRE_THROWS_AS(abstractions_check(failed), AbstractionsError);
+}
+
+#endif
+
+TEST_CASE("Assertion macros behave correctly when asserts are enabled or disabled.") {
+    using abstractions::Expected;
+    auto foo = [](int &x) {
+        x = 42;
+        return true;
+    };
+    auto bar = [](int &x) {
+        x = 42;
+        return Expected<int>(x);
+    };
+
+    SUBCASE("abstractions_assert() works as expected") {
+        int some_value = 123;
+        abstractions_assert(foo(some_value));
+        CHECK(some_value == 42);
+    }
+
+    SUBCASE("abstractions_check() works as expected.") {
+        int some_value = 456;
+        abstractions_check(bar(some_value));
+        CHECK(some_value == 42);
+    }
 }
 
 TEST_SUITE_END();

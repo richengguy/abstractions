@@ -138,8 +138,7 @@ void Canvas::RandomFill() {
     abstractions_assert(image != nullptr);
 
     BLImageData image_data;
-    auto err = image->getData(&image_data);
-    abstractions_assert(err == BL_SUCCESS);
+    abstractions_assert(image->getData(&image_data) == BL_SUCCESS);
 
     uint8_t *buffer = static_cast<uint8_t *>(image_data.pixelData);
     size_t num_bytes = image_data.stride * image_data.size.h;

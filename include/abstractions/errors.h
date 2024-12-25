@@ -38,8 +38,8 @@ void _check(const Expected<T> &output, const bool throw_only,
     _check(output.error(), throw_only, loc);
 }
 #else
-#define abstractions_assert(cond)
-#define abstractions_check(err) err
+#define abstractions_assert(cond) (void)(cond)
+#define abstractions_check(err) (void)(err)
 #endif
 
 namespace errors {
