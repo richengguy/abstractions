@@ -242,4 +242,17 @@ private:
     BLImage _buffer;
 };
 
+/// @brief Compare two images using an L1-norm (absolute difference).
+/// @param first first image
+/// @param second second image
+/// @return the pixel-wise L1-norm, or an error if the calculation failed
+Expected<double> CompareImagesAbsDiff(const Expected<Image> &first, const Expected<Image> &second);
+
+/// @brief Compare two images using an L1-norm (absolute difference).
+/// @param first first image
+/// @param second second image
+/// @return the pixel-wise L1-norm, or an error if the calculation failed
+Expected<double> CompareImagesSquaredDiff(const Expected<Image> &first,
+                                          const Expected<Image> &second);
+
 }  // namespace abstractions

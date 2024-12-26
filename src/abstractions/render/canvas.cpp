@@ -7,13 +7,17 @@
 
 namespace abstractions {
 
-Canvas::Canvas(Image &image, std::optional<DefaultRngType::result_type> seed) :
-    _context{image},
-    _prng{seed.value_or(PrngGenerator<DefaultRngType>::DrawRandomSeed())} {}
+Canvas::Canvas(Expected<Image> &image, std::optional<DefaultRngType::result_type> seed) :
+    _prng{seed.value_or(PrngGenerator<DefaultRngType>::DrawRandomSeed())} {
+    abstractions_check(image);
+    _context = BLContext(*image);
+}
 
-Canvas::Canvas(Image &image, Prng<DefaultRngType> &prng) :
-    _context{image},
-    _prng{prng} {}
+Canvas::Canvas(Expected<Image> &image, Prng<DefaultRngType> prng) :
+    _prng{prng} {
+    abstractions_check(image);
+    _context = BLContext(*image);
+}
 
 Canvas::~Canvas() {
     _context.end();
@@ -134,8 +138,7 @@ void Canvas::RandomFill() {
     abstractions_assert(image != nullptr);
 
     BLImageData image_data;
-    auto err = image->getData(&image_data);
-    abstractions_assert(err == BL_SUCCESS);
+    abstractions_assert(image->getData(&image_data) == BL_SUCCESS);
 
     uint8_t *buffer = static_cast<uint8_t *>(image_data.pixelData);
     size_t num_bytes = image_data.stride * image_data.size.h;
