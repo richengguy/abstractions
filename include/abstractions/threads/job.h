@@ -12,6 +12,7 @@ namespace abstractions::threads
 struct IJobFunction
 {
     virtual Error operator()(const int job_id) const = 0;
+    virtual ~IJobFunction() = default;
 };
 
 /// @brief Runs a job on some concurrent worker, potentially on a separate thread.
@@ -23,10 +24,10 @@ public:
     /// @tparam T function implementation
     /// @param id job ID
     template<typename T>
-    Job(int id)
+    static Job New(int id)
     {
         static_assert(std::is_base_of<IJobFunction, T>::value, "'T' must inherit from IJobFunction.");
-        Job(id, std::make_shared<T>());
+        return Job(id, std::make_shared<T>());
     }
 
     /// @brief Create a new job.
@@ -34,12 +35,13 @@ public:
     /// @param fn function the job executes
     Job(int id, std::shared_ptr<IJobFunction> fn);
 
-    /// @brief Get a future that can be used to determine when the job is complete.
-    std::shared_future<Error> GetFuture();
-
     /// @brief Run the job.
-    /// @return A future value with the job's error state.
-    void Run();
+    /// @param promise a promise the job will use to signal when its done, along
+    ///     with any errors that may have occurred
+    void Run(std::promise<Error> promise);
+
+    /// @brief Job ID.
+    int Id() const { return _id; }
 
     /// @brief Set to `true` after the job completes.
     ///
@@ -53,7 +55,6 @@ public:
     Job &operator=(const Job &) = default;
 
 private:
-    std::promise<::abstractions::Error> _promise;
     std::shared_ptr<IJobFunction> _fn;
     int _id;
     bool _complete;

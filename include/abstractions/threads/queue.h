@@ -20,10 +20,16 @@ public:
     /// @param max_size maximum number of entries
     Queue(int max_size);
 
+    template<typename T>
+    Error Push(int id)
+    {
+        return Push(Job::New<T>(id));
+    }
+
     /// @brief Push a job onto the end queue.
     /// @param job job instance
     /// @return an error if the push wasn't successful due to the queue being full
-    Error Push(Job &job);
+    Error Push(const Job &job);
 
     /// @brief See if there an available job in the queue.
     /// @return the job, if available, otherwise it will be empty if the queue
@@ -37,12 +43,15 @@ public:
     void Pop();
 
     /// @brief Determine if the queue is currently full.
-    bool IsFull() const;
+    bool IsFull();
 
-    /// @brief The queue's current capacity.
+    /// @brief The queue's current size.
+    int Size();
+
+    /// @brief The queue's maximum capacity.
     /// @return the capacity if the queue has a maximum size, otherwise it will
     ///     be empty
-    std::optional<int> Capacity() const;
+    std::optional<int> MaxCapacity() const;
 
 private:
     std::mutex _guard;

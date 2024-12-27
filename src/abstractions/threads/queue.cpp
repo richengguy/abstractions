@@ -15,11 +15,11 @@ Queue::Queue(int max_size)
 {
 }
 
-Error Queue::Push(Job &job)
+Error Queue::Push(const Job &job)
 {
     std::unique_lock lock{_guard};
 
-    if (_max_size && *_max_size >= _queue.size())
+    if (_max_size && _queue.size() >= *_max_size)
     {
         return fmt::format("Pushing job would exceed queue capacity of {}.", *_max_size);
     }
@@ -31,14 +31,39 @@ Error Queue::Push(Job &job)
 std::optional<Job> Queue::Peek()
 {
     std::unique_lock lock{_guard};
-
     if (_queue.empty())
     {
         return {};
     }
 
-    auto job = _queue.front();
     return _queue.front();
+}
+
+void Queue::Pop()
+{
+    std::unique_lock lock{_guard};
+    if (_queue.empty())
+    {
+        return;
+    }
+
+    _queue.pop_front();
+}
+
+bool Queue::IsFull()
+{
+    return _max_size && Size() >= *_max_size;
+}
+
+int Queue::Size()
+{
+    std::unique_lock lock{_guard};
+    return _queue.size();
+}
+
+std::optional<int> Queue::MaxCapacity() const
+{
+    return _max_size;
 }
 
 }
