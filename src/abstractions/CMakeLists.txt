@@ -18,6 +18,10 @@ set(ABSTRACTIONS_INCLUDES
 
     ${ABSTRACTIONS_INCLUDE_DIR}/render/canvas.h
     ${ABSTRACTIONS_INCLUDE_DIR}/render/shapes.h
+
+    ${ABSTRACTIONS_INCLUDE_DIR}/threads/job.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/threads/queue.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/threads/threadpool.h
 )
 
 set (ABSTRACTIONS_SOURCES
@@ -28,6 +32,10 @@ set (ABSTRACTIONS_SOURCES
 
     render/canvas.cpp
     render/shapes.cpp
+
+    threads/job.cpp
+    threads/queue.cpp
+    threads/threadpool.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})
