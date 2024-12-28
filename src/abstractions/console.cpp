@@ -20,8 +20,8 @@ void Console::PrintToStdout(fmt::string_view msg, fmt::format_args args) const
 void Console::Separator(int length, const std::string &separator) const
 {
     auto sepfmt = fmt::format("{{:{}^{{}}}}", separator);
-
-    fmt::println(fmt::runtime(sepfmt), "", length);
+    auto sepstr = fmt::format(fmt::runtime(sepfmt), "", length);
+    PrintToStdout(sepstr, fmt::format_args());
 }
 
 }
