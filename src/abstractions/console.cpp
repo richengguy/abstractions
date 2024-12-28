@@ -7,9 +7,12 @@ namespace abstractions
 {
 
 Console::Console(const std::string &name)
+    : Console(name, "[{}]") { }
+
+Console::Console(const std::string &name, const std::string &fmt)
 {
     auto styled_name = fmt::format("{}", fmt::styled(name, fmt::emphasis::italic | fmt::emphasis::faint));
-    _prefix = fmt::format("{} ::", styled_name);
+    _prefix = fmt::format(fmt::runtime(fmt), styled_name);
 }
 
 void Console::PrintToStdout(fmt::string_view msg, fmt::format_args args) const

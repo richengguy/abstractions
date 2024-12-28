@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <fmt/std.h>
 
 #include <string>
 
@@ -15,8 +16,13 @@ class Console
 {
 public:
     /// @brief Create a new Console instance.
-    /// @param name
+    /// @param name value shown at the start of the console output
     Console(const std::string &name);
+
+    /// @brief Create a new console instance.
+    /// @param name value shown at the start of the console output
+    /// @param fmt the format string used for the output prefix
+    Console(const std::string &name, const std::string &fmt);
 
     void Print(const std::string &msg)
     {
