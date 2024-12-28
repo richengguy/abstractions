@@ -10,6 +10,7 @@
 namespace abstractions::threads
 {
 
+/// @brief A job queue that supports concurrent push/pop operations.
 class Queue
 {
 public:
@@ -52,6 +53,11 @@ public:
     /// @return the capacity if the queue has a maximum size, otherwise it will
     ///     be empty
     std::optional<int> MaxCapacity() const;
+
+    Queue(const Queue &) = delete;
+    Queue(Queue &&) = delete;
+    void operator=(const Queue &) = delete;
+    void operator=(Queue &&) = delete;
 
 private:
     std::mutex _guard;

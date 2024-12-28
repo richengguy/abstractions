@@ -3,6 +3,9 @@
 #include <abstractions/threads/queue.h>
 #include <abstractions/types.h>
 
+#include <optional>
+#include <vector>
+
 namespace abstractions::threads
 {
 
@@ -10,7 +13,11 @@ namespace abstractions::threads
 class Worker
 {
 public:
+    /// @brief Create a new worker.
     Worker();
+
+    /// @brief Cleans up the worker, including shutting down the internal
+    ///     work thread.
     ~Worker();
 
     /// @brief Start a worker.
@@ -33,36 +40,37 @@ private:
     std::thread _thread;
 };
 
-// /// @brief Contains a set of jobs that will be executed on a thread pool.
-// ///
-// /// The queue is blocking so *new* jobs cannot be submitting while the queue is
-// /// full.
-// class JobQueue
-// {
-// public:
-//     void Push(IJob &job);
-//     std::optional<ConstIJobRef> Peek() const;
-//     void Pop();
-//     int Size() const;
 
-// private:
-//     std::deque<std::shared_ptr<IJob>> _jobs;
-//     std::mutex _guard;
-// };
+/// @brief A ThreadPool configuration.
+struct ThreadPoolConfig
+{
+    /// @brief Number of workers to create.
+    int num_workers;
 
-// class WorkerThread
-// {
-// public:
-//     WorkerThread();
-//     ~WorkerThread();
+    /// @brief Optional job queue depth.
+    std::optional<int> queue_depth;
 
-//     void Start(JobQueue &queue);
-//     void Stop();
+    /// @brief Create a ThreadPool configuration with default values.
+    ThreadPoolConfig();
+};
 
-// private:
-//     std::atomic<bool> _stop;
-//     std::thread _thread;
-// };
+
+/// @brief A thread pool for distributing work across multiple worker threads.
+class ThreadPool
+{
+public:
+    /// @brief Create a new thread pool with a default configuration.
+    ThreadPool(const ThreadPoolConfig &config = ThreadPoolConfig());
+
+    ThreadPool(const ThreadPool &) = delete;
+    ThreadPool(ThreadPool &&) = delete;
+    void operator=(const ThreadPool &) = delete;
+    void operator=(ThreadPool &&) = delete;
+
+private:
+    Queue _job_queue;
+    std::vector<Worker> _workers;
+};
 
 // /// @brief A thread pool capable of performing some sort of work.
 // class ThreadPool
