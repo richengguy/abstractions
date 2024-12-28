@@ -77,3 +77,4 @@ endfunction()
 
 add_feature_test(assert)
 add_feature_test(canvas)
+add_feature_test(threads)
