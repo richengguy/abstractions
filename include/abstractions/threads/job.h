@@ -9,6 +9,7 @@
 namespace abstractions::threads
 {
 
+/// @brief Defines what a Job actually does.
 struct IJobFunction
 {
     virtual Error operator()(const int job_id) const = 0;

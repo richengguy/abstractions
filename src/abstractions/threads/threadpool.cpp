@@ -2,11 +2,36 @@
 
 #include <abstractions/errors.h>
 
-namespace abstractions
+namespace abstractions::threads
 {
 
+Worker::Worker()
+    : _running{false}
+    {}
 
+Worker::~Worker()
+{
+    if (_thread.joinable())
+    {
+        _thread.join();
+    }
+}
 
+void Worker::Start(Queue &queue)
+{
+    abstractions_assert(_running == false);
+    _running = true;
+}
+
+void Worker::Stop()
+{
+
+}
+
+bool Worker::IsRunning() const
+{
+    return _running;
+}
 
 // ThreadPool::ThreadPool(std::optional<int> num_threads)
 // {

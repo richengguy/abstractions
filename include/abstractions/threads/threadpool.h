@@ -1,18 +1,37 @@
 #pragma once
 
+#include <abstractions/threads/queue.h>
 #include <abstractions/types.h>
 
-#include <functional>
-#include <optional>
-#include <deque>
-#include <future>
-#include <mutex>
-#include <vector>
-#include <thread>
-#include <memory>
-
-namespace abstractions
+namespace abstractions::threads
 {
+
+/// @brief A worker thread that accepts a Job and executes it.
+class Worker
+{
+public:
+    Worker();
+    ~Worker();
+
+    /// @brief Start a worker.
+    /// @param queue queue worker looks at for work
+    void Start(Queue &queue);
+
+    /// @brief Stops a worker.
+    void Stop();
+
+    /// @brief Check if a worker is still running.
+    bool IsRunning() const;
+
+    Worker(const Worker &) = delete;
+    Worker(Worker &&) = delete;
+    void operator=(const Worker &) = delete;
+    void operator=(Worker &&) = delete;
+
+private:
+    std::atomic<bool> _running;
+    std::thread _thread;
+};
 
 // /// @brief Contains a set of jobs that will be executed on a thread pool.
 // ///
