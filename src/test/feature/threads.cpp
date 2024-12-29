@@ -11,7 +11,7 @@ struct SimpleJob : public IJobFunction
 {
     Error operator()(int job_id, std::vector<Job> &dependencies) const override
     {
-        std::lock_guard lock{mutex};
+        std::unique_lock lock{mutex};
         fmt::print("-- Running job#{}", job_id);
         std::this_thread::sleep_for(std::chrono::milliseconds(25));
 
@@ -23,6 +23,7 @@ ABSTRACTIONS_FEATURE_TEST()
 {
     console.Print("Creating thread pool.");
     ThreadPool thread_pool({
+        .num_workers = 1,
         .debug = true,
     });
 
