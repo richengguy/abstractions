@@ -3,6 +3,7 @@
 #include <abstractions/threads/job.h>
 #include <abstractions/errors.h>
 
+#include <future>
 #include <deque>
 #include <mutex>
 #include <optional>
@@ -34,16 +35,14 @@ public:
     /// @return an error if the push wasn't successful due to the queue being full
     Error Push(const Job &job);
 
-    /// @brief See if there an available job in the queue.
-    /// @return the job, if available, otherwise it will be empty if the queue
-    ///     is empty
-    std::optional<Job> Peek();
-
-    /// @brief Removes a job from the front of the queue.
+    /// @brief See if there is a new job in the queue, removing it if there is one.
+    /// @return The job, if one is available, or an empty value, if no job is
+    ///     available.
     ///
-    /// Use Peek() to get the job from the queue.  This will be a no-op if the
-    /// queue is currently empty.
-    void Pop();
+    /// This is a combination peek+pop operation.  A lock protects access to the
+    /// underlying storage so that only one thread at a time may see if a job is
+    /// available.
+    std::optional<Job> NextJob();
 
     /// @brief Determine if the queue is currently full.
     bool IsFull();

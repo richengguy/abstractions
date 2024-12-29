@@ -11,13 +11,50 @@
 namespace abstractions::threads
 {
 
+// Forware declarations
 class Job;
+class JobContext;
 
-/// @brief Defines what a Job actually does.
+/// @brief Any callable that can execute an abstractions job.
 struct IJobFunction
 {
-    virtual Error operator()(const int job_id, std::vector<Job> &dependencies) const = 0;
+    /// @brief Run the job.
+    /// @param ctx a context object with information about the specific job
+    /// @return the job's success status
+    ///
+    /// The `ctx` is only valid for the duration of the job.  It should not be
+    /// captured or stored.
+    virtual Error operator()(JobContext &ctx) const = 0;
     virtual ~IJobFunction() = default;
+};
+
+/// @brief Execution information about the currently running job.
+class JobContext
+{
+public:
+    /// @brief Create a new job context.
+    /// @param job_id job ID
+    /// @param worker_id worker ID
+    JobContext(int job_id, int worker_id);
+
+    /// @brief ID of the particular job.
+    int Id() const { return _job_id; }
+
+    /// @brief ID of the worker that executes the job.
+    int Worker() const { return _worker_id; }
+
+    /// @brief Enqueue work to be done after the current job successfully
+    ///     completes.
+    /// @param job job to run after the current job completes
+    void EnqueueWork(const Job &job);
+
+    /// @brief An iterator to any "follow on" work from this particular job.
+    const std::vector<Job> &GetEnqueuedWork() const { return _to_queue; }
+
+private:
+    int _job_id;
+    int _worker_id;
+    std::vector<Job> _to_queue;
 };
 
 /// @brief The results of a job.
@@ -45,11 +82,12 @@ public:
     /// @brief Create a new job.
     /// @tparam T function implementation
     /// @param id job ID
-    template<typename T>
-    static Job New(int id)
+    /// @param args arguments to pass into the job function constructor
+    template<typename T, typename... Arg>
+    static Job New(int id, Arg&&... args)
     {
         static_assert(std::is_base_of<IJobFunction, T>::value, "'T' must inherit from IJobFunction.");
-        return Job(id, std::make_shared<T>());
+        return Job(id, std::make_shared<T>(std::forward<Arg>(args)...));
     }
 
     /// @brief Create a new job.
@@ -58,7 +96,8 @@ public:
     Job(int id, std::shared_ptr<IJobFunction> fn);
 
     /// @brief Run the job.
-    JobResult Run();
+    /// @param worker_id ID of the worker executing the job
+    JobResult Run(int worker_id);
 
     /// @brief Job ID.
     [[nodiscard]] int Id() const { return _id; }

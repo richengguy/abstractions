@@ -10,7 +10,7 @@ namespace
 
 struct NoOpJob : public abstractions::threads::IJobFunction
 {
-    abstractions::Error operator()(const int job_id, std::vector<abstractions::threads::Job> &deps) const override
+    abstractions::Error operator()(abstractions::threads::JobContext &ctx) const override
     {
         return abstractions::errors::no_error;
     }
@@ -39,10 +39,9 @@ TEST_CASE("Can push/pop to the job queue.")
 
         for (int i = 0; i < 5; i++)
         {
-            auto job = queue.Peek();
+            auto job = queue.NextJob();
             REQUIRE(job);
             CHECK(job->Id() == i);
-            queue.Pop();
         }
 
         REQUIRE(queue.Size() == 0);
@@ -72,10 +71,9 @@ TEST_CASE("Can push/pop to the job queue.")
             CHECK(queue.Size() == 3);
         }
 
-        auto job = queue.Peek();
+        auto job = queue.NextJob();
         REQUIRE(job);
         INFO("Popping job ", job->Id());
-        queue.Pop();
 
         CHECK_FALSE(queue.IsFull());
         INFO("Pushing new job.");

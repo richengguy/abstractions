@@ -32,7 +32,7 @@ Error Queue::Push(const Job &job)
     return errors::no_error;
 }
 
-std::optional<Job> Queue::Peek()
+std::optional<Job> Queue::NextJob()
 {
     std::unique_lock lock{_guard};
     if (_queue.empty())
@@ -40,18 +40,9 @@ std::optional<Job> Queue::Peek()
         return {};
     }
 
-    return _queue.front();
-}
-
-void Queue::Pop()
-{
-    std::unique_lock lock{_guard};
-    if (_queue.empty())
-    {
-        return;
-    }
-
+    Job job = _queue.front();
     _queue.pop_front();
+    return job;
 }
 
 bool Queue::IsFull()

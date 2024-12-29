@@ -27,7 +27,7 @@ void WorkerState::RunJobs(Queue &queue) const
         // Check if there's something to draw from the queue.  If not, wait
         // for a short time before trying again.  This is to avoid the
         // thread from doing any unnecessary work.
-        auto job = queue.Peek();
+        auto job = queue.NextJob();
         if (!job)
         {
             std::this_thread::yield();
@@ -36,11 +36,9 @@ void WorkerState::RunJobs(Queue &queue) const
             continue;
         }
 
-        queue.Pop();
-
         // There is a job, so run it.  Errors shouldn't happen, so if the
         // worker encounters one it should cause the program to halt.
-        auto results = job->Run();
+        auto results = job->Run(id);
         abstractions_check(results.error);
 
         // The job might spawn child jobs, so enqueue those if there are
