@@ -10,9 +10,13 @@ Queue::Queue()
     // don't do anything
 }
 
-Queue::Queue(int max_size)
+Queue::Queue(std::optional<int> max_size)
     : _max_size{max_size}
 {
+    if (_max_size)
+    {
+        abstractions_assert(*_max_size > 0);
+    }
 }
 
 Error Queue::Push(const Job &job)

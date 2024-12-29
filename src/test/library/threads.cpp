@@ -10,7 +10,7 @@ namespace
 
 struct NoOpJob : public abstractions::threads::IJobFunction
 {
-    abstractions::Error operator()(const int job_id) const override
+    abstractions::Error operator()(const int job_id, std::vector<abstractions::threads::Job> &deps) const override
     {
         return abstractions::errors::no_error;
     }

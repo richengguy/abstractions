@@ -2,18 +2,39 @@
 
 #include <abstractions/types.h>
 
+#include <chrono>
 #include <future>
 #include <memory>
 #include <type_traits>
+#include <vector>
 
 namespace abstractions::threads
 {
 
+class Job;
+
 /// @brief Defines what a Job actually does.
 struct IJobFunction
 {
-    virtual Error operator()(const int job_id) const = 0;
+    virtual Error operator()(const int job_id, std::vector<Job> &dependencies) const = 0;
     virtual ~IJobFunction() = default;
+};
+
+/// @brief The results of a job.
+struct JobResult
+{
+    /// @brief The ID of the finished job.
+    int job_id;
+
+    /// @brief The job's error status.
+    Error error;
+
+    /// @brief The length of time the job took.
+    std::chrono::microseconds time;
+
+    /// @brief A set of dependent jobs (if any) that should be queued up after
+    ///     this job completes successfully.
+    std::vector<Job> dependencies;
 };
 
 /// @brief Runs a job on some concurrent worker, potentially on a separate thread.
@@ -37,20 +58,21 @@ public:
     Job(int id, std::shared_ptr<IJobFunction> fn);
 
     /// @brief Run the job.
-    /// @param promise a promise the job will use to signal when its done, along
-    ///     with any errors that may have occurred
-    void Run(std::promise<Error> promise);
+    JobResult Run();
 
     /// @brief Job ID.
-    int Id() const { return _id; }
+    [[nodiscard]] int Id() const { return _id; }
 
     /// @brief Set to `true` after the job completes.
     ///
     /// Refer to the value of Error() to see if the job completed successfully.
-    bool Complete() const { return _complete; }
+    [[nodiscard]] bool Finished() const { return _complete; }
 
     /// @brief Set to the error value a job completes with.
-    Error Error() const { return _error; }
+    [[nodiscard]] Error Error() const { return _error; }
+
+    /// @brief The length of time the job took to complete, in microseconds.
+    [[nodiscard]] std::chrono::microseconds ExecutionTime() const { return _time; }
 
     Job(const Job &) = default;
     Job &operator=(const Job &) = default;
@@ -60,6 +82,7 @@ private:
     int _id;
     bool _complete;
     ::abstractions::Error _error;
+    std::chrono::microseconds _time;
 };
 
 }

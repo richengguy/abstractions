@@ -40,7 +40,7 @@ class TestOutputFolder {
 public:
     TestOutputFolder(const std::string &test_name) :
         _folder{kResultsPath / "s" / test_name} {
-        Console console(test_name);
+        Console console(test_name, "{} ::");
 
         if (std::filesystem::exists(_folder)) {
             auto removed = std::filesystem::remove_all(_folder);
@@ -85,7 +85,7 @@ private:
 class TestFixture {
 public:
     TestFixture(const std::string &name, const std::string &desc) :
-        console{name},
+        console{name, "{} ::"},
         output_folder{name},
         _app{desc} {}
 
@@ -102,7 +102,8 @@ public:
         try {
             Profile profile{timer};
             Func(prng);
-        } catch (const errors::AbstractionsError &) {
+        } catch (const errors::AbstractionsError &exc) {
+            exc.Print();
             return 1;
         }
 

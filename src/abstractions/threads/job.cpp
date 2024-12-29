@@ -1,6 +1,7 @@
 #include "abstractions/threads/job.h"
 
 #include <abstractions/errors.h>
+#include <abstractions/profile.h>
 
 namespace abstractions::threads
 {
@@ -8,12 +9,23 @@ namespace abstractions::threads
 Job::Job(int id, std::shared_ptr<IJobFunction> fn)
     : _fn{fn}, _id{id}, _complete{false} { }
 
-void Job::Run(std::promise<::abstractions::Error> promise)
+JobResult Job::Run()
 {
     abstractions_assert(_fn != nullptr);
-    _error = (*_fn)(_id);
+    std::vector<Job> dependencies;
+    OperationTiming timer;
+    {
+        Profile op_profiler{timer};
+        _error = (*_fn)(_id, dependencies);
+    }
     _complete = true;
-    promise.set_value(_error);
+    _time = timer.GetTiming().total;
+    return JobResult{
+        .job_id = _id,
+        .error = _error,
+        .time = _time,
+        .dependencies = std::move(dependencies),
+    };
 }
 
 }

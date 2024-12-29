@@ -1,6 +1,7 @@
 #pragma once
 
 #include <abstractions/threads/queue.h>
+#include <abstractions/threads/worker.h>
 #include <abstractions/types.h>
 
 #include <optional>
@@ -9,58 +10,39 @@
 namespace abstractions::threads
 {
 
-/// @brief A worker thread that accepts a Job and executes it.
-class Worker
-{
-public:
-    /// @brief Create a new worker.
-    Worker();
-
-    /// @brief Cleans up the worker, including shutting down the internal
-    ///     work thread.
-    ~Worker();
-
-    /// @brief Start a worker.
-    /// @param queue queue worker looks at for work
-    void Start(Queue &queue);
-
-    /// @brief Stops a worker.
-    void Stop();
-
-    /// @brief Check if a worker is still running.
-    bool IsRunning() const;
-
-    Worker(const Worker &) = delete;
-    Worker(Worker &&) = delete;
-    void operator=(const Worker &) = delete;
-    void operator=(Worker &&) = delete;
-
-private:
-    std::atomic<bool> _running;
-    std::thread _thread;
-};
-
-
 /// @brief A ThreadPool configuration.
 struct ThreadPoolConfig
 {
-    /// @brief Number of workers to create.
-    int num_workers;
+    /// @brief Number of workers to create.  The default is to base the number
+    ///     of workers on the number of availble CPU cores.
+    std::optional<int> num_workers = {};
 
-    /// @brief Optional job queue depth.
-    std::optional<int> queue_depth;
+    /// @brief Optional job queue depth.  If provided, then the thread poll will
+    ///     not accept new jobs (i.e., backpressure) when the job queue pool is
+    ///     full.
+    std::optional<int> queue_depth = {};
 
-    /// @brief Create a ThreadPool configuration with default values.
-    ThreadPoolConfig();
+    /// @brief Enables debugging output.
+    bool debug = false;
 };
 
-
 /// @brief A thread pool for distributing work across multiple worker threads.
+///
+/// The thread pool can neither be copied or moved due to an internal mutex used
+/// for managing the job queue.
 class ThreadPool
 {
 public:
     /// @brief Create a new thread pool with a default configuration.
     ThreadPool(const ThreadPoolConfig &config = ThreadPoolConfig());
+
+    /// @brief Stop all workers and release any thread pool resources.
+    ~ThreadPool();
+
+    /// @brief Submit a job to the thread pool.  The call will block if the
+    ///     internal job queue is full.
+    /// @param job job for the thread pool
+    void Submit(const Job &job);
 
     ThreadPool(const ThreadPool &) = delete;
     ThreadPool(ThreadPool &&) = delete;
@@ -70,26 +52,7 @@ public:
 private:
     Queue _job_queue;
     std::vector<Worker> _workers;
+    bool _debug;
 };
-
-// /// @brief A thread pool capable of performing some sort of work.
-// class ThreadPool
-// {
-// public:
-
-//     /// @brief Create a new thread pool.
-//     /// @param num_cores number of cores to use; a default value will be used if
-//     ///     not provided
-//     ThreadPool(std::optional<int> num_cores = std::nullopt);
-
-//     ThreadPool(const ThreadPool &) = delete;
-//     ThreadPool(ThreadPool &&) = delete;
-//     void operator=(const ThreadPool &) = delete;
-//     void operator=(ThreadPool &&) = delete;
-
-// private:
-//     JobQueue _jobs;
-//     std::vector<WorkerThread> _workers;
-// };
 
 }

@@ -23,6 +23,7 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/job.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/queue.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/threadpool.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/threads/worker.h
 )
 
 set (ABSTRACTIONS_SOURCES
@@ -38,6 +39,7 @@ set (ABSTRACTIONS_SOURCES
     threads/job.cpp
     threads/queue.cpp
     threads/threadpool.cpp
+    threads/worker.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})

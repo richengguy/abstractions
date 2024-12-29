@@ -19,7 +19,9 @@ public:
 
     /// @brief Create a queue with a maximum size.
     /// @param max_size maximum number of entries
-    Queue(int max_size);
+    /// @note Providing an empty optional is the same thing as creating a queue
+    ///     of unlimited size.
+    Queue(std::optional<int> max_size);
 
     template<typename T>
     Error Push(int id)

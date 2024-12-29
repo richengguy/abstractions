@@ -1,87 +1,74 @@
 #include "abstractions/threads/threadpool.h"
 
 #include <abstractions/errors.h>
+#include <abstractions/console.h>
 
 #include <chrono>
-
-using namespace std::chrono_literals;
 
 namespace abstractions::threads
 {
 
-// Default time the a worker sleeps for when waiting for a job.
-constexpr std::chrono::duration kDefaultWait = 10us;
+static const std::string kConsoleName = "ThreadPool";
 
-Worker::Worker()
-    : _running{false}
-    {}
-
-Worker::~Worker()
+ThreadPool::ThreadPool(const ThreadPoolConfig &config)
+    : _job_queue{config.queue_depth},
+      _debug{config.debug}
 {
-    Stop();
-}
+    Console console(kConsoleName);
 
-void Worker::Start(Queue &queue)
-{
-    abstractions_assert(_running == false);
-    _running = true;
+    const int available_threads = std::thread::hardware_concurrency();
+    const int default_max_threads = std::max(1, static_cast<int>(0.75 * available_threads));
+    const int requested_workers = config.num_workers.value_or(default_max_threads);
+    abstractions_assert(requested_workers > 0);
 
-    _thread = std::thread([&]()
+    if (_debug) {
+        console.Print("Workers:    {}", _workers.size());
+        console.Print("Queue Size: {}", _job_queue.MaxCapacity());
+        console.Separator();
+    }
+
+    for (int i = 0; i < requested_workers; i++)
     {
-        while (true)
+        Worker worker(i);
+        worker.Start(_job_queue);
+        _workers.push_back(std::move(worker));
+
+        if (_debug)
         {
-            // Not running, so need to break out of the loop.
-            if (!_running)
-            {
-                break;
-            }
-
-            // Check if there's something to draw from the queue.  If not, wait
-            // for a short time before trying again.  This is to avoid the
-            // thread from doing any unnecessary work.
-            auto job = queue.Peek();
-            if (!job)
-            {
-                std::this_thread::yield();
-                std::this_thread::sleep_for(kDefaultWait);
-                continue;
-            }
-
-            queue.Pop();
-
-            // There is a job, so run it.
-            std::promise<Error> job_promise;
-            job->Run(std::move(job_promise));
+            console.Print("Started worker {}", i);
         }
-    });
-}
+    }
 
-void Worker::Stop()
-{
-    if (_thread.joinable())
+    if (_debug)
     {
-        _running = false;
-        _thread.join();
+        console.Separator();
     }
 }
 
-bool Worker::IsRunning() const
+ThreadPool::~ThreadPool()
 {
-    return _running;
+    Console console(kConsoleName);
+
+    for (auto &worker : _workers)
+    {
+        worker.Stop();
+        if (_debug)
+        {
+            console.Print("Stopping worker {}", worker.Id());
+        }
+    }
 }
 
-
-ThreadPoolConfig::ThreadPoolConfig()
+void ThreadPool::Submit(const Job &job)
 {
-    const int available_threads = std::thread::hardware_concurrency();
-    const int default_max_threads = std::max(1, static_cast<int>(0.75 * available_threads));
-    num_workers = default_max_threads;
-    queue_depth = {};
-}
+    Console console(kConsoleName);
 
-ThreadPool::ThreadPool(const ThreadPoolConfig &config)
-{
-    // Do something
+    if (_debug)
+    {
+        console.Print("Submitting Job#{}", job.Id());
+    }
+
+    _job_queue.Push(job);
 }
 
 }
