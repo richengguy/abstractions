@@ -24,14 +24,20 @@ ThreadPool::ThreadPool(const ThreadPoolConfig &config)
     if (_debug) {
         console.Print("Workers:    {}", _workers.size());
         console.Print("Queue Size: {}", _job_queue.MaxCapacity());
+        console.Print("Sleep Time: {}", config.sleep_time.value_or(kDefaultWorkerSleep));
         console.Separator();
     }
 
     for (int i = 0; i < requested_workers; i++)
     {
-        Worker worker(i);
+        auto &worker = _workers.emplace_back(i);
+
+        if (config.sleep_time)
+        {
+            worker.SetSleepTime(*config.sleep_time);
+        }
+
         worker.Start(_job_queue);
-        _workers.push_back(std::move(worker));
 
         if (_debug)
         {
@@ -69,6 +75,11 @@ void ThreadPool::Submit(const Job &job)
     }
 
     _job_queue.Push(job);
+}
+
+void ThreadPool::StopAll()
+{
+    // TODO: Figure this out.
 }
 
 }
