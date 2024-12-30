@@ -16,7 +16,7 @@ struct NoOpJob : public abstractions::threads::IJobFunction {
 
 TEST_SUITE_BEGIN("threads");
 
-TEST_CASE("Can push/pop to the job queue.") {
+TEST_CASE("Can push/pop to the job queue. (Non-blocking)") {
     using abstractions::threads::Job;
     using abstractions::threads::Queue;
 
@@ -27,7 +27,7 @@ TEST_CASE("Can push/pop to the job queue.") {
 
         for (int i = 0; i < 5; i++) {
             auto job = Job::New<NoOpJob>(i);
-            queue.Enqueue(job);
+            CHECK(queue.TryEnqueue(job) == abstractions::errors::no_error);
             CHECK(queue.Size() == i + 1);
         }
 
@@ -40,7 +40,7 @@ TEST_CASE("Can push/pop to the job queue.") {
         REQUIRE(queue.Size() == 0);
     }
 
-    SUBCASE("Push/pop with limits (non-blocking version).") {
+    SUBCASE("Push/pop with limits.") {
         Queue queue(3);
         REQUIRE(queue.MaxCapacity());
         CHECK(queue.MaxCapacity().value() == 3);
@@ -73,6 +73,59 @@ TEST_CASE("Can push/pop to the job queue.") {
         auto err = queue.TryEnqueue(new_job);
         CHECK(err == abstractions::errors::no_error);
     }
+}
+
+TEST_CASE("Can push/pop to job queue asynchronously. (Blocking)") {
+    using abstractions::threads::Job;
+    using abstractions::threads::Queue;
+
+    auto parallel_work = [](Queue &queue) {
+        auto job = Job::New<NoOpJob>(10);
+        CHECK(queue.IsFull());
+        queue.Enqueue(job);
+    };
+
+    // Fill up the queue so that any future calls will block because the queue
+    // is full.
+    const int kCapacity = 3;
+    Queue queue(kCapacity);
+    for (int i = 0; i < kCapacity; i++) {
+        auto job = Job::New<NoOpJob>(i);
+        REQUIRE_FALSE(queue.IsFull());
+        queue.Enqueue(job);
+    }
+
+    // Now, launch a separate job that will attempt to push to the thread.  It
+    // should block.
+    std::thread thread(parallel_work, std::ref(queue));
+
+    // Wait a bit to simulate doing some work.
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+    // Pull from the queue.  After waiting for a short time, the queue should
+    // still be full from the worker thread.
+    auto job0 = queue.NextJob();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    REQUIRE(job0);
+    CHECK(job0->Id() == 0);
+    CHECK(queue.IsFull());
+
+    // Now, pull the remaining jobs. The last one should have the job created
+    // from the other thread (job ID '10').
+    auto job1 = queue.NextJob();
+    REQUIRE(job1);
+    CHECK(job1->Id() == 1);
+
+    auto job2 = queue.NextJob();
+    REQUIRE(job2);
+    CHECK(job2->Id() == 2);
+
+    auto job10 = queue.NextJob();
+    REQUIRE(job10);
+    CHECK(job10->Id() == 10);
+
+    // Do the final clean-up.
+    thread.join();
 }
 
 TEST_SUITE_END();

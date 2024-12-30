@@ -69,6 +69,7 @@ jobs:
         run: |
           cd build/Release
           ctest
+        timeout-minutes: 5
 
       - name: Save Conan build cache
         id: conan-save-cache
