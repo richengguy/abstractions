@@ -37,7 +37,7 @@ ThreadPool::ThreadPool(const ThreadPoolConfig &config)
     abstractions_assert(requested_workers > 0);
 
     if (_debug) {
-        console.Print("Workers:    {}", _workers.size());
+        console.Print("Workers:    {}", requested_workers);
         console.Print("Queue Size: {}", _job_queue.MaxCapacity());
         console.Print("Sleep Time: {}", config.sleep_time.value_or(kDefaultWorkerSleep));
         console.Separator();
@@ -100,6 +100,17 @@ void ThreadPool::Submit(const Job &job)
 void ThreadPool::StopAll()
 {
     _job_queue.Clear();
+}
+
+int ThreadPool::Workers() const
+{
+    return _workers.size();
+}
+
+const Worker &ThreadPool::GetWorker(int i) const
+{
+    abstractions_assert(i >= 0 && i < _workers.size());
+    return _workers.at(i);
 }
 
 }

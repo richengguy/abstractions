@@ -61,6 +61,14 @@ public:
     /// be cleared out.
     void StopAll();
 
+    /// @brief Return the number of workers in the thread pool.
+    int Workers() const;
+
+    /// @brief Get a particular worker.
+    /// @param i worker ID
+    /// @return a constant reference to a worker
+    const Worker &GetWorker(const int i) const;
+
     ThreadPool(const ThreadPool &) = delete;
     ThreadPool(ThreadPool &&) = delete;
     void operator=(const ThreadPool &) = delete;
