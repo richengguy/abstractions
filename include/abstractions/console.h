@@ -5,15 +5,13 @@
 
 #include <string>
 
-namespace abstractions
-{
+namespace abstractions {
 
 /// @brief A simple console printer.
 ///
 /// This is mainly to make all of the program output look "consistent" for all
 /// standard debugging output.
-class Console
-{
+class Console {
 public:
     /// @brief Create a new Console instance.
     /// @param name value shown at the start of the console output
@@ -24,14 +22,12 @@ public:
     /// @param fmt the format string used for the output prefix
     Console(const std::string &name, const std::string &fmt);
 
-    void Print(const std::string &msg)
-    {
+    void Print(const std::string &msg) {
         PrintToStdout(msg, fmt::format_args{});
     }
 
-    template<typename... T>
-    void Print(fmt::format_string<T...> fmt, T&&... args) const
-    {
+    template <typename... T>
+    void Print(fmt::format_string<T...> fmt, T &&...args) const {
         PrintToStdout(fmt, fmt::make_format_args(args...));
     }
 
@@ -47,4 +43,4 @@ private:
     std::string _separator;
 };
 
-}
+}  // namespace abstractions

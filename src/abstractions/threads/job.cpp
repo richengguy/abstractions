@@ -3,21 +3,17 @@
 #include <abstractions/errors.h>
 #include <abstractions/profile.h>
 
-namespace abstractions::threads
-{
+namespace abstractions::threads {
 
-JobContext::JobContext(int job_id, int worker_id)
-    : _job_id{job_id},
-      _worker_id{worker_id}
-{
+JobContext::JobContext(int job_id, int worker_id) :
+    _job_id{job_id},
+    _worker_id{worker_id} {}
 
-}
+Job::Job(int id, std::unique_ptr<IJobFunction> fn) :
+    _id{id},
+    _fn{std::move(fn)} {}
 
-Job::Job(int id, std::unique_ptr<IJobFunction> fn)
-    : _id{id}, _fn{std::move(fn)} { }
-
-JobStatus Job::Run(int worker_id)
-{
+JobStatus Job::Run(int worker_id) {
     abstractions_assert(_fn != nullptr);
     JobContext ctx(_id, worker_id);
     Error error;
@@ -30,7 +26,7 @@ JobStatus Job::Run(int worker_id)
 
     JobStatus status{
         .job_id = _id,
-        .error =error,
+        .error = error,
         .time = timer.GetTiming().total,
     };
 
@@ -38,14 +34,12 @@ JobStatus Job::Run(int worker_id)
     return status;
 }
 
-void Job::SetPromise(Promise& promise)
-{
+void Job::SetPromise(Promise& promise) {
     _job_status = std::move(promise);
 }
 
-int Job::Id() const
-{
+int Job::Id() const {
     return _id;
 }
 
-}
+}  // namespace abstractions::threads

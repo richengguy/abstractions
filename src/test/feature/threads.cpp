@@ -1,16 +1,14 @@
-#include "support.h"
-
 #include <abstractions/threads/threadpool.h>
+
+#include "support.h"
 
 using namespace abstractions;
 using namespace abstractions::threads;
 
 std::mutex mutex;
 
-struct SimpleJob : public IJobFunction
-{
-    Error operator()(JobContext &ctx) const override
-    {
+struct SimpleJob : public IJobFunction {
+    Error operator()(JobContext &ctx) const override {
         std::unique_lock lock{mutex};
         fmt::print("-- Running job#{} ({})\n", ctx.Id(), ctx.Worker());
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -19,8 +17,7 @@ struct SimpleJob : public IJobFunction
     }
 };
 
-ABSTRACTIONS_FEATURE_TEST()
-{
+ABSTRACTIONS_FEATURE_TEST() {
     console.Print("Creating thread pool.");
     ThreadPool thread_pool({
         .num_workers = 4,

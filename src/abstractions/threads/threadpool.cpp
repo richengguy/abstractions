@@ -1,33 +1,28 @@
 #include "abstractions/threads/threadpool.h"
 
-#include <abstractions/errors.h>
 #include <abstractions/console.h>
+#include <abstractions/errors.h>
 
 #include <chrono>
 
-namespace abstractions::threads
-{
+namespace abstractions::threads {
 
-namespace
-{
+namespace {
 
 static const std::string kConsoleName = "ThreadPool";
 
-void WaitForQueueEmpty(Queue &queue)
-{
-    while (queue.Size() > 1)
-    {
+void WaitForQueueEmpty(Queue &queue) {
+    while (queue.Size() > 1) {
         std::this_thread::yield();
         std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
 }
 
-}
+}  // namespace
 
-ThreadPool::ThreadPool(const ThreadPoolConfig &config)
-    : _job_queue{config.queue_depth},
-      _debug{config.debug}
-{
+ThreadPool::ThreadPool(const ThreadPoolConfig &config) :
+    _job_queue{config.queue_depth},
+    _debug{config.debug} {
     Console console(kConsoleName);
 
     // Determine a "good" number of threads to use (if no value is provided).
@@ -44,53 +39,44 @@ ThreadPool::ThreadPool(const ThreadPoolConfig &config)
     }
 
     // Start all of the workerers
-    for (int i = 0; i < requested_workers; i++)
-    {
+    for (int i = 0; i < requested_workers; i++) {
         auto &worker = _workers.emplace_back(i, _debug);
 
-        if (config.sleep_time)
-        {
+        if (config.sleep_time) {
             worker.SetSleepTime(*config.sleep_time);
         }
 
         worker.Start(_job_queue);
 
-        if (_debug)
-        {
+        if (_debug) {
             console.Print("Started worker {}", i);
         }
     }
 
-    if (_debug)
-    {
+    if (_debug) {
         console.Separator();
     }
 }
 
-ThreadPool::~ThreadPool()
-{
+ThreadPool::~ThreadPool() {
     Console console(kConsoleName);
 
     console.Print("Waiting for queue to be empty.");
     WaitForQueueEmpty(_job_queue);
     console.Print("Queue is empty.");
 
-    for (auto &worker : _workers)
-    {
+    for (auto &worker : _workers) {
         worker.Stop();
-        if (_debug)
-        {
+        if (_debug) {
             console.Print("Stopping worker {}", worker.Id());
         }
     }
 }
 
-Job::Future ThreadPool::Submit(Job &job)
-{
+Job::Future ThreadPool::Submit(Job &job) {
     Console console(kConsoleName);
 
-    if (_debug)
-    {
+    if (_debug) {
         console.Print("Submitting Job#{}", job.Id());
     }
 
@@ -101,20 +87,17 @@ Job::Future ThreadPool::Submit(Job &job)
     return status_future;
 }
 
-void ThreadPool::StopAll()
-{
+void ThreadPool::StopAll() {
     _job_queue.Clear();
 }
 
-int ThreadPool::Workers() const
-{
+int ThreadPool::Workers() const {
     return _workers.size();
 }
 
-const Worker &ThreadPool::GetWorker(int i) const
-{
+const Worker &ThreadPool::GetWorker(int i) const {
     abstractions_assert(i >= 0 && i < _workers.size());
     return _workers.at(i);
 }
 
-}
+}  // namespace abstractions::threads

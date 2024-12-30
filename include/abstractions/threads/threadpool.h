@@ -4,19 +4,17 @@
 #include <abstractions/threads/worker.h>
 #include <abstractions/types.h>
 
-#include <optional>
 #include <future>
+#include <optional>
 #include <vector>
 
-namespace abstractions::threads
-{
+namespace abstractions::threads {
 
 /// @brief A ThreadPool configuration.
 ///
 /// All configuration values are optional.  Setting a value will override the
 /// default.
-struct ThreadPoolConfig
-{
+struct ThreadPoolConfig {
     /// @brief Number of workers to create.  The default is to base the number
     ///     of workers on the number of availble CPU cores.
     std::optional<int> num_workers = {};
@@ -38,8 +36,7 @@ struct ThreadPoolConfig
 ///
 /// The thread pool can neither be copied or moved due to an internal mutex used
 /// for managing the job queue.
-class ThreadPool
-{
+class ThreadPool {
 public:
     /// @brief Create a new thread pool with a default configuration.
     ThreadPool(const ThreadPoolConfig &config = ThreadPoolConfig());
@@ -54,9 +51,8 @@ public:
     /// @tparam Arg IJobFunction constructor argument types
     /// @param id user-specified job ID
     /// @param args constructor arguments
-    template<typename T, typename ...Arg>
-    Job::Future Submit(int id, Arg&&... args)
-    {
+    template <typename T, typename... Arg>
+    Job::Future Submit(int id, Arg &&...args) {
         auto job = Job::New<T>(id, std::forward<Arg>(args)...);
         return Submit(job);
     }
@@ -93,4 +89,4 @@ private:
     bool _debug;
 };
 
-}
+}  // namespace abstractions::threads

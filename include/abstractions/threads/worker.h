@@ -6,15 +6,12 @@
 #include <memory>
 #include <thread>
 
-namespace abstractions::threads
-{
+namespace abstractions::threads {
 
-namespace detail
-{
+namespace detail {
 
 /// @brief A worker's internal state.
-struct WorkerState
-{
+struct WorkerState {
     int id;
     std::chrono::microseconds sleep_time;
     bool running;
@@ -22,19 +19,18 @@ struct WorkerState
     void RunJobs(Queue &queue) const;
 };
 
-}
+}  // namespace detail
 
 /// @brief Default time the a worker sleeps for when waiting for a job.
 constexpr std::chrono::duration kDefaultWorkerSleep = std::chrono::microseconds(10);
 
 /// @brief A worker thread that accepts a Job and executes it.
-class Worker
-{
+class Worker {
 public:
     /// @brief Create a new worker.
     /// @param worker_id thread pool-assigned ID
     /// @param debug enables/disables debugging output
-    Worker(int worker_id, bool debug=false);
+    Worker(int worker_id, bool debug = false);
 
     /// @brief Cleans up the worker, including shutting down the internal
     ///     work thread.
@@ -72,4 +68,4 @@ private:
     bool _debug;
 };
 
-}
+}  // namespace abstractions::threads

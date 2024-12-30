@@ -1,9 +1,9 @@
 #pragma once
 
-#include <abstractions/math/random.h>
-#include <abstractions/profile.h>
 #include <abstractions/console.h>
 #include <abstractions/errors.h>
+#include <abstractions/math/random.h>
+#include <abstractions/profile.h>
 #include <fmt/chrono.h>
 #include <fmt/color.h>
 #include <fmt/format.h>

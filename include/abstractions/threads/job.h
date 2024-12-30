@@ -8,16 +8,14 @@
 #include <type_traits>
 #include <vector>
 
-namespace abstractions::threads
-{
+namespace abstractions::threads {
 
 // Forware declarations
 class Job;
 class JobContext;
 
 /// @brief Any callable that can execute an abstractions job.
-struct IJobFunction
-{
+struct IJobFunction {
     /// @brief Run the job.
     /// @param ctx a context object with information about the specific job
     /// @return the job's success status
@@ -29,8 +27,7 @@ struct IJobFunction
 };
 
 /// @brief Execution information about the currently running job.
-class JobContext
-{
+class JobContext {
 public:
     /// @brief Create a new job context.
     /// @param job_id job ID
@@ -38,10 +35,14 @@ public:
     JobContext(int job_id, int worker_id);
 
     /// @brief ID of the particular job.
-    int Id() const { return _job_id; }
+    int Id() const {
+        return _job_id;
+    }
 
     /// @brief ID of the worker that executes the job.
-    int Worker() const { return _worker_id; }
+    int Worker() const {
+        return _worker_id;
+    }
 
 private:
     int _job_id;
@@ -49,8 +50,7 @@ private:
 };
 
 /// @brief The status of a job once it completes.
-struct JobStatus
-{
+struct JobStatus {
     /// @brief The ID of the finished job.
     int job_id;
 
@@ -62,21 +62,20 @@ struct JobStatus
 };
 
 /// @brief Runs a job on some concurrent worker, potentially on a separate thread.
-class Job
-{
+class Job {
 public:
-    typedef std::future<JobStatus> Future; ///< Future type a job uses to report on its status.
-    typedef std::promise<JobStatus> Promise; ///< Promise type a job expects for reporting status.
+    typedef std::future<JobStatus> Future;    ///< Future type a job uses to report on its status.
+    typedef std::promise<JobStatus> Promise;  ///< Promise type a job expects for reporting status.
 
     /// @brief Create a new job.
     /// @tparam T IJobFunction class type
     /// @tparam Arg IJobFunction constructor argument types
     /// @param id user-specified job ID
     /// @param args constructor arguments
-    template<typename T, typename... Arg>
-    static Job New(int id, Arg&&... args)
-    {
-        static_assert(std::is_base_of<IJobFunction, T>::value, "'T' must inherit from IJobFunction.");
+    template <typename T, typename... Arg>
+    static Job New(int id, Arg &&...args) {
+        static_assert(std::is_base_of<IJobFunction, T>::value,
+                      "'T' must inherit from IJobFunction.");
         return Job(id, std::make_unique<T>(std::forward<Arg>(args)...));
     }
 
@@ -96,7 +95,7 @@ public:
     /// The job will take ownership of the promise.  The caller can then create
     /// a future from the promise to get information on the job's status after
     /// it finishes.
-    void SetPromise(Promise& promise);
+    void SetPromise(Promise &promise);
 
     /// @brief The user-specified job ID.
     int Id() const;
@@ -112,4 +111,4 @@ private:
     std::promise<JobStatus> _job_status;
 };
 
-}
+}  // namespace abstractions::threads

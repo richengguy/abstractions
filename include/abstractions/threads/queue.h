@@ -1,22 +1,20 @@
 #pragma once
 
-#include <abstractions/threads/job.h>
 #include <abstractions/errors.h>
+#include <abstractions/threads/job.h>
 
-#include <future>
 #include <deque>
+#include <future>
 #include <mutex>
 #include <optional>
 
-namespace abstractions::threads
-{
+namespace abstractions::threads {
 
 /// @brief A job queue that supports concurrent push/pop operations.
 ///
 /// The queue is responsible for all jobs that it currently contains.  This
 /// means that jobs are *moved* into and out of the queue.
-class Queue
-{
+class Queue {
 public:
     /// @brief Create a queue with an unlimited size.
     Queue();
@@ -69,8 +67,7 @@ public:
     void operator=(Queue &&) = delete;
 
 private:
-    inline bool QueueFull() const
-    {
+    inline bool QueueFull() const {
         return _max_size && _queue.size() >= *_max_size;
     }
 
@@ -80,4 +77,4 @@ private:
     std::condition_variable _space_available;
 };
 
-}
+}  // namespace abstractions::threads

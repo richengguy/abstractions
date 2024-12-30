@@ -6,21 +6,16 @@
 
 using namespace std::chrono_literals;
 
-namespace abstractions::threads
-{
+namespace abstractions::threads {
 
 static const std::string kConsoleName = "Worker";
 
-namespace detail
-{
+namespace detail {
 
-void WorkerState::RunJobs(Queue &queue) const
-{
-    while (true)
-    {
+void WorkerState::RunJobs(Queue &queue) const {
+    while (true) {
         // Not running, so need to break out of the loop.
-        if (!running)
-        {
+        if (!running) {
             break;
         }
 
@@ -28,8 +23,7 @@ void WorkerState::RunJobs(Queue &queue) const
         // for a short time before trying again.  This is to avoid the
         // thread from doing any unnecessary work.
         auto job = queue.NextJob();
-        if (!job)
-        {
+        if (!job) {
             std::this_thread::yield();
             std::this_thread::sleep_for(sleep_time);
             continue;
@@ -42,30 +36,26 @@ void WorkerState::RunJobs(Queue &queue) const
     }
 }
 
-}
+}  // namespace detail
 
-Worker::Worker(int worker_id, bool debug)
-    : _state{std::make_unique<detail::WorkerState>()},
-      _debug{debug}
-{
+Worker::Worker(int worker_id, bool debug) :
+    _state{std::make_unique<detail::WorkerState>()},
+    _debug{debug} {
     _state->id = worker_id;
     _state->sleep_time = kDefaultWorkerSleep;
     _state->running = false;
 }
 
-Worker::~Worker()
-{
+Worker::~Worker() {
     Stop();
 }
 
-void Worker::Start(Queue &queue)
-{
+void Worker::Start(Queue &queue) {
     abstractions_assert(static_cast<bool>(_state) == true);
     abstractions_assert(_state->running == false);
     _state->running = true;
 
-    if (_debug)
-    {
+    if (_debug) {
         Console console(kConsoleName);
         console.Print("Starting worker {}.", _state->id);
     }
@@ -73,20 +63,16 @@ void Worker::Start(Queue &queue)
     _thread = std::thread(&detail::WorkerState::RunJobs, _state.get(), std::ref(queue));
 }
 
-void Worker::Stop()
-{
+void Worker::Stop() {
     // Nothing to do if the state is empty.  This can happen when a Worker
     // instance has been moved, such as with std::vector::emplace_back() or
     // std::move().
-    if (!_state)
-    {
+    if (!_state) {
         return;
     }
 
-    if (_thread.joinable())
-    {
-        if (_debug)
-        {
+    if (_thread.joinable()) {
+        if (_debug) {
             Console console(kConsoleName);
             console.Print("Waiting to join worker {}.", _state->id);
         }
@@ -95,29 +81,25 @@ void Worker::Stop()
     }
 }
 
-bool Worker::IsRunning() const
-{
+bool Worker::IsRunning() const {
     abstractions_assert(static_cast<bool>(_state) == true);
     return _state->running;
 }
 
-int Worker::Id() const
-{
+int Worker::Id() const {
     abstractions_assert(static_cast<bool>(_state) == true);
     return _state->id;
 }
 
-std::chrono::microseconds Worker::SleepTime() const
-{
+std::chrono::microseconds Worker::SleepTime() const {
     abstractions_assert(static_cast<bool>(_state) == true);
     return _state->sleep_time;
 }
 
-void Worker::SetSleepTime(const std::chrono::microseconds &time)
-{
+void Worker::SetSleepTime(const std::chrono::microseconds &time) {
     abstractions_assert(static_cast<bool>(_state) == true);
     abstractions_assert(!_state->running);
     _state->sleep_time = time;
 }
 
-}
+}  // namespace abstractions::threads
