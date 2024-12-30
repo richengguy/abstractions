@@ -33,7 +33,7 @@ TEST_CASE("Can push/pop to the job queue.")
 
         for (int i = 0; i < 5; i++)
         {
-            queue.Push<NoOpJob>(i);
+            queue.Enqueue(Job::New<NoOpJob>(i));
             CHECK(queue.Size() == i+1);
         }
 
@@ -47,7 +47,7 @@ TEST_CASE("Can push/pop to the job queue.")
         REQUIRE(queue.Size() == 0);
     }
 
-    SUBCASE("Push/pop with limits.")
+    SUBCASE("Push/pop with limits (non-blocking version).")
     {
         Queue queue(3);
         REQUIRE(queue.MaxCapacity());
@@ -56,7 +56,7 @@ TEST_CASE("Can push/pop to the job queue.")
         for (int i = 0; i < 3; i++)
         {
             INFO("Push job ID ", i);
-            auto err = queue.Push<NoOpJob>(i);
+            auto err = queue.TryEnqueue(Job::New<NoOpJob>(i));
             CHECK(err == abstractions::errors::no_error);
             CHECK(queue.Size() == i+1);
         }
@@ -66,7 +66,7 @@ TEST_CASE("Can push/pop to the job queue.")
         for (int i = 3; i < 5; i++)
         {
             INFO("Push extra job ", i);
-            auto err = queue.Push<NoOpJob>(i);
+            auto err = queue.TryEnqueue(Job::New<NoOpJob>(i));
             CHECK(err != abstractions::errors::no_error);
             CHECK(queue.Size() == 3);
         }
@@ -77,7 +77,7 @@ TEST_CASE("Can push/pop to the job queue.")
 
         CHECK_FALSE(queue.IsFull());
         INFO("Pushing new job.");
-        auto err = queue.Push<NoOpJob>(5);
+        auto err = queue.TryEnqueue(Job::New<NoOpJob>(5));
         CHECK(err == abstractions::errors::no_error);
     }
 }

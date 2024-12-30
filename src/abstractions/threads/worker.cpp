@@ -40,13 +40,6 @@ void WorkerState::RunJobs(Queue &queue) const
         // worker encounters one it should cause the program to halt.
         auto results = job->Run(id);
         abstractions_check(results.error);
-
-        // The job might spawn child jobs, so enqueue those if there are
-        // any.
-        for (auto &job : results.dependencies)
-        {
-            queue.Push(job);
-        }
     }
 
     // std::cout << "Stopped [" << id << "]" << std::endl;

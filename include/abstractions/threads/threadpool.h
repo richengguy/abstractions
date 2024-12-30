@@ -5,6 +5,7 @@
 #include <abstractions/types.h>
 
 #include <optional>
+#include <future>
 #include <vector>
 
 namespace abstractions::threads
@@ -50,6 +51,7 @@ public:
     /// @brief Submit a job to the thread pool.  The call will block if the
     ///     internal job queue is full.
     /// @param job job for the thread pool
+    /// @return A future with the result of the job.
     void Submit(const Job &job);
 
     /// @brief Stop all running jobs.

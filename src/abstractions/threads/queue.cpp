@@ -19,7 +19,21 @@ Queue::Queue(std::optional<int> max_size)
     }
 }
 
-Error Queue::Push(const Job &job)
+void Queue::Enqueue(const Job &job)
+{
+    std::unique_lock lock{_guard};
+
+    // Wait for someone to get a job from the queue if it's full to make some
+    // space for the new job.
+    if (QueueFull())
+    {
+        _space_available.wait(lock);
+    }
+
+    _queue.push_back(job);
+}
+
+Error Queue::TryEnqueue(const Job &job)
 {
     std::unique_lock lock{_guard};
 
@@ -42,12 +56,22 @@ std::optional<Job> Queue::NextJob()
 
     Job job = _queue.front();
     _queue.pop_front();
+    lock.unlock();  // <-- using since using an inner scope makes things a little messy
+
+    _space_available.notify_one();
     return job;
+}
+
+void Queue::Clear()
+{
+    std::unique_lock lock{_guard};
+    _queue.clear();
 }
 
 bool Queue::IsFull()
 {
-    return _max_size && Size() >= *_max_size;
+    std::unique_lock lock{_guard};
+    return QueueFull();
 }
 
 int Queue::Size()

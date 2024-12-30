@@ -43,18 +43,9 @@ public:
     /// @brief ID of the worker that executes the job.
     int Worker() const { return _worker_id; }
 
-    /// @brief Enqueue work to be done after the current job successfully
-    ///     completes.
-    /// @param job job to run after the current job completes
-    void EnqueueWork(const Job &job);
-
-    /// @brief An iterator to any "follow on" work from this particular job.
-    const std::vector<Job> &GetEnqueuedWork() const { return _to_queue; }
-
 private:
     int _job_id;
     int _worker_id;
-    std::vector<Job> _to_queue;
 };
 
 /// @brief The results of a job.
@@ -68,10 +59,6 @@ struct JobResult
 
     /// @brief The length of time the job took.
     std::chrono::microseconds time;
-
-    /// @brief A set of dependent jobs (if any) that should be queued up after
-    ///     this job completes successfully.
-    std::vector<Job> dependencies;
 };
 
 /// @brief Runs a job on some concurrent worker, potentially on a separate thread.
@@ -98,6 +85,9 @@ public:
     /// @brief Run the job.
     /// @param worker_id ID of the worker executing the job
     JobResult Run(int worker_id);
+
+    /// @brief Wait for the job to complete.
+    void Wait() const;
 
     /// @brief Job ID.
     [[nodiscard]] int Id() const { return _id; }

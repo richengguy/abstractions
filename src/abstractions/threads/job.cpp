@@ -13,11 +13,6 @@ JobContext::JobContext(int job_id, int worker_id)
 
 }
 
-void JobContext::EnqueueWork(const Job &job)
-{
-    _to_queue.push_back(job);
-}
-
 Job::Job(int id, std::shared_ptr<IJobFunction> fn)
     : _fn{fn}, _id{id}, _complete{false} { }
 
@@ -36,8 +31,12 @@ JobResult Job::Run(int worker_id)
         .job_id = _id,
         .error = _error,
         .time = _time,
-        .dependencies = std::vector<Job>(ctx.GetEnqueuedWork()),
     };
+}
+
+void Job::Wait() const
+{
+    // TBD
 }
 
 }

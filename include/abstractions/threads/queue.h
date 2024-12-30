@@ -24,16 +24,18 @@ public:
     ///     of unlimited size.
     Queue(std::optional<int> max_size);
 
-    template<typename T>
-    Error Push(int id)
-    {
-        return Push(Job::New<T>(id));
-    }
+    /// @brief Push a job onto the end of the queue, blocking if the queue if
+    ///     the queue is currently full.
+    /// @param job job instance
+    void Enqueue(const Job &job);
 
     /// @brief Push a job onto the end queue.
     /// @param job job instance
     /// @return an error if the push wasn't successful due to the queue being full
-    Error Push(const Job &job);
+    ///
+    /// Unlike Enqueue() this does not block the caller.  The return value is
+    /// used to signal whether or not an enqueue operation was successful.
+    Error TryEnqueue(const Job &job);
 
     /// @brief See if there is a new job in the queue, removing it if there is one.
     /// @return The job, if one is available, or an empty value, if no job is
@@ -44,6 +46,9 @@ public:
     /// available.
     std::optional<Job> NextJob();
 
+    /// @brief Clear out the job queue and remove any waiting jobs.
+    void Clear();
+
     /// @brief Determine if the queue is currently full.
     bool IsFull();
 
@@ -51,8 +56,8 @@ public:
     int Size();
 
     /// @brief The queue's maximum capacity.
-    /// @return the capacity if the queue has a maximum size, otherwise it will
-    ///     be empty
+    /// @return The capacity if the queue has a maximum size, otherwise it will
+    ///     be empty.
     std::optional<int> MaxCapacity() const;
 
     Queue(const Queue &) = delete;
@@ -61,9 +66,15 @@ public:
     void operator=(Queue &&) = delete;
 
 private:
+    inline bool QueueFull() const
+    {
+        return _max_size && _queue.size() >= *_max_size;
+    }
+
     std::mutex _guard;
     std::deque<Job> _queue;
     std::optional<int> _max_size;
+    std::condition_variable _space_available;
 };
 
 }
