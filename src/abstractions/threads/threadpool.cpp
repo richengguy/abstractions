@@ -61,9 +61,10 @@ ThreadPool::ThreadPool(const ThreadPoolConfig &config) :
 ThreadPool::~ThreadPool() {
     Console console(kConsoleName);
 
-    console.Print("Waiting for queue to be empty.");
+    if (_debug) {
+        console.Print("Waiting for queue to be empty.");
+    }
     WaitForQueueEmpty(_job_queue);
-    console.Print("Queue is empty.");
 
     for (auto &worker : _workers) {
         worker.Stop();
