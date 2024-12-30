@@ -12,6 +12,9 @@ namespace abstractions::threads
 {
 
 /// @brief A job queue that supports concurrent push/pop operations.
+///
+/// The queue is responsible for all jobs that it currently contains.  This
+/// means that jobs are *moved* into and out of the queue.
 class Queue
 {
 public:
@@ -27,7 +30,7 @@ public:
     /// @brief Push a job onto the end of the queue, blocking if the queue if
     ///     the queue is currently full.
     /// @param job job instance
-    void Enqueue(const Job &job);
+    void Enqueue(Job &job);
 
     /// @brief Push a job onto the end queue.
     /// @param job job instance
@@ -35,7 +38,7 @@ public:
     ///
     /// Unlike Enqueue() this does not block the caller.  The return value is
     /// used to signal whether or not an enqueue operation was successful.
-    Error TryEnqueue(const Job &job);
+    Error TryEnqueue(Job &job);
 
     /// @brief See if there is a new job in the queue, removing it if there is one.
     /// @return The job, if one is available, or an empty value, if no job is

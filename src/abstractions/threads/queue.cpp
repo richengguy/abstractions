@@ -19,7 +19,7 @@ Queue::Queue(std::optional<int> max_size)
     }
 }
 
-void Queue::Enqueue(const Job &job)
+void Queue::Enqueue(Job &job)
 {
     std::unique_lock lock{_guard};
 
@@ -30,10 +30,10 @@ void Queue::Enqueue(const Job &job)
         _space_available.wait(lock);
     }
 
-    _queue.push_back(job);
+    _queue.push_back(std::move(job));
 }
 
-Error Queue::TryEnqueue(const Job &job)
+Error Queue::TryEnqueue(Job &job)
 {
     std::unique_lock lock{_guard};
 
@@ -42,7 +42,7 @@ Error Queue::TryEnqueue(const Job &job)
         return fmt::format("Pushing job would exceed queue capacity of {}.", *_max_size);
     }
 
-    _queue.push_back(job);
+    _queue.push_back(std::move(job));
     return errors::no_error;
 }
 
@@ -54,7 +54,7 @@ std::optional<Job> Queue::NextJob()
         return {};
     }
 
-    Job job = _queue.front();
+    std::optional<Job> job(std::move(_queue.front()));
     _queue.pop_front();
     lock.unlock();  // <-- using since using an inner scope makes things a little messy
 

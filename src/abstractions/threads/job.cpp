@@ -13,30 +13,29 @@ JobContext::JobContext(int job_id, int worker_id)
 
 }
 
-Job::Job(int id, std::shared_ptr<IJobFunction> fn)
-    : _fn{fn}, _id{id}, _complete{false} { }
+Job::Job(int id, std::unique_ptr<IJobFunction> fn)
+    : _id{id}, _fn{std::move(fn)} { }
 
-JobResult Job::Run(int worker_id)
+JobStatus Job::Run(int worker_id)
 {
     abstractions_assert(_fn != nullptr);
     JobContext ctx(_id, worker_id);
+    Error error;
     OperationTiming timer;
     {
         Profile op_profiler{timer};
-        _error = (*_fn)(ctx);
+        error = (*_fn)(ctx);
     }
-    _complete = true;
-    _time = timer.GetTiming().total;
-    return JobResult{
+    return JobStatus{
         .job_id = _id,
-        .error = _error,
-        .time = _time,
+        .error =error,
+        .time = timer.GetTiming().total,
     };
 }
 
-void Job::Wait() const
+int Job::Id() const
 {
-    // TBD
+    return _id;
 }
 
 }

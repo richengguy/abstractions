@@ -32,13 +32,13 @@ ABSTRACTIONS_FEATURE_TEST()
     auto job2 = Job::New<SimpleJob>(2);
     auto job3 = Job::New<SimpleJob>(3);
     auto job4 = Job::New<SimpleJob>(4);
-    auto job5 = Job::New<SimpleJob>(5);
 
     thread_pool.Submit(job1);
     thread_pool.Submit(job2);
     thread_pool.Submit(job3);
     thread_pool.Submit(job4);
-    thread_pool.Submit(job5);
+    thread_pool.Submit<SimpleJob>(5);
+    thread_pool.Submit<SimpleJob>(6);
 }
 
 ABSTRACTIONS_FEATURE_TEST_MAIN("threads", "Run the ThreadPool through a simple work scenario.");

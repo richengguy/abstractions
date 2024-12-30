@@ -85,7 +85,7 @@ ThreadPool::~ThreadPool()
     }
 }
 
-void ThreadPool::Submit(const Job &job)
+void ThreadPool::Submit(Job &job)
 {
     Console console(kConsoleName);
 

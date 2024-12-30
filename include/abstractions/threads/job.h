@@ -48,8 +48,8 @@ private:
     int _worker_id;
 };
 
-/// @brief The results of a job.
-struct JobResult
+/// @brief The status of a job once it completes.
+struct JobStatus
 {
     /// @brief The ID of the finished job.
     int job_id;
@@ -67,51 +67,38 @@ class Job
 public:
 
     /// @brief Create a new job.
-    /// @tparam T function implementation
-    /// @param id job ID
-    /// @param args arguments to pass into the job function constructor
+    /// @tparam T IJobFunction class type
+    /// @tparam Arg IJobFunction constructor argument types
+    /// @param id user-specified job ID
+    /// @param args constructor arguments
     template<typename T, typename... Arg>
     static Job New(int id, Arg&&... args)
     {
         static_assert(std::is_base_of<IJobFunction, T>::value, "'T' must inherit from IJobFunction.");
-        return Job(id, std::make_shared<T>(std::forward<Arg>(args)...));
+        return Job(id, std::make_unique<T>(std::forward<Arg>(args)...));
     }
 
     /// @brief Create a new job.
     /// @param id job ID
     /// @param fn function the job executes
-    Job(int id, std::shared_ptr<IJobFunction> fn);
+    Job(int id, std::unique_ptr<IJobFunction> fn);
 
     /// @brief Run the job.
     /// @param worker_id ID of the worker executing the job
-    JobResult Run(int worker_id);
+    JobStatus Run(int worker_id);
 
-    /// @brief Wait for the job to complete.
-    void Wait() const;
+    /// @brief The user-specified job ID.
+    int Id() const;
 
-    /// @brief Job ID.
-    [[nodiscard]] int Id() const { return _id; }
-
-    /// @brief Set to `true` after the job completes.
-    ///
-    /// Refer to the value of Error() to see if the job completed successfully.
-    [[nodiscard]] bool Finished() const { return _complete; }
-
-    /// @brief Set to the error value a job completes with.
-    [[nodiscard]] Error Error() const { return _error; }
-
-    /// @brief The length of time the job took to complete, in microseconds.
-    [[nodiscard]] std::chrono::microseconds ExecutionTime() const { return _time; }
-
-    Job(const Job &) = default;
-    Job &operator=(const Job &) = default;
+    Job(const Job &) = delete;
+    Job &operator=(const Job &) = delete;
+    Job(Job &&) = default;
+    Job &operator=(Job &&) = default;
 
 private:
-    std::shared_ptr<IJobFunction> _fn;
     int _id;
-    bool _complete;
-    ::abstractions::Error _error;
-    std::chrono::microseconds _time;
+    std::unique_ptr<IJobFunction> _fn;
+    // std::promise<JobStatus> _job_status;
 };
 
 }
