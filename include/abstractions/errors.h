@@ -55,7 +55,7 @@ static constexpr Error no_error = std::nullopt;
 class AbstractionsError : public std::runtime_error {
 public:
     AbstractionsError(const std::string &condition, const std::source_location &location) :
-        std::runtime_error("Assert failed."),
+        std::runtime_error("Assert failed: " + condition),
         condition{condition},
         location{location} {}
 

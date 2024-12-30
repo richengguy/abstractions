@@ -1,5 +1,7 @@
 #pragma once
 
+#include <abstractions/console.h>
+#include <abstractions/errors.h>
 #include <abstractions/math/random.h>
 #include <abstractions/profile.h>
 #include <fmt/chrono.h>
@@ -33,43 +35,21 @@
 
 namespace abstractions::tests {
 
-/// @brief Simple logging utility for printing commonly-formatting messages to a console.
-class Console {
-public:
-    Console(const std::string &test_name) {
-        _test_name =
-            fmt::format("{}", fmt::styled(test_name, fmt::emphasis::faint | fmt::emphasis::italic));
-    }
-
-    void Separator(int length = 10) const {
-        fmt::println("{:\u2500^{}}", "", length);
-    }
-
-    void Print(const std::string &msg) const {
-        fmt::println("{} :: {}", _test_name, msg);
-    }
-
-private:
-    std::string _test_name;
-};
-
 /// @brief Manages the output results folder for a particular feature test.
 class TestOutputFolder {
 public:
     TestOutputFolder(const std::string &test_name) :
         _folder{kResultsPath / "s" / test_name} {
-        Console console(test_name);
+        Console console(test_name, "{} ::");
 
         if (std::filesystem::exists(_folder)) {
             auto removed = std::filesystem::remove_all(_folder);
-            console.Print(
-                fmt::format("Removed {} files.", fmt::styled(removed, fmt::emphasis::bold)));
+            console.Print("Removed {} files.", fmt::styled(removed, fmt::emphasis::bold));
         }
 
         auto ret = std::filesystem::create_directories(_folder);
         if (ret) {
-            console.Print(
-                fmt::format("Created {}", fmt::styled(_folder.c_str(), fmt::emphasis::bold)));
+            console.Print("Created {}", fmt::styled(_folder.c_str(), fmt::emphasis::bold));
         }
     }
 
@@ -105,7 +85,7 @@ private:
 class TestFixture {
 public:
     TestFixture(const std::string &name, const std::string &desc) :
-        console{name},
+        console{name, "{} ::"},
         output_folder{name},
         _app{desc} {}
 
@@ -122,14 +102,15 @@ public:
         try {
             Profile profile{timer};
             Func(prng);
-        } catch (const errors::AbstractionsError &) {
+        } catch (const errors::AbstractionsError &exc) {
+            exc.Print();
             return 1;
         }
 
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(timer.GetTiming().total);
 
         console.Separator();
-        console.Print(fmt::format("Completed in {}", fmt::styled(time, fmt::emphasis::bold)));
+        console.Print("Completed in {}", fmt::styled(time, fmt::emphasis::bold));
 
         return 0;
     }
