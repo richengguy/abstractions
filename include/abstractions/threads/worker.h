@@ -32,7 +32,9 @@ class Worker
 {
 public:
     /// @brief Create a new worker.
-    Worker(int worker_id);
+    /// @param worker_id thread pool-assigned ID
+    /// @param debug enables/disables debugging output
+    Worker(int worker_id, bool debug=false);
 
     /// @brief Cleans up the worker, including shutting down the internal
     ///     work thread.
@@ -67,6 +69,7 @@ public:
 private:
     std::thread _thread;
     std::unique_ptr<detail::WorkerState> _state;
+    bool _debug;
 };
 
 }

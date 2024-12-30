@@ -21,16 +21,26 @@ JobStatus Job::Run(int worker_id)
     abstractions_assert(_fn != nullptr);
     JobContext ctx(_id, worker_id);
     Error error;
+
     OperationTiming timer;
     {
         Profile op_profiler{timer};
         error = (*_fn)(ctx);
     }
-    return JobStatus{
+
+    JobStatus status{
         .job_id = _id,
         .error =error,
         .time = timer.GetTiming().total,
     };
+
+    _job_status.set_value(status);
+    return status;
+}
+
+void Job::SetPromise(Promise& promise)
+{
+    _job_status = std::move(promise);
 }
 
 int Job::Id() const

@@ -11,6 +11,8 @@ namespace abstractions::threads
 namespace
 {
 
+static const std::string kConsoleName = "ThreadPool";
+
 void WaitForQueueEmpty(Queue &queue)
 {
     while (queue.Size() > 1)
@@ -21,8 +23,6 @@ void WaitForQueueEmpty(Queue &queue)
 }
 
 }
-
-static const std::string kConsoleName = "ThreadPool";
 
 ThreadPool::ThreadPool(const ThreadPoolConfig &config)
     : _job_queue{config.queue_depth},
@@ -46,7 +46,7 @@ ThreadPool::ThreadPool(const ThreadPoolConfig &config)
     // Start all of the workerers
     for (int i = 0; i < requested_workers; i++)
     {
-        auto &worker = _workers.emplace_back(i);
+        auto &worker = _workers.emplace_back(i, _debug);
 
         if (config.sleep_time)
         {
@@ -85,7 +85,7 @@ ThreadPool::~ThreadPool()
     }
 }
 
-void ThreadPool::Submit(Job &job)
+Job::Future ThreadPool::Submit(Job &job)
 {
     Console console(kConsoleName);
 
@@ -94,7 +94,11 @@ void ThreadPool::Submit(Job &job)
         console.Print("Submitting Job#{}", job.Id());
     }
 
+    Job::Promise status_promise;
+    Job::Future status_future = status_promise.get_future();
+    job.SetPromise(status_promise);
     _job_queue.Enqueue(job);
+    return status_future;
 }
 
 void ThreadPool::StopAll()

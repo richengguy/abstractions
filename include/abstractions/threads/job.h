@@ -65,6 +65,8 @@ struct JobStatus
 class Job
 {
 public:
+    typedef std::future<JobStatus> Future; ///< Future type a job uses to report on its status.
+    typedef std::promise<JobStatus> Promise; ///< Promise type a job expects for reporting status.
 
     /// @brief Create a new job.
     /// @tparam T IJobFunction class type
@@ -87,6 +89,15 @@ public:
     /// @param worker_id ID of the worker executing the job
     JobStatus Run(int worker_id);
 
+    /// @brief Provide a promise to the job for it to use to signal when job is
+    ///     complete and report its final status.
+    /// @param promise promise object used for reporting status
+    ///
+    /// The job will take ownership of the promise.  The caller can then create
+    /// a future from the promise to get information on the job's status after
+    /// it finishes.
+    void SetPromise(Promise& promise);
+
     /// @brief The user-specified job ID.
     int Id() const;
 
@@ -98,7 +109,7 @@ public:
 private:
     int _id;
     std::unique_ptr<IJobFunction> _fn;
-    // std::promise<JobStatus> _job_status;
+    std::promise<JobStatus> _job_status;
 };
 
 }

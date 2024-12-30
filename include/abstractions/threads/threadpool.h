@@ -55,17 +55,17 @@ public:
     /// @param id user-specified job ID
     /// @param args constructor arguments
     template<typename T, typename ...Arg>
-    void Submit(int id, Arg&&... args)
+    Job::Future Submit(int id, Arg&&... args)
     {
         auto job = Job::New<T>(id, std::forward<Arg>(args)...);
-        Submit(job);
+        return Submit(job);
     }
 
     /// @brief Submit a job to the thread pool.  The call will block if the
     ///     internal job queue is full.
     /// @param job job for the thread pool
     /// @return A future with the result of the job.
-    void Submit(Job &job);
+    Job::Future Submit(Job &job);
 
     /// @brief Stop all running jobs.
     ///

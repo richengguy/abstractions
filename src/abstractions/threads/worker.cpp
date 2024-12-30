@@ -9,6 +9,8 @@ using namespace std::chrono_literals;
 namespace abstractions::threads
 {
 
+static const std::string kConsoleName = "Worker";
+
 namespace detail
 {
 
@@ -16,8 +18,6 @@ void WorkerState::RunJobs(Queue &queue) const
 {
     while (true)
     {
-        // std::cout << "Running [" << id << "]: " << std::boolalpha << running << std::endl;
-
         // Not running, so need to break out of the loop.
         if (!running)
         {
@@ -32,7 +32,6 @@ void WorkerState::RunJobs(Queue &queue) const
         {
             std::this_thread::yield();
             std::this_thread::sleep_for(sleep_time);
-            // std::cout << "Peeking [" << id << "]" << std::endl;
             continue;
         }
 
@@ -41,14 +40,13 @@ void WorkerState::RunJobs(Queue &queue) const
         auto results = job->Run(id);
         abstractions_check(results.error);
     }
-
-    // std::cout << "Stopped [" << id << "]" << std::endl;
 }
 
 }
 
-Worker::Worker(int worker_id)
-    : _state{std::make_unique<detail::WorkerState>()}
+Worker::Worker(int worker_id, bool debug)
+    : _state{std::make_unique<detail::WorkerState>()},
+      _debug{debug}
 {
     _state->id = worker_id;
     _state->sleep_time = kDefaultWorkerSleep;
@@ -66,8 +64,11 @@ void Worker::Start(Queue &queue)
     abstractions_assert(_state->running == false);
     _state->running = true;
 
-    Console console("Worker");
-    console.Print("Starting worker {}.", _state->id);
+    if (_debug)
+    {
+        Console console(kConsoleName);
+        console.Print("Starting worker {}.", _state->id);
+    }
 
     _thread = std::thread(&detail::WorkerState::RunJobs, _state.get(), std::ref(queue));
 }
@@ -82,12 +83,13 @@ void Worker::Stop()
         return;
     }
 
-    Console console("Worker");
-    console.Print("Stopping worker {}.", _state->id);
-
     if (_thread.joinable())
     {
-        console.Print("Waiting to join worker {}.", _state->id);
+        if (_debug)
+        {
+            Console console(kConsoleName);
+            console.Print("Waiting to join worker {}.", _state->id);
+        }
         _state->running = false;
         _thread.join();
     }
