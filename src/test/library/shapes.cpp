@@ -5,6 +5,11 @@ using namespace abstractions;
 
 TEST_SUITE_BEGIN("shapes");
 
+TEST_CASE("Shape collections can be empty.") {
+    ShapeCollection<2> collection;
+    REQUIRE(collection.Empty());
+}
+
 TEST_CASE("Shape collections are initialized correctly.") {
     ShapeCollection<2> collection(5);
     REQUIRE(collection.NumShapes() == 5);

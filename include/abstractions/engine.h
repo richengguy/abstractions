@@ -1,5 +1,6 @@
 #pragma once
 
+#include <abstractions/shapes.h>
 #include <abstractions/types.h>
 #include <abstractions/math/random.h>
 

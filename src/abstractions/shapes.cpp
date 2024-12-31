@@ -35,4 +35,17 @@ RectangleCollection ShapeGenerator::RandomRectangles(const int num) {
     return collection;
 }
 
+PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes, ConstRowVectorRef params)
+{
+    bool has_circles = shapes & AbstractionShape::Circles;
+    bool has_rects = shapes & AbstractionShape::Rectangles;
+    bool has_triangles = shapes & AbstractionShape::Triangles;
+
+    // TODO: Implement the shape count calculation
+
+    circles = CircleCollection(0);
+    rectangles = RectangleCollection(0);
+    triangles = TriangleCollection(0);
+}
+
 }  // namespace abstractions

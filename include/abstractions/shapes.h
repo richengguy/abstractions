@@ -4,6 +4,9 @@
 #include <abstractions/errors.h>
 #include <abstractions/types.h>
 
+#include <optional>
+#include <vector>
+
 namespace abstractions
 {
 
@@ -28,16 +31,25 @@ struct ShapeCollection {
     /// @brief Total number of dimensions in a shape vector, including colour.
     static constexpr int TotalDimensions = D + 4;
 
+    /// @brief Create an empty ShapeCollection.
+    ShapeCollection()
+        : ShapeCollection(0) { }
+
     /// @brief Create a new ShapeCollection instance.
     /// @param num_shapes number of shapes in the collection
     ShapeCollection(int num_shapes) {
-        abstractions_assert(num_shapes > 0);
+        abstractions_assert(num_shapes >= 0);
         Params = Matrix::Zero(num_shapes, TotalDimensions);
     }
 
     /// @brief A `NxD` matrix with the `N` shape vectors, each `D` dimensions in
     ///      length.
     Matrix Params;
+
+    /// @brief Determine if the collection is empty.
+    bool Empty() const {
+        return Params.size() == 0;
+    }
 
     /// @brief Get a view of the parameters matrix as a single vector.
     auto AsVector() const {
@@ -64,12 +76,12 @@ struct ShapeCollection {
 /// @brief Store circles as `(x,y,r)` points, where `r` is the radius.
 using CircleCollection = ShapeCollection<3>;
 
+/// @brief Store rectangles as set of corners in a `(x1,y1,x2,y2)` format.
+using RectangleCollection = ShapeCollection<4>;
+
 /// @brief Store triangles as a set of three points in `(x1,y1,x2,y2,x3,y3)`
 ///     format.
 using TriangleCollection = ShapeCollection<6>;
-
-/// @brief Store rectangles as set of corners in a `(x1,y1,x2,y2)` format.
-using RectangleCollection = ShapeCollection<4>;
 
 /// @brief Generate shape parameter matrices.
 ///
@@ -113,6 +125,33 @@ public:
 private:
     const double _aspect_ratio;
     UniformDistribution<> _dist;
+};
+
+/// @brief Provides access to the individual shape collections when multiple
+///     collections are inside a single parameter vector.
+/// @see AbstractionShape
+///
+/// The packed collection always stores all available shape types.  The
+/// particular collection will be empty if the provided packed collections
+/// configuration doesn't contain that shape.
+///
+/// One limitation of this structure is that each collection must contain the
+/// same number of shapes.
+struct PackedShapeCollection
+{
+    /// @brief Create a new packed shape collection.
+    /// @param shapes shapes stored in the packed parameters vector
+    /// @param params packed shape parameters vector
+    PackedShapeCollection(Options<AbstractionShape> shapes, ConstRowVectorRef params);
+
+    /// @brief All packed circles.
+    CircleCollection circles;
+
+    /// @brief All packed rectangles.
+    RectangleCollection rectangles;
+
+    /// @brief All packed triangles.
+    TriangleCollection triangles;
 };
 
 }
