@@ -7,6 +7,7 @@ set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
 set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/abstractions.h
     ${ABSTRACTIONS_INCLUDE_DIR}/console.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/engine.h
     ${ABSTRACTIONS_INCLUDE_DIR}/errors.h
     ${ABSTRACTIONS_INCLUDE_DIR}/image.h
     ${ABSTRACTIONS_INCLUDE_DIR}/pgpe.h
@@ -29,6 +30,7 @@ set(ABSTRACTIONS_INCLUDES
 set (ABSTRACTIONS_SOURCES
     abstractions.cpp
     console.cpp
+    engine.cpp
     errors.cpp
     image.cpp
     pgpe.cpp
