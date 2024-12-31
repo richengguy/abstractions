@@ -1,22 +1,19 @@
 #include <abstractions/render/shapes.h>
 #include <doctest/doctest.h>
 
+using namespace abstractions;
+
 TEST_SUITE_BEGIN("shapes");
 
 TEST_CASE("Shape collections are initialized correctly.") {
-    using abstractions::ShapeCollection;
-
-    ShapeCollection<2> collection(5);
+    render::ShapeCollection<2> collection(5);
     REQUIRE(collection.NumShapes() == 5);
-    REQUIRE(ShapeCollection<2>::ShapeDimensions == 2);
-    REQUIRE(ShapeCollection<2>::TotalDimensions == 6);
+    REQUIRE(render::ShapeCollection<2>::ShapeDimensions == 2);
+    REQUIRE(render::ShapeCollection<2>::TotalDimensions == 6);
 }
 
 TEST_CASE("Can get the individual parts of the parameters matrix.") {
-    using abstractions::Matrix;
-    using abstractions::ShapeCollection;
-
-    ShapeCollection<1> collection(2);
+    render::ShapeCollection<1> collection(2);
     collection.Params(0, 0) = 1;
     collection.Params(0, 1) = 2;
     collection.Params(0, 2) = 3;

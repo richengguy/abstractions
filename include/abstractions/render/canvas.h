@@ -7,7 +7,7 @@
 
 #include <filesystem>
 
-namespace abstractions {
+namespace abstractions::render {
 
 /// @brief Compositing modes used by the renderer.
 enum class CompositeMode {

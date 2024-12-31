@@ -2,7 +2,7 @@
 
 #include <abstractions/math/matrices.h>
 
-namespace abstractions {
+namespace abstractions::render {
 
 ShapeGenerator::ShapeGenerator(const int width, const int height, Prng<> &prng) :
     ShapeGenerator(static_cast<double>(width) / static_cast<double>(height), prng) {}

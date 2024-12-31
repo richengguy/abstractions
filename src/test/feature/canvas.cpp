@@ -13,18 +13,16 @@
 constexpr int kWidth = 640;
 constexpr int kHeight = 480;
 
+using namespace abstractions;
+
 namespace {
 
-void DrawCircles(abstractions::ShapeGenerator &generator, const std::filesystem::path &output,
+void DrawCircles(render::ShapeGenerator &generator, const std::filesystem::path &output,
                  const int num_circles) {
-    using abstractions::Canvas;
-    using abstractions::Image;
-    using abstractions::Matrix;
-
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
-        Canvas canvas{surface};
+        render::Canvas canvas{surface};
         canvas.Clear();
 
         auto circles = generator.RandomCircles(num_circles);
@@ -33,16 +31,12 @@ void DrawCircles(abstractions::ShapeGenerator &generator, const std::filesystem:
     surface->Save(output);
 }
 
-void DrawTriangles(abstractions::ShapeGenerator &generator, const std::filesystem::path &output,
+void DrawTriangles(render::ShapeGenerator &generator, const std::filesystem::path &output,
                    const int num_triangles) {
-    using abstractions::Canvas;
-    using abstractions::Image;
-    using abstractions::Matrix;
-
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
-        Canvas canvas{surface};
+        render::Canvas canvas{surface};
         canvas.Clear();
 
         auto triangles = generator.RandomTriangles(num_triangles);
@@ -51,16 +45,12 @@ void DrawTriangles(abstractions::ShapeGenerator &generator, const std::filesyste
     surface->Save(output);
 }
 
-void DrawRectangles(abstractions::ShapeGenerator &generator, const std::filesystem::path &output,
+void DrawRectangles(render::ShapeGenerator &generator, const std::filesystem::path &output,
                     const int num_rects) {
-    using abstractions::Canvas;
-    using abstractions::Image;
-    using abstractions::Matrix;
-
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
-        Canvas canvas{surface};
+        render::Canvas canvas{surface};
         canvas.Clear();
 
         auto rects = generator.RandomRectangles(num_rects);
@@ -70,13 +60,10 @@ void DrawRectangles(abstractions::ShapeGenerator &generator, const std::filesyst
 }
 
 void RandomFillCanvas(const std::filesystem::path &output) {
-    using abstractions::Canvas;
-    using abstractions::Image;
-
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
     {
-        Canvas canvas{surface};
+        render::Canvas canvas{surface};
         canvas.RandomFill();
     }
     surface->Save(output);
@@ -85,7 +72,7 @@ void RandomFillCanvas(const std::filesystem::path &output) {
 }  // namespace
 
 ABSTRACTIONS_FEATURE_TEST() {
-    abstractions::ShapeGenerator generator(kWidth, kHeight, prng);
+    render::ShapeGenerator generator(kWidth, kHeight, prng);
 
     console.Print("Draw circles.");
     DrawCircles(generator, output_folder.FilePath("circles.png"), 50);

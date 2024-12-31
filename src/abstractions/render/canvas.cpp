@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-namespace abstractions {
+namespace abstractions::render {
 
 Canvas::Canvas(Expected<Image> &image, std::optional<DefaultRngType::result_type> seed) :
     _prng{seed.value_or(PrngGenerator<DefaultRngType>::DrawRandomSeed())} {
