@@ -17,15 +17,6 @@ enum class ImageComparison {
     L2Norm
 };
 
-/// @brief Available shapes for the image abstraction.
-enum class Shape {
-    Circles,
-    Rectangles,
-    Triangles
-};
-
-ABSTRACTIONS_OPTIONS_ENUM(Shape)
-
 /// @brief Engine configuration options.
 struct EngineConfig
 {
@@ -60,8 +51,8 @@ struct EngineConfig
     /// multiple shapes will slow down the optimizer since it increases the
     /// length of the parameter vector.
     ///
-    /// See the Shape enum for the list of available shapes.
-    Options<Shape> shapes = Shape::Triangles;
+    /// See the AbstractionShape enum for the list of available shapes.
+    Options<AbstractionShape> shapes = AbstractionShape::Triangles;
 
     /// @brief The number of shapes, per shape type, to draw.
     ///
@@ -138,7 +129,7 @@ struct OptimizationResult
     double cost;
 
     /// @brief The shapes used in the reconstruction.
-    Options<Shape> shapes;
+    Options<AbstractionShape> shapes;
 
     /// @brief The PRNG seed used by the optimizer.
     DefaultRngType::result_type seed;

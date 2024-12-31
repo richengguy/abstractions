@@ -1,4 +1,4 @@
-#include <abstractions/render/shapes.h>
+#include <abstractions/shapes.h>
 #include <doctest/doctest.h>
 
 using namespace abstractions;
@@ -6,14 +6,14 @@ using namespace abstractions;
 TEST_SUITE_BEGIN("shapes");
 
 TEST_CASE("Shape collections are initialized correctly.") {
-    render::ShapeCollection<2> collection(5);
+    ShapeCollection<2> collection(5);
     REQUIRE(collection.NumShapes() == 5);
-    REQUIRE(render::ShapeCollection<2>::ShapeDimensions == 2);
-    REQUIRE(render::ShapeCollection<2>::TotalDimensions == 6);
+    REQUIRE(ShapeCollection<2>::ShapeDimensions == 2);
+    REQUIRE(ShapeCollection<2>::TotalDimensions == 6);
 }
 
 TEST_CASE("Can get the individual parts of the parameters matrix.") {
-    render::ShapeCollection<1> collection(2);
+    ShapeCollection<1> collection(2);
     collection.Params(0, 0) = 1;
     collection.Params(0, 1) = 2;
     collection.Params(0, 2) = 3;

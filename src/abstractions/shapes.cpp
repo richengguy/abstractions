@@ -1,8 +1,8 @@
-#include "abstractions/render/shapes.h"
+#include "abstractions/shapes.h"
 
 #include <abstractions/math/matrices.h>
 
-namespace abstractions::render {
+namespace abstractions {
 
 ShapeGenerator::ShapeGenerator(const int width, const int height, Prng<> &prng) :
     ShapeGenerator(static_cast<double>(width) / static_cast<double>(height), prng) {}

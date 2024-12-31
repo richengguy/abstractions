@@ -2,7 +2,6 @@
 
 #include <abstractions/math/types.h>
 
-#include <Eigen/Core>
 #include <expected>
 #include <optional>
 #include <string>
