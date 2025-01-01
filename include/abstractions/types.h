@@ -74,6 +74,11 @@ public:
         return _value & MaskValue(value);
     }
 
+    constexpr bool operator==(const Options<T> &other)
+    {
+        return _value == other._value;
+    }
+
     constexpr bool operator!()
     {
         return !static_cast<bool>(*this);
