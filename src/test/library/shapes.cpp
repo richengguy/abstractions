@@ -70,7 +70,7 @@ TEST_CASE("Can get the individual parts of the parameters matrix.") {
     CHECK(colour(1, 3) == 0);
 }
 
-TEST_CASE("Can pack individual shape collections.")
+TEST_CASE("Can pack/unpack individual shape collections.")
 {
     constexpr int kIndexCircles = 0;
     constexpr int kIndexRectangles = 50;
@@ -110,6 +110,9 @@ TEST_CASE("Can pack individual shape collections.")
     };
 
     ABSTRACTIONS_PARAMETERIZED_TEST(shape_collections, test_set);
+
+    // First, see if packing works because it should be straightforward to pack
+    // the different collections into a single vector.
 
     auto [test_circles, test_rectangles, test_triangles] = shape_collections;
 
@@ -161,6 +164,20 @@ TEST_CASE("Can pack individual shape collections.")
             CHECK(packed_vector(i + start_index) == triangles.AsVector()(i));
         }
     }
+
+    // Now, if that all works, see if unpacking works by seeing if the original
+    // collections can be recovered from the packed_vector.  This is a bit more
+    // complicated as it requires figuring out how many shapes are stored in
+    // the packed collection.  If the packing fails, then so will the unpacking.
+
+    PackedShapeCollection unpacked(packed.Shapes(), packed_vector);
+
+    REQUIRE(unpacked.CollectionSize() == 2);
+    REQUIRE(unpacked.Shapes() == packed.Shapes());
+
+    CHECK(unpacked.Circles().Params == test_circles.Params);
+    CHECK(unpacked.Rectangles().Params == test_rectangles.Params);
+    CHECK(unpacked.Triangles().Params == test_triangles.Params);
 }
 
 TEST_CASE("Assert when all shape collections are empty.")

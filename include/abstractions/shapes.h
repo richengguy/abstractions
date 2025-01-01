@@ -156,6 +156,9 @@ public:
     /// @brief The options used to describe this shape collection.
     Options<AbstractionShape> Shapes() const;
 
+    /// @brief The size of the individual collections.
+    int CollectionSize() const;
+
     /// @brief Convert the internal collections into their packed representation.
     /// @return a row vector with the packed parameters
     RowVector AsPackedVector() const;
@@ -170,6 +173,7 @@ public:
     const TriangleCollection &Triangles() const { return _triangles; }
 
 private:
+    int _collection_size;
     CircleCollection _circles;
     RectangleCollection _rectangles;
     TriangleCollection _triangles;
