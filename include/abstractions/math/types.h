@@ -49,5 +49,5 @@ using ConstRowVectorRef = const Eigen::Ref<const RowVector>&;
 template <>
 struct fmt::formatter<abstractions::Matrix> : fmt::ostream_formatter {};
 
-template<>
+template <>
 struct fmt::formatter<abstractions::RowVector> : fmt::ostream_formatter {};

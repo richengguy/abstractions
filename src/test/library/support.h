@@ -13,18 +13,19 @@
 
 /// @brief Used to parameterize unit tests.
 ///
-/// See https://github.com/doctest/doctest/blob/master/doc/markdown/parameterized-tests.md#value-parameterized-test-cases
+/// See
+/// https://github.com/doctest/doctest/blob/master/doc/markdown/parameterized-tests.md#value-parameterized-test-cases
 /// for details on how this works.
-#define ABSTRACTIONS_PARAMETERIZED_TEST(data, container) \
-    static size_t _subtest_id = 0; \
+#define ABSTRACTIONS_PARAMETERIZED_TEST(data, container)                                 \
+    static size_t _subtest_id = 0;                                                       \
     std::for_each(std::begin(container), std::end(container), [&](const auto &element) { \
-        std::string _test_name = fmt::format("{} - [{}]", #container, _subtest_id); \
-        _subtest_id++; \
-        DOCTEST_SUBCASE(_test_name.c_str()) { \
-            INFO("Test Value: ", element); \
-            data = element; \
-        } \
-    }); \
+        std::string _test_name = fmt::format("{} - [{}]", #container, _subtest_id);      \
+        _subtest_id++;                                                                   \
+        DOCTEST_SUBCASE(_test_name.c_str()) {                                            \
+            INFO("Test Value: ", element);                                               \
+            data = element;                                                              \
+        }                                                                                \
+    });                                                                                  \
     _subtest_id = 0
 
 namespace abstractions::tests {

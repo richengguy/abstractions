@@ -10,19 +10,16 @@ using namespace abstractions;
 namespace {
 
 template <int N>
-void InitShapeCollection(ShapeCollection<N> &collection, int start)
-{
+void InitShapeCollection(ShapeCollection<N> &collection, int start) {
     int index = start + 1;
-    for (int i = 0; i < collection.NumShapes(); i++)
-    {
-        for (int j = 0; j < ShapeCollection<N>::TotalDimensions; j++)
-        {
+    for (int i = 0; i < collection.NumShapes(); i++) {
+        for (int j = 0; j < ShapeCollection<N>::TotalDimensions; j++) {
             collection.Params(i, j) = index++;
         }
     }
 }
 
-}
+}  // namespace
 
 TEST_SUITE_BEGIN("shapes");
 
@@ -70,8 +67,7 @@ TEST_CASE("Can get the individual parts of the parameters matrix.") {
     CHECK(colour(1, 3) == 0);
 }
 
-TEST_CASE("Can pack/unpack individual shape collections.")
-{
+TEST_CASE("Can pack/unpack individual shape collections.") {
     constexpr int kIndexCircles = 0;
     constexpr int kIndexRectangles = 50;
     constexpr int kIndexTriangles = 100;
@@ -100,6 +96,7 @@ TEST_CASE("Can pack/unpack individual shape collections.")
 
     using CollectionTuple = std::tuple<CircleCollection, RectangleCollection, TriangleCollection>;
     CollectionTuple shape_collections;
+    // clang-format off
     std::vector<CollectionTuple> test_set{
         {circles, empty_rectangles, empty_triangles},
         {empty_circles, rectangles, empty_triangles},
@@ -108,6 +105,7 @@ TEST_CASE("Can pack/unpack individual shape collections.")
         {empty_circles, rectangles, triangles},
         {circles, rectangles, triangles},
     };
+    // clang-format on
 
     ABSTRACTIONS_PARAMETERIZED_TEST(shape_collections, test_set);
 
@@ -119,7 +117,8 @@ TEST_CASE("Can pack/unpack individual shape collections.")
     bool expect_circles = !test_circles.Empty();
     bool expect_rectangles = !test_rectangles.Empty();
     bool expect_triangles = !test_triangles.Empty();
-    auto msg = fmt::format("Circles: {}, Rectangles: {}, Triangles: {}", expect_circles, expect_rectangles, expect_triangles);
+    auto msg = fmt::format("Circles: {}, Rectangles: {}, Triangles: {}", expect_circles,
+                           expect_rectangles, expect_triangles);
     INFO("Current test: ", msg);
 
     PackedShapeCollection packed(test_circles, test_rectangles, test_triangles);
@@ -136,31 +135,25 @@ TEST_CASE("Can pack/unpack individual shape collections.")
 
     int start_index = 0;
 
-    if (expect_circles)
-    {
+    if (expect_circles) {
         CAPTURE(start_index);
-        for (int i = 0; i < dim_circles; i++)
-        {
+        for (int i = 0; i < dim_circles; i++) {
             CHECK(packed_vector(i + start_index) == circles.AsVector()(i));
         }
         start_index += dim_circles;
     }
 
-    if (expect_rectangles)
-    {
+    if (expect_rectangles) {
         CAPTURE(start_index);
-        for (int i = 0; i < dim_rectangles; i++)
-        {
+        for (int i = 0; i < dim_rectangles; i++) {
             CHECK(packed_vector(i + start_index) == rectangles.AsVector()(i));
         }
         start_index += dim_rectangles;
     }
 
-    if (expect_triangles)
-    {
+    if (expect_triangles) {
         CAPTURE(start_index);
-        for (int i = 0; i < dim_triangles; i++)
-        {
+        for (int i = 0; i < dim_triangles; i++) {
             CHECK(packed_vector(i + start_index) == triangles.AsVector()(i));
         }
     }
@@ -180,22 +173,22 @@ TEST_CASE("Can pack/unpack individual shape collections.")
     CHECK(unpacked.Triangles().Params == test_triangles.Params);
 }
 
-TEST_CASE("Assert when all shape collections are empty.")
-{
+TEST_CASE("Assert when all shape collections are empty.") {
     CircleCollection empty_circles;
     RectangleCollection empty_rectangles;
     TriangleCollection empty_triangles;
 
-    REQUIRE_THROWS_AS(PackedShapeCollection(empty_circles, empty_rectangles, empty_triangles), errors::AbstractionsError);
+    REQUIRE_THROWS_AS(PackedShapeCollection(empty_circles, empty_rectangles, empty_triangles),
+                      errors::AbstractionsError);
 }
 
-TEST_CASE("Assert when shapes have different sizes.")
-{
+TEST_CASE("Assert when shapes have different sizes.") {
     CircleCollection empty_circles;
     RectangleCollection rectangles(5);
     TriangleCollection triangles(8);
 
-    REQUIRE_THROWS_AS(PackedShapeCollection(empty_circles, rectangles, triangles), errors::AbstractionsError);
+    REQUIRE_THROWS_AS(PackedShapeCollection(empty_circles, rectangles, triangles),
+                      errors::AbstractionsError);
 }
 
 TEST_SUITE_END();

@@ -103,4 +103,4 @@ private:
     Prng<DefaultRngType> _prng;
 };
 
-}  // namespace abstractions
+}  // namespace abstractions::render

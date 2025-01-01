@@ -163,4 +163,4 @@ Error Canvas::SetCompositeMode(const CompositeMode mode) {
     return errors::no_error;
 }
 
-}  // namespace abstractions
+}  // namespace abstractions::render

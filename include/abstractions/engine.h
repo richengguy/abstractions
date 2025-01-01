@@ -1,13 +1,12 @@
 #pragma once
 
+#include <abstractions/math/random.h>
 #include <abstractions/shapes.h>
 #include <abstractions/types.h>
-#include <abstractions/math/random.h>
 
 #include <optional>
 
-namespace abstractions
-{
+namespace abstractions {
 
 /// @brief The type of image comparison the abstraction engine should use.
 enum class ImageComparison {
@@ -19,8 +18,7 @@ enum class ImageComparison {
 };
 
 /// @brief Engine configuration options.
-struct EngineConfig
-{
+struct EngineConfig {
     /// @brief Total number of optimizer iterations.
     ///
     /// This is the most iterations that the optimizer will try before it
@@ -85,14 +83,12 @@ struct EngineConfig
 };
 
 /// @brief The timing for each stage of the optimization pipeline.
-struct TimingReport
-{
+struct TimingReport {
     /// @brief Alias for "microseconds".
     using Duration = std::chrono::microseconds;
 
     /// @brief Information about a repeated process.
-    struct ProcessTime
-    {
+    struct ProcessTime {
         /// @brief The total time spent on this one process.
         Duration total;
 
@@ -121,8 +117,7 @@ struct TimingReport
 };
 
 /// @brief The results of an optimization from the abstractions Engine.
-struct OptimizationResult
-{
+struct OptimizationResult {
     /// @brief The solution that best represents the input image.
     RowVector solution;
 
@@ -146,10 +141,9 @@ struct OptimizationResult
 /// shapes to represent an image.  The end result will always be slightly
 /// different because PGPE is a stochastic optimization algorithm; it uses
 /// random sample to move towards a local optima.
-class Engine
-{
+class Engine {
 public:
 private:
 };
 
-}
+}  // namespace abstractions

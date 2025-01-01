@@ -4,17 +4,18 @@
 
 namespace abstractions {
 
-namespace
-{
+namespace {
 
-template<typename S, typename T>
-auto ReshapeAsParamsMatrix(const Eigen::MatrixBase<T> &vector, const int start_index, const int num_shapes)
-{
+template <typename S, typename T>
+auto ReshapeAsParamsMatrix(const Eigen::MatrixBase<T> &vector, const int start_index,
+                           const int num_shapes) {
     const int total_length = S::TotalDimensions * num_shapes;
-    return vector.segment(start_index, total_length).reshaped(S::TotalDimensions, num_shapes).transpose();
+    return vector.segment(start_index, total_length)
+        .reshaped(S::TotalDimensions, num_shapes)
+        .transpose();
 }
 
-}
+}  // namespace
 
 ShapeGenerator::ShapeGenerator(const int width, const int height, Prng<> &prng) :
     ShapeGenerator(static_cast<double>(width) / static_cast<double>(height), prng) {}
@@ -47,8 +48,8 @@ RectangleCollection ShapeGenerator::RandomRectangles(const int num) {
     return collection;
 }
 
-PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes, ConstRowVectorRef params)
-{
+PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes,
+                                             ConstRowVectorRef params) {
     const bool has_circles = shapes & AbstractionShape::Circles;
     const bool has_rects = shapes & AbstractionShape::Rectangles;
     const bool has_triangles = shapes & AbstractionShape::Triangles;
@@ -62,18 +63,15 @@ PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes, C
     int num_params = params.size();
     int total_shape_params = 0;
 
-    if (has_circles)
-    {
+    if (has_circles) {
         total_shape_params += CircleCollection::TotalDimensions;
     }
 
-    if (has_rects)
-    {
+    if (has_rects) {
         total_shape_params += RectangleCollection::TotalDimensions;
     }
 
-    if (has_triangles)
-    {
+    if (has_triangles) {
         total_shape_params += TriangleCollection::TotalDimensions;
     }
 
@@ -93,42 +91,38 @@ PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes, C
     _triangles = TriangleCollection(num_triangles);
 
     int start_index = 0;
-    if (has_circles)
-    {
-        _circles.Params = ReshapeAsParamsMatrix<CircleCollection>(params, start_index, _collection_size);
+    if (has_circles) {
+        _circles.Params =
+            ReshapeAsParamsMatrix<CircleCollection>(params, start_index, _collection_size);
         start_index += _circles.Params.size();
     }
 
-    if (has_rects)
-    {
-        _rectangles.Params = ReshapeAsParamsMatrix<RectangleCollection>(params, start_index, _collection_size);
+    if (has_rects) {
+        _rectangles.Params =
+            ReshapeAsParamsMatrix<RectangleCollection>(params, start_index, _collection_size);
         start_index += _rectangles.Params.size();
     }
 
-    if (has_triangles)
-    {
-        _triangles.Params = ReshapeAsParamsMatrix<TriangleCollection>(params, start_index, _collection_size);
+    if (has_triangles) {
+        _triangles.Params =
+            ReshapeAsParamsMatrix<TriangleCollection>(params, start_index, _collection_size);
         start_index += _triangles.Params.size();
     }
 }
 
-PackedShapeCollection::PackedShapeCollection(const CircleCollection &circles, const RectangleCollection &rectangles, const TriangleCollection &triangles)
-{
+PackedShapeCollection::PackedShapeCollection(const CircleCollection &circles,
+                                             const RectangleCollection &rectangles,
+                                             const TriangleCollection &triangles) {
     int num_circles = circles.NumShapes();
     int num_rectangles = rectangles.NumShapes();
     int num_triangles = triangles.NumShapes();
 
     int num_shapes = 0;
-    if (num_circles != 0)
-    {
+    if (num_circles != 0) {
         num_shapes = num_circles;
-    }
-    else if (num_rectangles != 0)
-    {
+    } else if (num_rectangles != 0) {
         num_shapes = num_rectangles;
-    }
-    else if (num_triangles != 0)
-    {
+    } else if (num_triangles != 0) {
         num_shapes = num_triangles;
     }
 
@@ -145,35 +139,29 @@ PackedShapeCollection::PackedShapeCollection(const CircleCollection &circles, co
     _triangles = triangles;
 }
 
-Options<AbstractionShape> PackedShapeCollection::Shapes() const
-{
+Options<AbstractionShape> PackedShapeCollection::Shapes() const {
     Options<AbstractionShape> shapes;
 
-    if (!_circles.Empty())
-    {
+    if (!_circles.Empty()) {
         shapes.Set(AbstractionShape::Circles);
     }
 
-    if (!_rectangles.Empty())
-    {
+    if (!_rectangles.Empty()) {
         shapes.Set(AbstractionShape::Rectangles);
     }
 
-    if (!_triangles.Empty())
-    {
+    if (!_triangles.Empty()) {
         shapes.Set(AbstractionShape::Triangles);
     }
 
     return shapes;
 }
 
-int PackedShapeCollection::CollectionSize() const
-{
+int PackedShapeCollection::CollectionSize() const {
     return _collection_size;
 }
 
-RowVector PackedShapeCollection::AsPackedVector() const
-{
+RowVector PackedShapeCollection::AsPackedVector() const {
     const int circles_size = _circles.Params.size();
     const int rects_size = _rectangles.Params.size();
     const int triangles_size = _triangles.Params.size();
@@ -182,20 +170,17 @@ RowVector PackedShapeCollection::AsPackedVector() const
     RowVector packed(total_size);
     int start_index = 0;
 
-    if (circles_size > 0)
-    {
+    if (circles_size > 0) {
         packed.segment(start_index, circles_size) = _circles.AsVector();
         start_index += circles_size;
     }
 
-    if (rects_size > 0)
-    {
+    if (rects_size > 0) {
         packed.segment(start_index, rects_size) = _rectangles.AsVector();
         start_index += rects_size;
     }
 
-    if (triangles_size > 0)
-    {
+    if (triangles_size > 0) {
         packed.segment(start_index, triangles_size) = _triangles.AsVector();
     }
 

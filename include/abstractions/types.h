@@ -29,89 +29,81 @@ using Expected = std::expected<T, Error>;
 ///
 /// This is adapted from https://gpfault.net/posts/typesafe-bitmasks.txt.html.
 template <typename T>
-class Options
-{
+class Options {
     static_assert(std::is_scoped_enum_v<T>, "Can only wrap scoped enums.");
+
 public:
     /// @brief The wrapped enum's underlying type.
     using enum_type = std::underlying_type_t<T>;
 
     /// @brief Create a new Options instance with none of the options
     ///     having been set.
-    constexpr Options() : Options(0) { }
+    constexpr Options() :
+        Options(0) {}
 
     /// @brief Create a new Options instance from the given value.
     /// @param value enum value
-    constexpr Options(T value) : _value{MaskValue(value)} { }
+    constexpr Options(T value) :
+        _value{MaskValue(value)} {}
 
     /// @brief Sets the bit corresponding to the given enum value.
     /// @param value enum value
-    constexpr void Set(T value)
-    {
+    constexpr void Set(T value) {
         _value = _value | MaskValue(value);
     }
 
     /// @brief Clears the bit corresponding to the given enum value.
     /// @param value enum value
-    constexpr void Clear(T value)
-    {
+    constexpr void Clear(T value) {
         _value = _value & ~MaskValue(value);
     }
 
     /// @brief Implements the `union = a | b` operation.
     /// @param other enum value
     /// @return an updated MaskedOption
-    constexpr Options operator|(T other)
-    {
+    constexpr Options operator|(T other) {
         return Options(_value | MaskValue(other));
     }
 
     /// @brief Checks if the given bit is set in the masked option.
     /// @param value enum value
     /// @return whether or not the bit is set
-    constexpr bool operator&(T value)
-    {
+    constexpr bool operator&(T value) {
         return _value & MaskValue(value);
     }
 
-    constexpr bool operator==(const Options<T> &other)
-    {
+    constexpr bool operator==(const Options<T> &other) {
         return _value == other._value;
     }
 
-    constexpr bool operator!()
-    {
+    constexpr bool operator!() {
         return !static_cast<bool>(*this);
     }
 
-    constexpr operator bool()
-    {
+    constexpr operator bool() {
         return _value != 0;
     }
 
 private:
-    static constexpr enum_type MaskValue(T value)
-    {
+    static constexpr enum_type MaskValue(T value) {
         return 1 << static_cast<enum_type>(value);
     }
 
-    explicit constexpr Options(enum_type value)
-        : _value{value}
-    { }
+    explicit constexpr Options(enum_type value) :
+        _value{value} {}
 
     enum_type _value;
 };
 
-template<typename T>
-constexpr Options<T> operator|(T a, T b)
-{
+template <typename T>
+constexpr Options<T> operator|(T a, T b) {
     return Options(a) | b;
 }
 
 /// @brief Defines the `|` operator for an Options-wrapped enum type.
-#define ABSTRACTIONS_OPTIONS_ENUM(type) \
+#define ABSTRACTIONS_OPTIONS_ENUM(type)                                 \
     constexpr ::abstractions::Options<type> operator|(type a, type b) { \
-        return ::abstractions::Options<type>(a) | b; \
+        return ::abstractions::Options<type>(a) | b;                    \
     }
 
 }  // namespace abstractions
