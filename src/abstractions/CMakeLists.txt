@@ -19,6 +19,7 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/math/types.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/render/canvas.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/render/renderer.h
     ${ABSTRACTIONS_INCLUDE_DIR}/render/shapes.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/job.h
@@ -36,6 +37,7 @@ set (ABSTRACTIONS_SOURCES
     pgpe.cpp
 
     render/canvas.cpp
+    render/renderer.cpp
     render/shapes.cpp
 
     threads/job.cpp
