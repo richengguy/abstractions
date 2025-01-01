@@ -10,15 +10,6 @@
 namespace abstractions
 {
 
-/// @brief Available shapes for the image abstraction.
-enum class AbstractionShape {
-    Circles,
-    Rectangles,
-    Triangles
-};
-
-ABSTRACTIONS_OPTIONS_ENUM(AbstractionShape)
-
 /// @brief A collection of shape parameter vectors.
 /// @tparam D number of dimensions needed to describe a shape
 template <int D>
@@ -127,6 +118,15 @@ private:
     UniformDistribution<> _dist;
 };
 
+/// @brief Available shapes for the image abstraction.
+enum class AbstractionShape {
+    Circles,
+    Rectangles,
+    Triangles
+};
+
+ABSTRACTIONS_OPTIONS_ENUM(AbstractionShape)
+
 /// @brief Provides access to the individual shape collections when multiple
 ///     collections are inside a single parameter vector.
 /// @see AbstractionShape
@@ -137,21 +137,42 @@ private:
 ///
 /// One limitation of this structure is that each collection must contain the
 /// same number of shapes.
-struct PackedShapeCollection
+class PackedShapeCollection
 {
+public:
     /// @brief Create a new packed shape collection.
     /// @param shapes shapes stored in the packed parameters vector
     /// @param params packed shape parameters vector
     PackedShapeCollection(Options<AbstractionShape> shapes, ConstRowVectorRef params);
 
-    /// @brief All packed circles.
-    CircleCollection circles;
+    /// @brief Create a new packed shape collection.
+    /// @param circles set of circles
+    /// @param rectangles set of rectangles
+    /// @param triangles set of triangles
+    ///
+    /// The individual shape collections must be the same size or be empty.
+    PackedShapeCollection(const CircleCollection &circles, const RectangleCollection &rectangles, const TriangleCollection &triangles);
 
-    /// @brief All packed rectangles.
-    RectangleCollection rectangles;
+    /// @brief The options used to describe this shape collection.
+    Options<AbstractionShape> Shapes() const;
 
-    /// @brief All packed triangles.
-    TriangleCollection triangles;
+    /// @brief Convert the internal collections into their packed representation.
+    /// @return a row vector with the packed parameters
+    RowVector AsPackedVector() const;
+
+    CircleCollection &Circles() { return _circles; }
+    const CircleCollection &Circles() const { return _circles; }
+
+    RectangleCollection &Rectangles() { return _rectangles; }
+    const RectangleCollection &Rectangles() const { return _rectangles; }
+
+    TriangleCollection &Triangles() { return _triangles; }
+    const TriangleCollection &Triangles() const { return _triangles; }
+
+private:
+    CircleCollection _circles;
+    RectangleCollection _rectangles;
+    TriangleCollection _triangles;
 };
 
 }
