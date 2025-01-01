@@ -44,6 +44,20 @@ public:
     /// @param value enum value
     constexpr Options(T value) : _value{MaskValue(value)} { }
 
+    /// @brief Sets the bit corresponding to the given enum value.
+    /// @param value enum value
+    constexpr void Set(T value)
+    {
+        _value = _value | MaskValue(value);
+    }
+
+    /// @brief Clears the bit corresponding to the given enum value.
+    /// @param value enum value
+    constexpr void Clear(T value)
+    {
+        _value = _value & ~MaskValue(value);
+    }
+
     /// @brief Implements the `union = a | b` operation.
     /// @param other enum value
     /// @return an updated MaskedOption
