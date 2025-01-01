@@ -2,7 +2,7 @@
 #include <abstractions/image.h>
 #include <abstractions/math/matrices.h>
 #include <abstractions/render/canvas.h>
-#include <abstractions/shapes.h>
+#include <abstractions/render/shapes.h>
 #include <fmt/format.h>
 
 #include <CLI/CLI.hpp>
@@ -17,7 +17,7 @@ using namespace abstractions;
 
 namespace {
 
-void DrawCircles(ShapeGenerator &generator, const std::filesystem::path &output,
+void DrawCircles(render::ShapeGenerator &generator, const std::filesystem::path &output,
                  const int num_circles) {
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
@@ -31,7 +31,7 @@ void DrawCircles(ShapeGenerator &generator, const std::filesystem::path &output,
     surface->Save(output);
 }
 
-void DrawTriangles(ShapeGenerator &generator, const std::filesystem::path &output,
+void DrawTriangles(render::ShapeGenerator &generator, const std::filesystem::path &output,
                    const int num_triangles) {
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
@@ -45,7 +45,7 @@ void DrawTriangles(ShapeGenerator &generator, const std::filesystem::path &outpu
     surface->Save(output);
 }
 
-void DrawRectangles(ShapeGenerator &generator, const std::filesystem::path &output,
+void DrawRectangles(render::ShapeGenerator &generator, const std::filesystem::path &output,
                     const int num_rects) {
     auto surface = Image::New(kWidth, kHeight);
     abstractions_check(surface);
@@ -72,7 +72,7 @@ void RandomFillCanvas(const std::filesystem::path &output) {
 }  // namespace
 
 ABSTRACTIONS_FEATURE_TEST() {
-    ShapeGenerator generator(kWidth, kHeight, prng);
+    render::ShapeGenerator generator(kWidth, kHeight, prng);
 
     console.Print("Draw circles.");
     DrawCircles(generator, output_folder.FilePath("circles.png"), 50);

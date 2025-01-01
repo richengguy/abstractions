@@ -12,7 +12,6 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/image.h
     ${ABSTRACTIONS_INCLUDE_DIR}/pgpe.h
     ${ABSTRACTIONS_INCLUDE_DIR}/profile.h
-    ${ABSTRACTIONS_INCLUDE_DIR}/shapes.h
     ${ABSTRACTIONS_INCLUDE_DIR}/types.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/math/matrices.h
@@ -20,6 +19,7 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/math/types.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/render/canvas.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/render/shapes.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/job.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/queue.h
@@ -34,9 +34,9 @@ set (ABSTRACTIONS_SOURCES
     errors.cpp
     image.cpp
     pgpe.cpp
-    shapes.cpp
 
     render/canvas.cpp
+    render/shapes.cpp
 
     threads/job.cpp
     threads/queue.cpp

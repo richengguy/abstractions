@@ -7,7 +7,7 @@
 #include <optional>
 #include <vector>
 
-namespace abstractions {
+namespace abstractions::render {
 
 /// @brief A collection of shape parameter vectors.
 /// @tparam D number of dimensions needed to describe a shape

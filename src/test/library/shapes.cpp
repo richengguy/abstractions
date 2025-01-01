@@ -1,4 +1,4 @@
-#include <abstractions/shapes.h>
+#include <abstractions/render/shapes.h>
 #include <doctest/doctest.h>
 
 #include <tuple>
@@ -6,6 +6,7 @@
 #include "support.h"
 
 using namespace abstractions;
+using namespace abstractions::render;
 
 namespace {
 
