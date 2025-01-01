@@ -44,7 +44,7 @@ struct ShapeCollection {
 
     /// @brief Get a view of the parameters matrix as a single vector.
     auto AsVector() const {
-        return Params.reshaped();
+        return Params.transpose().reshaped();
     }
 
     /// @brief Only get the submatrix containing the shape parameters.

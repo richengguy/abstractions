@@ -72,20 +72,31 @@ TEST_CASE("Can get the individual parts of the parameters matrix.") {
 
 TEST_CASE("Can pack individual shape collections.")
 {
+    constexpr int kIndexCircles = 0;
+    constexpr int kIndexRectangles = 50;
+    constexpr int kIndexTriangles = 100;
+
     CircleCollection empty_circles;
     RectangleCollection empty_rectangles;
     TriangleCollection empty_triangles;
 
     CircleCollection circles(2);
-    InitShapeCollection(circles, 0);
+    InitShapeCollection(circles, kIndexCircles);
 
     RectangleCollection rectangles(2);
-    InitShapeCollection(rectangles, 50);
+    InitShapeCollection(rectangles, kIndexRectangles);
 
     TriangleCollection triangles(2);
-    InitShapeCollection(triangles, 100);
+    InitShapeCollection(triangles, kIndexTriangles);
 
-    // Doing the weird test parameterization that Doctest recommends.
+    const int dim_circles = circles.Params.size();
+    const int dim_rectangles = rectangles.Params.size();
+    const int dim_triangles = triangles.Params.size();
+
+    // Doing the weird test parameterization that Doctest recommends.  The
+    // 'shape_collections' variable is what's actually set by the individual
+    // subtest and 'test_set' is the full list of permutations the test runs
+    // through.
 
     using CollectionTuple = std::tuple<CircleCollection, RectangleCollection, TriangleCollection>;
     CollectionTuple shape_collections;
@@ -105,6 +116,8 @@ TEST_CASE("Can pack individual shape collections.")
     bool expect_circles = !test_circles.Empty();
     bool expect_rectangles = !test_rectangles.Empty();
     bool expect_triangles = !test_triangles.Empty();
+    auto msg = fmt::format("Circles: {}, Rectangles: {}, Triangles: {}", expect_circles, expect_rectangles, expect_triangles);
+    INFO("Current test: ", msg);
 
     PackedShapeCollection packed(test_circles, test_rectangles, test_triangles);
 
@@ -115,6 +128,39 @@ TEST_CASE("Can pack individual shape collections.")
     CHECK(packed.Circles().Params == test_circles.Params);
     CHECK(packed.Rectangles().Params == test_rectangles.Params);
     CHECK(packed.Triangles().Params == test_triangles.Params);
+
+    RowVector packed_vector = packed.AsPackedVector();
+
+    int start_index = 0;
+
+    if (expect_circles)
+    {
+        CAPTURE(start_index);
+        for (int i = 0; i < dim_circles; i++)
+        {
+            CHECK(packed_vector(i + start_index) == circles.AsVector()(i));
+        }
+        start_index += dim_circles;
+    }
+
+    if (expect_rectangles)
+    {
+        CAPTURE(start_index);
+        for (int i = 0; i < dim_rectangles; i++)
+        {
+            CHECK(packed_vector(i + start_index) == rectangles.AsVector()(i));
+        }
+        start_index += dim_rectangles;
+    }
+
+    if (expect_triangles)
+    {
+        CAPTURE(start_index);
+        for (int i = 0; i < dim_triangles; i++)
+        {
+            CHECK(packed_vector(i + start_index) == triangles.AsVector()(i));
+        }
+    }
 }
 
 TEST_CASE("Assert when all shape collections are empty.")

@@ -138,9 +138,31 @@ Options<AbstractionShape> PackedShapeCollection::Shapes() const
 
 RowVector PackedShapeCollection::AsPackedVector() const
 {
-    int total_size = _circles.Params.size() + _rectangles.Params.size() + _triangles.Params.size();
+    const int circles_size = _circles.Params.size();
+    const int rects_size = _rectangles.Params.size();
+    const int triangles_size = _triangles.Params.size();
+    const int total_size = circles_size + rects_size + triangles_size;
+
     RowVector packed(total_size);
-    packed << _circles.AsVector(), _rectangles.AsVector(), _triangles.AsVector();
+    int start_index = 0;
+
+    if (circles_size > 0)
+    {
+        packed.segment(start_index, circles_size) = _circles.AsVector();
+        start_index += circles_size;
+    }
+
+    if (rects_size > 0)
+    {
+        packed.segment(start_index, rects_size) = _rectangles.AsVector();
+        start_index += rects_size;
+    }
+
+    if (triangles_size > 0)
+    {
+        packed.segment(start_index, triangles_size) = _triangles.AsVector();
+    }
+
     return packed;
 }
 
