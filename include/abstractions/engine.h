@@ -1,10 +1,14 @@
 #pragma once
 
 #include <abstractions/math/random.h>
-#include <abstractions/shapes.h>
+#include <abstractions/render/shapes.h>
+#include <abstractions/pgpe.h>
+#include <abstractions/image.h>
 #include <abstractions/types.h>
 
 #include <optional>
+#include <functional>
+#include <vector>
 
 namespace abstractions {
 
@@ -51,7 +55,7 @@ struct EngineConfig {
     /// length of the parameter vector.
     ///
     /// See the AbstractionShape enum for the list of available shapes.
-    Options<AbstractionShape> shapes = AbstractionShape::Triangles;
+    Options<render::AbstractionShape> shapes = render::AbstractionShape::Triangles;
 
     /// @brief The number of shapes, per shape type, to draw.
     ///
@@ -73,13 +77,17 @@ struct EngineConfig {
     std::optional<int> num_workers = {};
 
     /// @brief Set the base seed for the PRNGs used by the optimizer.
-    /// @note Each worker has its own PRNG.  Because this is the *base* seed,
-    ///     each PRNG obtains its seed from this one.  Both seed *and*
-    ///     num_workers must be the same for a result to be repeatable.
+    /// @note Each sample renderer has its own PRNG.  Because this is the *base*
+    ///     seed, each PRNG obtains its seed from this one.  Both seed *and*
+    ///     num_samples must be the same for a result to be repeatable.
     ///
     /// A randomly generated seed will be used if one isn't specified.
     /// Otherwise the seed can be provided for some degree of repeatabilty.
     std::optional<DefaultRngType::result_type> seed = {};
+
+    /// @brief Validate the Engine configuration.
+    /// @return an error if the configuration was invalid
+    Error Validate() const;
 };
 
 /// @brief The timing for each stage of the optimization pipeline.
@@ -124,8 +132,11 @@ struct OptimizationResult {
     /// @brief The final optimization cost.
     double cost;
 
+    /// @brief The number of iterations the optimization ran for.
+    int iterations;
+
     /// @brief The shapes used in the reconstruction.
-    Options<AbstractionShape> shapes;
+    Options<render::AbstractionShape> shapes;
 
     /// @brief The PRNG seed used by the optimizer.
     DefaultRngType::result_type seed;
@@ -143,7 +154,23 @@ struct OptimizationResult {
 /// random sample to move towards a local optima.
 class Engine {
 public:
+    /// @brief Create a new abstractions engine.
+    /// @param config engine configuration
+    /// @param optim_settings optional optimizer configuration
+    /// @return the initialized engine or an error if the configuraiton failed
+    Expected<Engine> Create(const EngineConfig &config, const PgpeOptimizerSettings &optim_settings = PgpeOptimizerSettings());
+
+    /// @brief Generate an abstract representation from the provided reference image.
+    /// @param reference reference image
+    /// @return the results of the optimization, or an error if the optimization
+    ///     failed
+    [[nodiscard]]
+    Expected<OptimizationResult> GenerateAbstraction(const Image &reference) const;
+
 private:
+    Engine(const EngineConfig &config, const PgpeOptimizerSettings &settings);
+    EngineConfig _config;
+    PgpeOptimizerSettings _optim_settings;
 };
 
 }  // namespace abstractions

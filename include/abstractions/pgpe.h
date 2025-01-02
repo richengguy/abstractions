@@ -108,6 +108,14 @@ public:
     [[nodiscard]]
     const PgpeOptimizerSettings &GetSettings() const;
 
+    /// @brief Replace the internl PRNG with a new with the provided seed.
+    /// @param seed new PRNG seed
+    ///
+    /// This is mainly for when the optimizer is being used as part of a larger
+    /// system.  This allows the internal PRNG to be configured with a new seed
+    /// post-initialization.  This has the effect of also resetting the PRNG.
+    void SetPrngSeed(DefaultRngType::result_type seed);
+
     /// @brief Initialize the optimizer to some starting state.
     /// @param x_init The initial state (parameters) vector
     ///
@@ -154,7 +162,7 @@ private:
 
     bool _is_initialized;
     PgpeOptimizerSettings _settings;
-    Prng<std::mt19937> _prng;
+    Prng<> _prng;
 
     RowVector _current_state;
     RowVector _current_standard_deviation;
