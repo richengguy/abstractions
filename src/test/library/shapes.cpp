@@ -174,16 +174,15 @@ TEST_CASE("Can pack/unpack individual shape collections.") {
     CHECK(unpacked.Triangles().Params == test_triangles.Params);
 }
 
-TEST_CASE("Assert when all shape collections are empty.") {
+TEST_CASE("Allow all shape collections in a packed shape collection to be empty.") {
     CircleCollection empty_circles;
     RectangleCollection empty_rectangles;
     TriangleCollection empty_triangles;
 
-    REQUIRE_THROWS_AS(PackedShapeCollection(empty_circles, empty_rectangles, empty_triangles),
-                      errors::AbstractionsError);
+    REQUIRE_NOTHROW(PackedShapeCollection(empty_circles, empty_rectangles, empty_triangles));
 }
 
-TEST_CASE("Assert when shapes have different sizes.") {
+TEST_CASE("Assert when shapes have different sizes in a packed shape collection.") {
     CircleCollection empty_circles;
     RectangleCollection rectangles(5);
     TriangleCollection triangles(8);

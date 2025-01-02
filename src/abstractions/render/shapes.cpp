@@ -126,9 +126,6 @@ PackedShapeCollection::PackedShapeCollection(const CircleCollection &circles,
         num_shapes = num_triangles;
     }
 
-    // At least one of the shape collections must not be empty.
-    abstractions_assert(num_shapes != 0);
-
     // Ensure the shape collections are either empty or the same size.
     abstractions_assert(num_circles == 0 || num_circles == num_shapes);
     abstractions_assert(num_rectangles == 0 || num_rectangles == num_shapes);
