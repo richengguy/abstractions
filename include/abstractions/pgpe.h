@@ -19,9 +19,6 @@ struct PgpeOptimizerSettings {
     /// update that the optimizer can make.
     double max_speed = std::numeric_limits<double>::signaling_NaN();
 
-    /// @brief Smooth out gradient estimates by scaling and ranking the sample costs.
-    bool costs_ranking = false;
-
     /// @brief The initial distribution search radius.
     double init_search_radius = 15;
 
