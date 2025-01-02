@@ -61,18 +61,18 @@ public:
     /// @brief Implements the `union = a | b` operation.
     /// @param other enum value
     /// @return an updated MaskedOption
-    constexpr Options operator|(T other) {
+    constexpr Options operator|(T other) const {
         return Options(_value | MaskValue(other));
     }
 
     /// @brief Checks if the given bit is set in the masked option.
     /// @param value enum value
     /// @return whether or not the bit is set
-    constexpr bool operator&(T value) {
+    constexpr bool operator&(T value) const {
         return _value & MaskValue(value);
     }
 
-    constexpr bool operator==(const Options<T> &other) {
+    constexpr bool operator==(const Options<T> &other) const {
         return _value == other._value;
     }
 
