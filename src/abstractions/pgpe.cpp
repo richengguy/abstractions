@@ -49,7 +49,7 @@ Error PgpeOptimizerSettings::Validate() const {
     return errors::no_error;
 }
 
-Expected<PgpeOptimizer> PgpeOptimizer::Create(const PgpeOptimizerSettings &settings) {
+Expected<PgpeOptimizer> PgpeOptimizer::New(const PgpeOptimizerSettings &settings) {
     auto err = settings.Validate();
     if (err) {
         return std::unexpected(err);

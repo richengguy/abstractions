@@ -67,7 +67,7 @@ struct PgpeOptimizerSettings {
 /// RowVector solution = InitialGuess();
 /// Matrix samples = Allocate();
 ///
-/// auto optimizer = PgpeOptimizer::Create(settings);
+/// auto optimizer = PgpeOptimizer::New(settings);
 /// optimizer.Initialize(solution);
 ///
 /// while (!converged) {
@@ -82,7 +82,7 @@ public:
     /// @param settings optimizer settings
     /// @return The configured optimizer or an Error instance if the creation
     ///     failed.
-    static Expected<PgpeOptimizer> Create(const PgpeOptimizerSettings &settings);
+    static Expected<PgpeOptimizer> New(const PgpeOptimizerSettings &settings);
 
     /// @brief Create an optimizer from another one.
     /// @param other other optimizer

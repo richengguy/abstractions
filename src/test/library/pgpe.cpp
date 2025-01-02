@@ -48,7 +48,7 @@ TEST_CASE("Can validate PGPE optimizer settings.") {
 TEST_CASE("Can create an optimizer using PgpeOptimizer::Create()") {
     SUBCASE("Error when settings are invalid.") {
         abstractions::PgpeOptimizerSettings settings{};
-        auto optim = abstractions::PgpeOptimizer::Create(settings);
+        auto optim = abstractions::PgpeOptimizer::New(settings);
         REQUIRE_FALSE(optim.has_value());
     }
 
@@ -57,7 +57,7 @@ TEST_CASE("Can create an optimizer using PgpeOptimizer::Create()") {
             .max_speed = 1,
             .momentum = 123,
         };
-        auto optim = abstractions::PgpeOptimizer::Create(settings);
+        auto optim = abstractions::PgpeOptimizer::New(settings);
         REQUIRE(optim.has_value());
         CHECK(optim->GetSettings().max_speed == 1);
         CHECK(optim->GetSettings().momentum == 123);
@@ -79,7 +79,7 @@ TEST_CASE("Costs can be correctly rank-linearized.") {
     ColumnVector expected(5);
     expected << 0.25, 0.0, -0.5, 0.5, -0.25;
 
-    auto optimizer = PgpeOptimizer::Create(PgpeOptimizerSettings{.max_speed = 1.0});
+    auto optimizer = PgpeOptimizer::New(PgpeOptimizerSettings{.max_speed = 1.0});
     optimizer->RankLinearize(costs);
 
     INFO("Linearized Costs: ", costs.transpose());
@@ -148,7 +148,7 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.") {
         line_pt.array();
 
     // Construct the optimizer and try to find a "good" solution
-    auto optimizer = PgpeOptimizer::Create(
+    auto optimizer = PgpeOptimizer::New(
         PgpeOptimizerSettings{.max_speed = 0.2, .costs_ranking = false, .seed = 3});
 
     INFO("Ensure optimizer is created.");
