@@ -40,7 +40,12 @@ class TestOutputFolder {
 public:
     TestOutputFolder(const std::string &test_name) :
         _folder{kResultsPath / "s" / test_name} {
-        Console console(test_name, "{} ::");
+    }
+
+    /// @brief Initialize the test storage folder.
+    void Init()
+    {
+        Console console(_folder.stem(), "{} ::");
 
         if (std::filesystem::exists(_folder)) {
             auto removed = std::filesystem::remove_all(_folder);
@@ -51,6 +56,7 @@ public:
         if (ret) {
             console.Print("Created {}", fmt::styled(_folder.c_str(), fmt::emphasis::bold));
         }
+
     }
 
     /// @brief Top-level test case folder path.
@@ -93,6 +99,8 @@ public:
         std::optional<int> seed;
         _app.add_option("-s,--seed", seed, "Set the seed used by the feature test.");
         CLI11_PARSE(_app, nargs, args);
+
+        output_folder.Init();
 
         console.Print(seed ? fmt::format("Seed: {}", *seed) : "Seed: N/A");
         console.Separator();
