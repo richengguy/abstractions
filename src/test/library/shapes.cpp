@@ -189,6 +189,53 @@ TEST_CASE("Can pack/unpack individual shape collections.") {
     CHECK(unpacked.Triangles().Params == test_triangles.Params);
 }
 
+TEST_CASE("Can initialize a packed shape collection with a set number of shapes.")
+{
+    // Doing the weird "doctest parameterized test"-thing.  'possible_shapes' is
+    // the set of all shape combinations while 'current_shapes' is the currently
+    // tested configuration.
+
+    std::vector<Options<AbstractionShape>> possible_shapes{
+        AbstractionShape::Circles,
+        AbstractionShape::Rectangles,
+        AbstractionShape::Triangles,
+        AbstractionShape::Circles | AbstractionShape::Rectangles,
+        AbstractionShape::Circles | AbstractionShape::Triangles,
+        AbstractionShape::Rectangles | AbstractionShape::Triangles,
+        AbstractionShape::Circles | AbstractionShape::Rectangles | AbstractionShape::Triangles,
+    };
+    Options<AbstractionShape> current_shapes;
+
+    ABSTRACTIONS_PARAMETERIZED_TEST(current_shapes, possible_shapes);
+
+    PackedShapeCollection packed(current_shapes, 5);
+    REQUIRE(packed.Shapes() == current_shapes);
+
+    if (current_shapes & AbstractionShape::Circles) {
+        CHECK(packed.Circles().NumShapes() == 5);
+    }
+    else
+    {
+        CHECK(packed.Circles().Empty());
+    }
+
+    if (current_shapes & AbstractionShape::Rectangles) {
+        CHECK(packed.Rectangles().NumShapes() == 5);
+    }
+    else
+    {
+        CHECK(packed.Rectangles().Empty());
+    }
+
+    if (current_shapes & AbstractionShape::Triangles) {
+        CHECK(packed.Triangles().NumShapes() == 5);
+    }
+    else
+    {
+        CHECK(packed.Triangles().Empty());
+    }
+}
+
 TEST_CASE("Allow all shape collections in a packed shape collection to be empty.") {
     CircleCollection empty_circles;
     RectangleCollection empty_rectangles;

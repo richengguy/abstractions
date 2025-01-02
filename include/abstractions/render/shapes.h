@@ -139,6 +139,12 @@ public:
     /// @param params packed shape parameters vector
     PackedShapeCollection(Options<AbstractionShape> shapes, ConstRowVectorRef params);
 
+    /// @brief Creates a new packed shape collection, allocating space to store
+    ///     the requested shapes.
+    /// @param shapes shape stored in the packed collection
+    /// @param num_shapes the number of shapes in the individual collections
+    PackedShapeCollection(Options<AbstractionShape> shapes, int num_shapes);
+
     /// @brief Create a new packed shape collection.
     /// @param circles set of circles
     /// @param rectangles set of rectangles

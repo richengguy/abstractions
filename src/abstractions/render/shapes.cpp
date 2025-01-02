@@ -110,6 +110,17 @@ PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes,
     }
 }
 
+PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes, int num_shapes)
+{
+    int num_circles = shapes & AbstractionShape::Circles ? num_shapes : 0;
+    int num_rectangles = shapes & AbstractionShape::Rectangles ? num_shapes : 0;
+    int num_triangles = shapes & AbstractionShape::Triangles ? num_shapes : 0;
+
+    _circles = CircleCollection(num_circles);
+    _rectangles = RectangleCollection(num_rectangles);
+    _triangles = TriangleCollection(num_triangles);
+}
+
 PackedShapeCollection::PackedShapeCollection(const CircleCollection &circles,
                                              const RectangleCollection &rectangles,
                                              const TriangleCollection &triangles) {
