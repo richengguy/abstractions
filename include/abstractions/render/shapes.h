@@ -85,12 +85,12 @@ public:
     /// @param width canvas width
     /// @param height canvas height
     /// @param prng random number generator
-    ShapeGenerator(const int width, const int height, Prng<> &prng);
+    ShapeGenerator(const int width, const int height, Prng<> prng);
 
     /// @brief Create a new ShapeGenerator for a canvas with a given aspect ratio.
     /// @param aspect canvas aspect ratio (height/width)
     /// @param prng random number generator
-    ShapeGenerator(const double aspect, Prng<> &prng);
+    ShapeGenerator(const double aspect, Prng<> prng);
 
     /// @brief Generate a set of random circles with random colours.
     /// @param num number of circles
@@ -134,6 +134,9 @@ ABSTRACTIONS_OPTIONS_ENUM(AbstractionShape)
 /// same number of shapes.
 class PackedShapeCollection {
 public:
+    /// @brief Create a completely empty collection.
+    PackedShapeCollection();
+
     /// @brief Create a new packed shape collection.
     /// @param shapes shapes stored in the packed parameters vector
     /// @param params packed shape parameters vector

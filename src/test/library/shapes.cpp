@@ -236,6 +236,16 @@ TEST_CASE("Can initialize a packed shape collection with a set number of shapes.
     }
 }
 
+TEST_CASE("Can initialize a completely empty packed collection.")
+{
+    PackedShapeCollection empty_collection;
+    REQUIRE(empty_collection.CollectionSize() == 0);
+    REQUIRE(empty_collection.Circles().Empty());
+    REQUIRE(empty_collection.Rectangles().Empty());
+    REQUIRE(empty_collection.Triangles().Empty());
+    REQUIRE_FALSE(empty_collection.Shapes());
+}
+
 TEST_CASE("Allow all shape collections in a packed shape collection to be empty.") {
     CircleCollection empty_circles;
     RectangleCollection empty_rectangles;

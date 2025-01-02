@@ -17,10 +17,10 @@ auto ReshapeAsParamsMatrix(const Eigen::MatrixBase<T> &vector, const int start_i
 
 }  // namespace
 
-ShapeGenerator::ShapeGenerator(const int width, const int height, Prng<> &prng) :
+ShapeGenerator::ShapeGenerator(const int width, const int height, Prng<> prng) :
     ShapeGenerator(static_cast<double>(width) / static_cast<double>(height), prng) {}
 
-ShapeGenerator::ShapeGenerator(const double aspect, Prng<> &prng) :
+ShapeGenerator::ShapeGenerator(const double aspect, Prng<> prng) :
     _aspect_ratio{aspect},
     _dist{prng} {}
 
@@ -46,6 +46,12 @@ RectangleCollection ShapeGenerator::RandomRectangles(const int num) {
     collection.Params.col(0) *= _aspect_ratio;
     collection.Params.col(2) *= _aspect_ratio;
     return collection;
+}
+
+PackedShapeCollection::PackedShapeCollection()
+    : _collection_size{0}, _circles{}, _rectangles{}, _triangles{}
+{
+
 }
 
 PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes,
