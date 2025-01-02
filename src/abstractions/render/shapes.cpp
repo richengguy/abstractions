@@ -158,6 +158,16 @@ int PackedShapeCollection::CollectionSize() const {
     return _collection_size;
 }
 
+int PackedShapeCollection::TotalDimensions() const
+{
+    auto shapes = Shapes();
+    int total_dimensions = 0;
+    total_dimensions += shapes & AbstractionShape::Circles ? CircleCollection::TotalDimensions : 0;
+    total_dimensions += shapes & AbstractionShape::Rectangles ? RectangleCollection::TotalDimensions : 0;
+    total_dimensions += shapes & AbstractionShape::Triangles ? TriangleCollection::TotalDimensions : 0;
+    return total_dimensions;
+}
+
 RowVector PackedShapeCollection::AsPackedVector() const {
     const int circles_size = _circles.Params.size();
     const int rects_size = _rectangles.Params.size();

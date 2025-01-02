@@ -122,11 +122,26 @@ TEST_CASE("Can pack/unpack individual shape collections.") {
                            expect_rectangles, expect_triangles);
     INFO("Current test: ", msg);
 
+    int total_dims = 0;
+    if (expect_circles) {
+        total_dims += test_circles.Params.cols();
+    }
+
+    if (expect_rectangles) {
+        total_dims += test_rectangles.Params.cols();
+    }
+
+    if (expect_triangles) {
+        total_dims += test_triangles.Params.cols();
+    }
+
     PackedShapeCollection packed(test_circles, test_rectangles, test_triangles);
 
     CHECK((packed.Shapes() & AbstractionShape::Circles) == expect_circles);
     CHECK((packed.Shapes() & AbstractionShape::Rectangles) == expect_rectangles);
     CHECK((packed.Shapes() & AbstractionShape::Triangles) == expect_triangles);
+
+    CHECK(packed.TotalDimensions() == total_dims);
 
     CHECK(packed.Circles().Params == test_circles.Params);
     CHECK(packed.Rectangles().Params == test_rectangles.Params);

@@ -151,6 +151,13 @@ public:
     /// @brief The options used to describe this shape collection.
     Options<AbstractionShape> Shapes() const;
 
+    /// @brief Get the total length of a parameter vector from a shape configuration.
+    /// @return total number of dimensions
+    ///
+    /// This is the sum of the ShapeCollection<>::TotalDimensions property for
+    /// the individual collections contained in the packed shape.
+    int TotalDimensions() const;
+
     /// @brief The size of the individual collections.
     int CollectionSize() const;
 
