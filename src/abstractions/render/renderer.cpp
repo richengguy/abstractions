@@ -8,7 +8,7 @@ namespace abstractions::render {
 Expected<Renderer> Renderer::Create(int width, int height, std::optional<Prng<>> prng) {
     auto image = Image::New(width, height, true);
     if (image.has_value()) {
-        return Renderer(image.value(), prng);
+        return Renderer(*image, prng);
     }
     return errors::report<Renderer>(image.error());
 }
