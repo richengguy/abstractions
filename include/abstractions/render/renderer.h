@@ -1,21 +1,19 @@
 #pragma once
 
-#include <optional>
-
 #include <abstractions/image.h>
 #include <abstractions/math/random.h>
 #include <abstractions/render/shapes.h>
 
-namespace abstractions::render
-{
+#include <optional>
+
+namespace abstractions::render {
 
 /// @brief Renders an abstract image from a shape collection.
 ///
 /// The renderers maintains an internal rendering surface and can be reused.
 /// Each call to Renderer::Render() will clear out the surface before rendering
 /// the provided shapes.
-class Renderer
-{
+class Renderer {
 public:
     /// @brief Create a new renderer with the given canvas size.
     /// @param width canvas width
@@ -56,4 +54,4 @@ private:
     Image _drawing_surface;
 };
 
-}
+}  // namespace abstractions::render

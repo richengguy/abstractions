@@ -39,12 +39,10 @@ namespace abstractions::tests {
 class TestOutputFolder {
 public:
     TestOutputFolder(const std::string &test_name) :
-        _folder{kResultsPath / "s" / test_name} {
-    }
+        _folder{kResultsPath / "s" / test_name} {}
 
     /// @brief Initialize the test storage folder.
-    void Init()
-    {
+    void Init() {
         Console console(_folder.stem(), "{} ::");
 
         if (std::filesystem::exists(_folder)) {
@@ -56,7 +54,6 @@ public:
         if (ret) {
             console.Print("Created {}", fmt::styled(_folder.c_str(), fmt::emphasis::bold));
         }
-
     }
 
     /// @brief Top-level test case folder path.

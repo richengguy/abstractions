@@ -19,8 +19,9 @@ Canvas::Canvas(Expected<Image> &image, Prng<DefaultRngType> prng) :
     _context = BLContext(*image);
 }
 
-Canvas::Canvas(Image &image, Prng<DefaultRngType> prng):
-    _context{BLContext(image)}, _prng{prng} {}
+Canvas::Canvas(Image &image, Prng<DefaultRngType> prng) :
+    _context{BLContext(image)},
+    _prng{prng} {}
 
 Canvas::~Canvas() {
     _context.end();

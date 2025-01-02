@@ -184,4 +184,4 @@ RowVector PackedShapeCollection::AsPackedVector() const {
     return packed;
 }
 
-}  // namespace abstractions
+}  // namespace abstractions::render

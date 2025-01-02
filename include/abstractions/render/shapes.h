@@ -186,4 +186,4 @@ private:
     TriangleCollection _triangles;
 };
 
-}  // namespace abstractions
+}  // namespace abstractions::render

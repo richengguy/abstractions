@@ -1,7 +1,7 @@
-#include "support.h"
-
-#include <abstractions/render/shapes.h>
 #include <abstractions/render/renderer.h>
+#include <abstractions/render/shapes.h>
+
+#include "support.h"
 
 using namespace abstractions;
 using namespace abstractions::render;
@@ -10,8 +10,7 @@ constexpr int kNumShapes = 10;
 constexpr int kWidth = 1024;
 constexpr int kHeight = 728;
 
-ABSTRACTIONS_FEATURE_TEST()
-{
+ABSTRACTIONS_FEATURE_TEST() {
     ShapeGenerator generator(kWidth, kHeight, prng);
     auto random_circles = generator.RandomCircles(kNumShapes);
     auto random_rectangles = generator.RandomRectangles(kNumShapes);
@@ -38,7 +37,8 @@ ABSTRACTIONS_FEATURE_TEST()
 
     console.Print("Render a dark-green background without any shapes.");
     {
-        PackedShapeCollection shapes(CircleCollection(0), RectangleCollection(0), TriangleCollection(0));
+        PackedShapeCollection shapes(CircleCollection(0), RectangleCollection(0),
+                                     TriangleCollection(0));
         renderer->UseRandomBackgroundFill(false);
         renderer->SetBackground(0, 128, 0);
         renderer->Render(shapes);
@@ -46,4 +46,5 @@ ABSTRACTIONS_FEATURE_TEST()
     }
 }
 
-ABSTRACTIONS_FEATURE_TEST_MAIN("renderer", "Generate some simple images using the abstractions renderer.");
+ABSTRACTIONS_FEATURE_TEST_MAIN("renderer",
+                               "Generate some simple images using the abstractions renderer.");
