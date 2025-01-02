@@ -45,6 +45,11 @@ public:
     /// @param prng PRNG used for all random draw operations
     Canvas(Expected<Image> &image, Prng<DefaultRngType> prng);
 
+    /// @brief Create a new Canvas from an iamge.
+    /// @param image image the canvas draws to
+    /// @param prng PRNG used for all random draw operations
+    Canvas(Image &image, Prng<DefaultRngType> prng);
+
     /// @brief Clean up the rendering canvas when it is destroyed.
     ///
     /// The destructor cleans up the rendering canvas and ensures that any draw
@@ -97,6 +102,11 @@ public:
     /// @param mode compositing mode
     /// @return an Error if the compositing mode is unsupported
     Error SetCompositeMode(const CompositeMode mode);
+
+    Canvas(const Canvas &) = delete;
+    Canvas(Canvas &&) = delete;
+    void operator=(const Canvas &) = delete;
+    void operator=(Canvas &&) = delete;
 
 private:
     BLContext _context;
