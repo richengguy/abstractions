@@ -9,6 +9,34 @@ namespace abstractions
 namespace
 {
 
+/// @brief Generate the set of samples needed for estimating sample costs.
+struct GenerateSolutionSamples : public threads::IJobFunction
+{
+    Error operator()(threads::JobContext &ctx) const override
+    {
+        return errors::no_error;
+    }
+};
+
+/// @brief Run the PGPE optimizer to update the internal solution.
+struct RunOptimizer : public threads::IJobFunction
+{
+    Error operator()(threads::JobContext &ctx) const override
+    {
+        return errors::no_error;
+    }
+};
+
+/// @brief Render the set of images from the PGPE optimizer samples and compute
+///     the per-sample costs.
+struct RenderAndCompare : public threads::IJobFunction
+{
+    Error operator()(threads::JobContext &ctx) const override
+    {
+        return errors::no_error;
+    }
+};
+
 }
 
 Error EngineConfig::Validate() const
