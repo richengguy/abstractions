@@ -2,6 +2,7 @@
 
 #include <abstractions/types.h>
 
+#include <any>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -32,7 +33,32 @@ public:
     /// @brief Create a new job context.
     /// @param job_id job ID
     /// @param worker_id worker ID
-    JobContext(int job_id, int worker_id);
+    JobContext(int job_id, int worker_id, std::any &data);
+
+    /// @brief Gets a reference to the data stored in the job context.
+    /// @tparam T expected data type
+    /// @return contained data
+    template<typename T>
+    T Data() const {
+        AssertHasData();
+        return std::any_cast<T>(_data);
+    }
+
+    /// @brief Check if the context contains data of the given type.
+    /// @tparam T type being checked
+    /// @return `true` if there is data and the type matches
+    template<typename T>
+    bool HasValueOfType() const
+    {
+        auto &type = typeid(T);
+        return HasData() && _data.type() == type;
+    }
+
+    /// @brief Gets a reference to the data stored in the job context.
+    std::any &Data();
+
+    /// @brief Determine if context contains any data.
+    bool HasData() const;
 
     /// @brief ID of the particular job.
     int Id() const {
@@ -45,8 +71,10 @@ public:
     }
 
 private:
+    void AssertHasData() const;
     int _job_id;
     int _worker_id;
+    std::any &_data;
 };
 
 /// @brief The status of a job once it completes.
@@ -72,6 +100,7 @@ public:
     /// @tparam Arg IJobFunction constructor argument types
     /// @param id user-specified job ID
     /// @param args constructor arguments
+    /// @return a new Job instance
     template <typename T, typename... Arg>
     static Job New(int id, Arg &&...args) {
         static_assert(std::is_base_of<IJobFunction, T>::value,
@@ -80,9 +109,30 @@ public:
     }
 
     /// @brief Create a new job.
+    /// @tparam T IJobFunction class type
+    /// @tparam S payload type
+    /// @tparam Arg IJobFunction constructor argument types
+    /// @param id user-specified job ID
+    /// @param payload data the job can access when it executes
+    /// @param args constructor arguments
+    /// @return a new Job instance
+    template<typename T, typename S, typename... Arg>
+    static Job NewWithPayload(int id, S &&payload, Arg &&...args)
+    {
+        static_assert(std::is_base_of<IJobFunction, T>::value, "'T' must inherit from IJobFunction.");
+        return Job(id, std::make_any<S>(payload), std::make_unique<T>(std::forward<Arg>(args)...));
+    }
+
+    /// @brief Create a new job.
     /// @param id job ID
     /// @param fn function the job executes
     Job(int id, std::unique_ptr<IJobFunction> fn);
+
+    /// @brief Create a new job.
+    /// @param id job ID
+    /// @param payload data that goes to the job when it runs
+    /// @param fn function the job executes
+    Job(int id, std::any payload, std::unique_ptr<IJobFunction> fn);
 
     /// @brief Run the job.
     /// @param worker_id ID of the worker executing the job
@@ -108,6 +158,7 @@ public:
 private:
     int _id;
     std::unique_ptr<IJobFunction> _fn;
+    std::unique_ptr<std::any> _payload;
     std::promise<JobStatus> _job_status;
 };
 

@@ -51,9 +51,26 @@ public:
     /// @tparam Arg IJobFunction constructor argument types
     /// @param id user-specified job ID
     /// @param args constructor arguments
+    /// @return an awaitable future for the results of the job
     template <typename T, typename... Arg>
     Job::Future Submit(int id, Arg &&...args) {
         auto job = Job::New<T>(id, std::forward<Arg>(args)...);
+        return Submit(job);
+    }
+
+    /// @brief Submit a job to the thread pool.  The call will block if the
+    ///     internal job queue is full.
+    /// @tparam T IJobFunction class type
+    /// @tparam S payload type
+    /// @tparam Arg IJobFunction constructor argument types
+    /// @param id user-specified job ID
+    /// @param payload data the job can access when it executes
+    /// @param args constructor arguments
+    /// @return an awaitable future for the results of the job
+    template<typename T, typename S, typename... Arg>
+    Job::Future SubmitWithPayload(int id, S &&payload, Arg &&...args)
+    {
+        auto job = Job::NewWithPayload<T>(id, payload, std::forward<Arg>(args)...);
         return Submit(job);
     }
 

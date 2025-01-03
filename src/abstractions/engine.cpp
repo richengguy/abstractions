@@ -1,6 +1,7 @@
 #include "abstractions/engine.h"
 
 #include <abstractions/profile.h>
+#include <abstractions/threads/threadpool.h>
 
 namespace abstractions
 {
@@ -64,12 +65,22 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
     Timer e2e_timer;
 
+    // The bulk of the work is done on the thread pool.  It is set up to have
+    // enough resources for processing all sample rendering requests, along with
+    // some buffer.  The number of workers, unless overridden in the engine
+    // config, will depend on the number of available CPU cores.
+    threads::ThreadPoolConfig multithreading_config{
+        .num_workers = _config.num_workers,
+        .queue_depth = _config.num_samples + 1,
+    };
+    threads::ThreadPool thread_pool(multithreading_config);
+
     // Create the generator for all PRNGs that will be used during the
     // optimization.  This wil use either a pre-configured seed or a randomly
     // chosen one.
     PrngGenerator<> prng_generator(_config.seed);
 
-    // First, initialize the optimizer.
+    // First, create the optimizer.  Use a generated PRNG to get the seed.
     auto pgpe_prng = prng_generator.CreatePrng();
     auto optimizer = PgpeOptimizer::New(_optim_settings);
     if (!optimizer.has_value())
@@ -111,6 +122,11 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
     // Now run the "sample->render->optimize" loop, keeping track of how the
     // solution is performing.
+
+    for (int i = 0; i < _config.max_iterations; i++)
+    {
+
+    }
 
     // Wrap things up
     auto end_to_end_time = e2e_timer.GetElapsedTime();

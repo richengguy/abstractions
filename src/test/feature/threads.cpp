@@ -1,5 +1,8 @@
 #include <abstractions/threads/threadpool.h>
 
+#include <functional>
+#include <fmt/ranges.h>
+
 #include "support.h"
 
 using namespace abstractions;
@@ -13,7 +16,45 @@ struct SimpleJob : public IJobFunction {
         fmt::print("-- Running job#{} ({})\n", ctx.Id(), ctx.Worker());
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        return abstractions::errors::no_error;
+        return errors::no_error;
+    }
+};
+
+struct ReadOnlyJob : public IJobFunction
+{
+    Error operator()(JobContext &ctx) const override {
+        if (!ctx.HasData())
+        {
+            return "Missing data!";
+        }
+        std::string msg = ctx.Data<std::string>();
+
+        std::unique_lock lock{mutex};
+        fmt::print("-- Running job#{} ({}) with payload: {}\n", ctx.Id(), ctx.Worker(), msg);
+        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+
+        return errors::no_error;
+    }
+};
+
+struct WriteOnlyJob : public IJobFunction
+{
+    using DataType = int *;
+
+    Error operator()(JobContext &ctx) const override {
+        // std::unique_lock lock{mutex};
+
+        // fmt::print("-- Type: {}\n", ctx.Data().type());
+        // if (!ctx.HasValueOfType<DataType>())
+        // {
+        //     return "Missing data of expected type!";
+        // }
+
+        // auto array = std::any_cast<DataType>(ctx.Data());
+        // fmt::print("-- Running job#{} ({}) - Old value:", ctx.Id(), ctx.Worker());
+
+        // array[ctx.Id()] = 123;
+        // fmt::print("-- New value: {}", array[ctx.Id()])+;
     }
 };
 
@@ -44,6 +85,19 @@ ABSTRACTIONS_FEATURE_TEST() {
     future4.wait();
     future5.wait();
     future6.wait();
+
+    std::string msg = "This is some message.";
+    auto future_w_msg = thread_pool.SubmitWithPayload<ReadOnlyJob>(10, msg);
+    future_w_msg.wait();
+
+    std::string msg2 = "This is another message";
+    auto another_future_w_msg = thread_pool.SubmitWithPayload<ReadOnlyJob>(11, msg2);
+    another_future_w_msg.wait();
+
+    std::array<int, 5> array{0,1,2,3,4};
+    auto future_w_update = thread_pool.SubmitWithPayload<WriteOnlyJob>(2, array.data());
+    future_w_update.wait();
+    console.Print("Array after thread: [{}]", fmt::join(array, ", "));
 }
 
 ABSTRACTIONS_FEATURE_TEST_MAIN("threads", "Run the ThreadPool through a simple work scenario.");
