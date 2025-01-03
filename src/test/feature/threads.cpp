@@ -39,22 +39,14 @@ struct ReadOnlyJob : public IJobFunction
 
 struct WriteOnlyJob : public IJobFunction
 {
-    using DataType = int *;
-
     Error operator()(JobContext &ctx) const override {
-        // std::unique_lock lock{mutex};
+        auto array = std::any_cast<int *>(ctx.Data());
+        std::unique_lock lock{mutex};
+        fmt::print("-- Running job#{} ({}) - Old value: {}\n", ctx.Id(), ctx.Worker(), array[ctx.Id()]);
 
-        // fmt::print("-- Type: {}\n", ctx.Data().type());
-        // if (!ctx.HasValueOfType<DataType>())
-        // {
-        //     return "Missing data of expected type!";
-        // }
-
-        // auto array = std::any_cast<DataType>(ctx.Data());
-        // fmt::print("-- Running job#{} ({}) - Old value:", ctx.Id(), ctx.Worker());
-
-        // array[ctx.Id()] = 123;
-        // fmt::print("-- New value: {}", array[ctx.Id()])+;
+        array[ctx.Id()] = 123;
+        fmt::print("-- New value: {}\n", array[ctx.Id()]);
+        return errors::no_error;
     }
 };
 
@@ -94,7 +86,7 @@ ABSTRACTIONS_FEATURE_TEST() {
     auto another_future_w_msg = thread_pool.SubmitWithPayload<ReadOnlyJob>(11, msg2);
     another_future_w_msg.wait();
 
-    std::array<int, 5> array{0,1,2,3,4};
+    std::vector<int> array{0,1,2,3,4};
     auto future_w_update = thread_pool.SubmitWithPayload<WriteOnlyJob>(2, array.data());
     future_w_update.wait();
     console.Print("Array after thread: [{}]", fmt::join(array, ", "));
