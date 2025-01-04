@@ -216,7 +216,17 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .comparison_metric = _config.comparison_metric
     };
 
-    // TODO: init the renderers
+    for (int i = 0; i < _config.num_samples; i++)
+    {
+        auto renderer = render::Renderer::Create(width, height, prng_generator.CreatePrng());
+
+        if (!renderer.has_value())
+        {
+            return errors::report<OptimizationResult>(renderer.error());
+        }
+
+        render_payload.renderers.push_back(*renderer);
+    }
 
     // Now run the "sample->render->optimize" loop, keeping track of how the
     // solution is performing.
@@ -241,7 +251,21 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         for (int j = 0; j < _config.num_samples; j++)
         {
             auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(j, render_payload);
-            // TODO: figure out how to wait on these in a reasonable way
+            futures.push_back(std::move(render_job));
+        }
+
+        threads::WaitForJobs(futures);
+
+        for (auto &render_future : futures)
+        {
+            auto result = render_future.get();
+
+            if (result.error)
+            {
+                return errors::report<OptimizationResult>(result.error);
+            }
+
+            render_timing.AddSample(result.time);
         }
 
         // Run the optimizer and update its state.
