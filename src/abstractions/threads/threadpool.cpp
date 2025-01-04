@@ -78,7 +78,7 @@ Job::Future ThreadPool::Submit(Job &job) {
     Console console(kConsoleName);
 
     if (_debug) {
-        console.Print("Submitting Job#{}", job.Index());
+        console.Print("Submitting Job #{}", job.Index());
     }
 
     Job::Promise status_promise;
