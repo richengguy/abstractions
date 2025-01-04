@@ -35,9 +35,9 @@ struct IJobFunction {
 class JobContext {
 public:
     /// @brief Create a new job context.
-    /// @param job_id job ID
+    /// @param index job ID
     /// @param worker_id worker ID
-    JobContext(int job_id, int worker_id, std::any &data);
+    JobContext(int index, int worker_id, std::any &data);
 
     /// @brief Check if the context contains data of the given type.
     /// @tparam T type being checked
@@ -69,8 +69,8 @@ public:
     std::any &Data();
 
     /// @brief ID of the particular job.
-    int Id() const {
-        return _job_id;
+    int Index() const {
+        return _index;
     }
 
     /// @brief ID of the worker that executes the job.
@@ -79,7 +79,7 @@ public:
     }
 
 private:
-    int _job_id;
+    int _index;
     int _worker_id;
     std::any &_data;
 };
@@ -87,7 +87,7 @@ private:
 /// @brief The status of a job once it completes.
 struct JobStatus {
     /// @brief The ID of the finished job.
-    int job_id;
+    int index;
 
     /// @brief The job's error status.
     Error error;
@@ -155,7 +155,7 @@ public:
     void SetPromise(Promise &promise);
 
     /// @brief The user-specified job ID.
-    int Id() const;
+    int Index() const;
 
     Job(const Job &) = delete;
     Job &operator=(const Job &) = delete;
@@ -163,7 +163,7 @@ public:
     Job &operator=(Job &&) = default;
 
 private:
-    int _id;
+    int _index;
     std::unique_ptr<IJobFunction> _fn;
     std::unique_ptr<std::any> _payload;
     std::promise<JobStatus> _job_status;

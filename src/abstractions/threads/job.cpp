@@ -5,8 +5,8 @@
 
 namespace abstractions::threads {
 
-JobContext::JobContext(int job_id, int worker_id, std::any &data) :
-    _job_id{job_id},
+JobContext::JobContext(int index, int worker_id, std::any &data) :
+    _index{index},
     _worker_id{worker_id},
     _data{data} {}
 
@@ -15,18 +15,18 @@ std::any &JobContext::Data() {
 }
 
 Job::Job(int id, std::unique_ptr<IJobFunction> fn) :
-    _id{id},
+    _index{id},
     _fn{std::move(fn)},
     _payload{std::make_unique<std::any>()} {}
 
 Job::Job(int id, std::any payload, std::unique_ptr<IJobFunction> fn) :
-    _id{id},
+    _index{id},
     _fn{std::move(fn)},
     _payload{std::make_unique<std::any>(payload)} { }
 
 JobStatus Job::Run(int worker_id) {
     abstractions_assert(_fn != nullptr);
-    JobContext ctx(_id, worker_id, *_payload);
+    JobContext ctx(_index, worker_id, *_payload);
     Error error;
 
     OperationTiming timer;
@@ -36,7 +36,7 @@ JobStatus Job::Run(int worker_id) {
     }
 
     JobStatus status{
-        .job_id = _id,
+        .index = _index,
         .error = error,
         .time = timer.GetTiming().total,
     };
@@ -49,8 +49,8 @@ void Job::SetPromise(Promise& promise) {
     _job_status = std::move(promise);
 }
 
-int Job::Id() const {
-    return _id;
+int Job::Index() const {
+    return _index;
 }
 
 }  // namespace abstractions::threads

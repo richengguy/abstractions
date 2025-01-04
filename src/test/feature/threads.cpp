@@ -13,7 +13,7 @@ std::mutex mutex;
 struct SimpleJob : public IJobFunction {
     Error operator()(JobContext &ctx) const override {
         std::unique_lock lock{mutex};
-        fmt::print("-- Running job#{} ({})\n", ctx.Id(), ctx.Worker());
+        fmt::print("-- Running job#{} ({})\n", ctx.Index(), ctx.Worker());
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         return errors::no_error;
@@ -29,7 +29,7 @@ struct ReadOnlyJob : public IJobFunction
         }
 
         std::unique_lock lock{mutex};
-        fmt::print("-- Running job#{} ({}) with payload: {}\n", ctx.Id(), ctx.Worker(), *msg);
+        fmt::print("-- Running job#{} ({}) with payload: {}\n", ctx.Index(), ctx.Worker(), *msg);
         std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
         return errors::no_error;
@@ -41,10 +41,10 @@ struct WriteOnlyJob : public IJobFunction
     Error operator()(JobContext &ctx) const override {
         auto array = std::any_cast<int *>(ctx.Data());
         std::unique_lock lock{mutex};
-        fmt::print("-- Running job#{} ({}) - Old value: {}\n", ctx.Id(), ctx.Worker(), array[ctx.Id()]);
+        fmt::print("-- Running job#{} ({}) - Old value: {}\n", ctx.Index(), ctx.Worker(), array[ctx.Index()]);
 
-        array[ctx.Id()] = 123;
-        fmt::print("-- New value: {}\n", array[ctx.Id()]);
+        array[ctx.Index()] = 123;
+        fmt::print("-- New value: {}\n", array[ctx.Index()]);
         return errors::no_error;
     }
 };
