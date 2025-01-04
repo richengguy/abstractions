@@ -23,14 +23,13 @@ struct SimpleJob : public IJobFunction {
 struct ReadOnlyJob : public IJobFunction
 {
     Error operator()(JobContext &ctx) const override {
-        if (!ctx.HasData())
-        {
-            return "Missing data!";
+        auto msg = ctx.Data<std::string>();
+        if (!msg.has_value()) {
+            return msg.error();
         }
-        std::string msg = ctx.Data<std::string>();
 
         std::unique_lock lock{mutex};
-        fmt::print("-- Running job#{} ({}) with payload: {}\n", ctx.Id(), ctx.Worker(), msg);
+        fmt::print("-- Running job#{} ({}) with payload: {}\n", ctx.Id(), ctx.Worker(), *msg);
         std::this_thread::sleep_for(std::chrono::milliseconds(150));
 
         return errors::no_error;

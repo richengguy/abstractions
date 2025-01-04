@@ -11,17 +11,7 @@ JobContext::JobContext(int job_id, int worker_id, std::any &data) :
     _data{data} {}
 
 std::any &JobContext::Data() {
-    AssertHasData();
     return _data;
-}
-
-void JobContext::AssertHasData() const
-{
-    abstractions_assert(_data.has_value());
-}
-
-bool JobContext::HasData() const {
-    return _data.has_value();
 }
 
 Job::Job(int id, std::unique_ptr<IJobFunction> fn) :

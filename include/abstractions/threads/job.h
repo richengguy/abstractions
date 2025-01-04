@@ -1,6 +1,10 @@
 #pragma once
 
+#include <abstractions/errors.h>
 #include <abstractions/types.h>
+
+#include <fmt/format.h>
+#include <fmt/std.h>
 
 #include <any>
 #include <chrono>
@@ -11,7 +15,7 @@
 
 namespace abstractions::threads {
 
-// Forware declarations
+// Forward declarations
 class Job;
 class JobContext;
 
@@ -35,15 +39,6 @@ public:
     /// @param worker_id worker ID
     JobContext(int job_id, int worker_id, std::any &data);
 
-    /// @brief Gets a reference to the data stored in the job context.
-    /// @tparam T expected data type
-    /// @return contained data
-    template<typename T>
-    T Data() const {
-        AssertHasData();
-        return std::any_cast<T>(_data);
-    }
-
     /// @brief Check if the context contains data of the given type.
     /// @tparam T type being checked
     /// @return `true` if there is data and the type matches
@@ -51,14 +46,27 @@ public:
     bool HasValueOfType() const
     {
         auto &type = typeid(T);
-        return HasData() && _data.type() == type;
+        return _data.has_value() && _data.type() == type;
+    }
+
+    /// @brief Gets a reference to the data stored in the job context.
+    /// @tparam T expected data type
+    /// @return contained data or an error if it could not be extracted
+    template<typename T>
+    Expected<T> Data() const {
+        if (!_data.has_value()) {
+            return errors::report<T>("Context contains no data.");
+        }
+
+        if (!HasValueOfType<T>()) {
+            return errors::report<T>(fmt::format("Context contains data of type '{}'; expected '{}'.", _data.type(), typeid(T)));
+        }
+
+        return std::any_cast<T>(_data);
     }
 
     /// @brief Gets a reference to the data stored in the job context.
     std::any &Data();
-
-    /// @brief Determine if context contains any data.
-    bool HasData() const;
 
     /// @brief ID of the particular job.
     int Id() const {
@@ -71,7 +79,6 @@ public:
     }
 
 private:
-    void AssertHasData() const;
     int _job_id;
     int _worker_id;
     std::any &_data;
