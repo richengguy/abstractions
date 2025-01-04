@@ -105,41 +105,41 @@ public:
     /// @brief Create a new job.
     /// @tparam T IJobFunction class type
     /// @tparam Arg IJobFunction constructor argument types
-    /// @param id user-specified job ID
+    /// @param index user-specified job ID
     /// @param args constructor arguments
     /// @return a new Job instance
     template <typename T, typename... Arg>
-    static Job New(int id, Arg &&...args) {
+    static Job New(int index, Arg &&...args) {
         static_assert(std::is_base_of<IJobFunction, T>::value,
                       "'T' must inherit from IJobFunction.");
-        return Job(id, std::make_unique<T>(std::forward<Arg>(args)...));
+        return Job(index, std::make_unique<T>(std::forward<Arg>(args)...));
     }
 
     /// @brief Create a new job.
     /// @tparam T IJobFunction class type
     /// @tparam S payload type
     /// @tparam Arg IJobFunction constructor argument types
-    /// @param id user-specified job ID
+    /// @param index user-specified job ID
     /// @param payload data the job can access when it executes
     /// @param args constructor arguments
     /// @return a new Job instance
     template<typename T, typename S, typename... Arg>
-    static Job NewWithPayload(int id, S &&payload, Arg &&...args)
+    static Job NewWithPayload(int index, S &&payload, Arg &&...args)
     {
         static_assert(std::is_base_of<IJobFunction, T>::value, "'T' must inherit from IJobFunction.");
-        return Job(id, std::make_any<S>(payload), std::make_unique<T>(std::forward<Arg>(args)...));
+        return Job(index, std::make_any<S>(payload), std::make_unique<T>(std::forward<Arg>(args)...));
     }
 
     /// @brief Create a new job.
-    /// @param id job ID
+    /// @param index job ID
     /// @param fn function the job executes
-    Job(int id, std::unique_ptr<IJobFunction> fn);
+    Job(int index, std::unique_ptr<IJobFunction> fn);
 
     /// @brief Create a new job.
-    /// @param id job ID
+    /// @param index job ID
     /// @param payload data that goes to the job when it runs
     /// @param fn function the job executes
-    Job(int id, std::any payload, std::unique_ptr<IJobFunction> fn);
+    Job(int index, std::any payload, std::unique_ptr<IJobFunction> fn);
 
     /// @brief Run the job.
     /// @param worker_id ID of the worker executing the job

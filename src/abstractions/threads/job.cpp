@@ -14,13 +14,13 @@ std::any &JobContext::Data() {
     return _data;
 }
 
-Job::Job(int id, std::unique_ptr<IJobFunction> fn) :
-    _index{id},
+Job::Job(int index, std::unique_ptr<IJobFunction> fn) :
+    _index{index},
     _fn{std::move(fn)},
     _payload{std::make_unique<std::any>()} {}
 
-Job::Job(int id, std::any payload, std::unique_ptr<IJobFunction> fn) :
-    _index{id},
+Job::Job(int index, std::any payload, std::unique_ptr<IJobFunction> fn) :
+    _index{index},
     _fn{std::move(fn)},
     _payload{std::make_unique<std::any>(payload)} { }
 
