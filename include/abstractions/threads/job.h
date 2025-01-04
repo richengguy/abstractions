@@ -6,6 +6,7 @@
 #include <fmt/format.h>
 #include <fmt/std.h>
 
+#include <initializer_list>
 #include <any>
 #include <chrono>
 #include <future>
@@ -168,5 +169,13 @@ private:
     std::unique_ptr<std::any> _payload;
     std::promise<JobStatus> _job_status;
 };
+
+/// @brief Have the current thread wait for a set of jobs to complete.
+/// @param futures pointers to a set of job futures
+void WaitForJobs(std::initializer_list<const Job::Future *> futures);
+
+/// @brief Have the current thread wait for a set of jobs to complete.
+/// @param futures set of job futures
+void WaitForJobs(const std::vector<Job::Future> &futures);
 
 }  // namespace abstractions::threads

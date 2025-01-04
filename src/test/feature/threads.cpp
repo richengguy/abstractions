@@ -1,5 +1,6 @@
 #include <abstractions/threads/threadpool.h>
 
+#include <vector>
 #include <functional>
 #include <fmt/ranges.h>
 
@@ -70,20 +71,16 @@ ABSTRACTIONS_FEATURE_TEST() {
     auto future5 = thread_pool.Submit<SimpleJob>(5);
     auto future6 = thread_pool.Submit<SimpleJob>(6);
 
-    future1.wait();
-    future2.wait();
-    future3.wait();
-    future4.wait();
-    future5.wait();
-    future6.wait();
+    WaitForJobs({&future1, &future2, &future3, &future4, &future5, &future6});
 
+    std::vector<Job::Future> futures;
     std::string msg = "This is some message.";
-    auto future_w_msg = thread_pool.SubmitWithPayload<ReadOnlyJob>(10, msg);
-    future_w_msg.wait();
+    futures.push_back(thread_pool.SubmitWithPayload<ReadOnlyJob>(10, msg));
 
     std::string msg2 = "This is another message";
-    auto another_future_w_msg = thread_pool.SubmitWithPayload<ReadOnlyJob>(11, msg2);
-    another_future_w_msg.wait();
+    futures.push_back(thread_pool.SubmitWithPayload<ReadOnlyJob>(11, msg2));
+
+    WaitForJobs(futures);
 
     std::vector<int> array{0,1,2,3,4};
     auto future_w_update = thread_pool.SubmitWithPayload<WriteOnlyJob>(2, array.data());
