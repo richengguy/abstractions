@@ -110,7 +110,9 @@ struct RenderAndCompare : public threads::IJobFunction {
             return cost.error();
         }
 
-        payload->costs(ctx.Index()) = *cost;
+        // NOTE: Storing the *negative* costs because PGPE finds a maximum, not
+        // a minimum.
+        payload->costs(ctx.Index()) = -(*cost);
 
         return errors::no_error;
     }
