@@ -67,9 +67,8 @@ public:
     /// @param payload data the job can access when it executes
     /// @param args constructor arguments
     /// @return an awaitable future for the results of the job
-    template<typename T, typename S, typename... Arg>
-    Job::Future SubmitWithPayload(int index, S &&payload, Arg &&...args)
-    {
+    template <typename T, typename S, typename... Arg>
+    Job::Future SubmitWithPayload(int index, S &&payload, Arg &&...args) {
         auto job = Job::NewWithPayload<T>(index, payload, std::forward<Arg>(args)...);
         return Submit(job);
     }

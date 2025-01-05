@@ -101,8 +101,7 @@ const PgpeOptimizerSettings &PgpeOptimizer::GetSettings() const {
     return _settings;
 }
 
-void PgpeOptimizer::SetPrngSeed(DefaultRngType::result_type seed)
-{
+void PgpeOptimizer::SetPrngSeed(DefaultRngType::result_type seed) {
     _prng = Prng(seed);
 }
 

@@ -48,11 +48,11 @@ RectangleCollection ShapeGenerator::RandomRectangles(const int num) {
     return collection;
 }
 
-PackedShapeCollection::PackedShapeCollection()
-    : _collection_size{0}, _circles{}, _rectangles{}, _triangles{}
-{
-
-}
+PackedShapeCollection::PackedShapeCollection() :
+    _collection_size{0},
+    _circles{},
+    _rectangles{},
+    _triangles{} {}
 
 PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes,
                                              ConstRowVectorRef params) {
@@ -116,8 +116,7 @@ PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes,
     }
 }
 
-PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes, int num_shapes)
-{
+PackedShapeCollection::PackedShapeCollection(Options<AbstractionShape> shapes, int num_shapes) {
     int num_circles = shapes & AbstractionShape::Circles ? num_shapes : 0;
     int num_rectangles = shapes & AbstractionShape::Rectangles ? num_shapes : 0;
     int num_triangles = shapes & AbstractionShape::Triangles ? num_shapes : 0;
@@ -175,13 +174,14 @@ int PackedShapeCollection::CollectionSize() const {
     return _collection_size;
 }
 
-int PackedShapeCollection::TotalDimensions() const
-{
+int PackedShapeCollection::TotalDimensions() const {
     auto shapes = Shapes();
     int total_dimensions = 0;
     total_dimensions += shapes & AbstractionShape::Circles ? CircleCollection::TotalDimensions : 0;
-    total_dimensions += shapes & AbstractionShape::Rectangles ? RectangleCollection::TotalDimensions : 0;
-    total_dimensions += shapes & AbstractionShape::Triangles ? TriangleCollection::TotalDimensions : 0;
+    total_dimensions +=
+        shapes & AbstractionShape::Rectangles ? RectangleCollection::TotalDimensions : 0;
+    total_dimensions +=
+        shapes & AbstractionShape::Triangles ? TriangleCollection::TotalDimensions : 0;
     return total_dimensions;
 }
 

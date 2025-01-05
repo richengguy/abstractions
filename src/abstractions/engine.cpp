@@ -1,27 +1,23 @@
 #include "abstractions/engine.h"
 
 #include <abstractions/profile.h>
-#include <abstractions/threads/threadpool.h>
 #include <abstractions/render/renderer.h>
+#include <abstractions/threads/threadpool.h>
 
 #include <functional>
 #include <vector>
 
-namespace abstractions
-{
+namespace abstractions {
 
-namespace
-{
+namespace {
 
 /// @brief Compute the comparison costs.
 /// @param metric comparison metric
 /// @param ref reference image
 /// @param tgt target image (what's being compared to the reference)
 /// @return the cost, or an error if something went wrong
-Expected<double> ComputeCost(ImageComparison metric, const Image &ref, const Image &tgt)
-{
-    switch (metric)
-    {
+Expected<double> ComputeCost(ImageComparison metric, const Image &ref, const Image &tgt) {
+    switch (metric) {
         case ImageComparison::L1Norm:
             return CompareImagesAbsDiff(ref, tgt);
         case ImageComparison::L2Norm:
@@ -34,8 +30,7 @@ Expected<double> ComputeCost(ImageComparison metric, const Image &ref, const Ima
 /// @brief Helper to convert an "internal" data type to an "external" one.
 /// @param op operations timing
 /// @return the process time
-TimingReport::ProcessTime FromOperationTiming(const OperationTiming &op)
-{
+TimingReport::ProcessTime FromOperationTiming(const OperationTiming &op) {
     auto timing = op.GetTiming();
     return TimingReport::ProcessTime{
         .total = timing.total,
@@ -46,8 +41,7 @@ TimingReport::ProcessTime FromOperationTiming(const OperationTiming &op)
 
 /// @brief Contains the optimizer along with everything it needs to perform
 ///     the "sample" and "optimize" operations.
-struct OptimizerPayload
-{
+struct OptimizerPayload {
     std::reference_wrapper<PgpeOptimizer> optimizer;
     MatrixRef samples;
     ColumnVectorRef costs;
@@ -55,8 +49,7 @@ struct OptimizerPayload
 
 /// @brief Contains everything needed to render a single image and compute the
 ///     matching cost.
-struct RenderPayload
-{
+struct RenderPayload {
     std::reference_wrapper<const Image> reference;
     std::vector<render::Renderer> renderers;
     MatrixRef samples;
@@ -66,13 +59,10 @@ struct RenderPayload
 };
 
 /// @brief Generate the set of samples needed for estimating sample costs.
-struct GenerateSolutionSamples : public threads::IJobFunction
-{
-    Error operator()(threads::JobContext &ctx) const override
-    {
+struct GenerateSolutionSamples : public threads::IJobFunction {
+    Error operator()(threads::JobContext &ctx) const override {
         auto payload = ctx.Data<OptimizerPayload>();
-        if (!payload.has_value())
-        {
+        if (!payload.has_value()) {
             return payload.error();
         }
 
@@ -82,13 +72,10 @@ struct GenerateSolutionSamples : public threads::IJobFunction
 };
 
 /// @brief Run the PGPE optimizer to update the internal solution.
-struct RunOptimizer : public threads::IJobFunction
-{
-    Error operator()(threads::JobContext &ctx) const override
-    {
+struct RunOptimizer : public threads::IJobFunction {
+    Error operator()(threads::JobContext &ctx) const override {
         auto payload = ctx.Data<OptimizerPayload>();
-        if (!payload.has_value())
-        {
+        if (!payload.has_value()) {
             return payload.error();
         }
 
@@ -99,17 +86,15 @@ struct RunOptimizer : public threads::IJobFunction
 
 /// @brief Render the set of images from the PGPE optimizer samples and compute
 ///     the per-sample costs.
-struct RenderAndCompare : public threads::IJobFunction
-{
-    Error operator()(threads::JobContext &ctx) const override
-    {
+struct RenderAndCompare : public threads::IJobFunction {
+    Error operator()(threads::JobContext &ctx) const override {
         auto payload = ctx.Data<RenderPayload>();
-        if (!payload.has_value())
-        {
+        if (!payload.has_value()) {
             return payload.error();
         }
 
-        render::PackedShapeCollection sampled_shapes(payload->shapes, payload->samples.row(ctx.Index()));
+        render::PackedShapeCollection sampled_shapes(payload->shapes,
+                                                     payload->samples.row(ctx.Index()));
 
         // Render the test image, using a random background to avoid biasing
         // blank areas.
@@ -118,10 +103,10 @@ struct RenderAndCompare : public threads::IJobFunction
         renderer.Render(sampled_shapes);
 
         // Compute the matching cost of the rendered image with the reference.
-        auto cost = ComputeCost(payload->comparison_metric, payload->reference, renderer.DrawingSurface());
+        auto cost =
+            ComputeCost(payload->comparison_metric, payload->reference, renderer.DrawingSurface());
 
-        if (!cost.has_value())
-        {
+        if (!cost.has_value()) {
             return cost.error();
         }
 
@@ -131,57 +116,46 @@ struct RenderAndCompare : public threads::IJobFunction
     }
 };
 
-}
+}  // namespace
 
-Error EngineConfig::Validate() const
-{
-    if (max_iterations < 1)
-    {
+Error EngineConfig::Validate() const {
+    if (max_iterations < 1) {
         return "Maximum number of iterations cannot be negative.";
     }
 
-    if (num_samples < 1 || num_samples % 2 != 0)
-    {
+    if (num_samples < 1 || num_samples % 2 != 0) {
         return "The number of samples must be greater than zero and an even number.";
     }
 
-    if (num_drawn_shapes < 1)
-    {
+    if (num_drawn_shapes < 1) {
         return "The number of drawn shapes must be greater than zero.";
     }
 
-    if (num_workers && num_workers < 1)
-    {
+    if (num_workers && num_workers < 1) {
         return "The number of thread workers must be greater than zero.";
     }
 
     return errors::no_error;
 }
 
-Expected<Engine> Engine::Create(const EngineConfig &config, const PgpeOptimizerSettings &optim_settings)
-{
-    if (auto err = config.Validate())
-    {
+Expected<Engine> Engine::Create(const EngineConfig &config,
+                                const PgpeOptimizerSettings &optim_settings) {
+    if (auto err = config.Validate()) {
         return errors::report<Engine>(err);
     }
 
-    if (auto err = optim_settings.Validate())
-    {
+    if (auto err = optim_settings.Validate()) {
         return errors::report<Engine>(err);
     }
 
     return Engine(config, optim_settings);
 }
 
-Engine::Engine(const EngineConfig &config, const PgpeOptimizerSettings &optim)
-    : _config{config},
-      _optim_settings{optim}
-{
+Engine::Engine(const EngineConfig &config, const PgpeOptimizerSettings &optim) :
+    _config{config},
+    _optim_settings{optim} {}
 
-}
-
-Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference) const
-{
+Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference) const {
     const int width = reference.Width();
     const int height = reference.Height();
 
@@ -205,8 +179,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     // First, create the optimizer.  Use a generated PRNG to get the seed.
     auto pgpe_prng = prng_generator.CreatePrng();
     auto optimizer = PgpeOptimizer::New(_optim_settings);
-    if (!optimizer.has_value())
-    {
+    if (!optimizer.has_value()) {
         return errors::report<OptimizationResult>(optimizer.error());
     }
     optimizer->SetPrngSeed(pgpe_prng.seed());
@@ -225,18 +198,15 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         render::RectangleCollection rectangles;
         render::TriangleCollection triangles;
 
-        if (_config.shapes & render::AbstractionShape::Circles)
-        {
+        if (_config.shapes & render::AbstractionShape::Circles) {
             circles = shape_generator.RandomCircles(_config.num_drawn_shapes);
         }
 
-        if (_config.shapes & render::AbstractionShape::Rectangles)
-        {
+        if (_config.shapes & render::AbstractionShape::Rectangles) {
             rectangles = shape_generator.RandomRectangles(_config.num_drawn_shapes);
         }
 
-        if (_config.shapes & render::AbstractionShape::Triangles)
-        {
+        if (_config.shapes & render::AbstractionShape::Triangles) {
             triangles = shape_generator.RandomTriangles(_config.num_drawn_shapes);
         }
 
@@ -263,12 +233,10 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .comparison_metric = _config.comparison_metric,
     };
 
-    for (int i = 0; i < _config.num_samples; i++)
-    {
+    for (int i = 0; i < _config.num_samples; i++) {
         auto renderer = render::Renderer::Create(width, height, prng_generator.CreatePrng());
 
-        if (!renderer.has_value())
-        {
+        if (!renderer.has_value()) {
             return errors::report<OptimizationResult>(renderer.error());
         }
 
@@ -282,8 +250,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     OperationTiming sampling_timing;
 
     int iterations = 0;
-    for (int i = 0; i < _config.max_iterations; i++)
-    {
+    for (int i = 0; i < _config.max_iterations; i++) {
         // Run the sampling step
         auto sample_job = thread_pool.SubmitWithPayload<GenerateSolutionSamples>(0, optim_payload);
         auto sample_result = sample_job.get();
@@ -296,20 +263,17 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
         // Render images from the generated samples and compute the costs.
         std::vector<threads::Job::Future> futures;
-        for (int j = 0; j < _config.num_samples; j++)
-        {
+        for (int j = 0; j < _config.num_samples; j++) {
             auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(j, render_payload);
             futures.push_back(std::move(render_job));
         }
 
         threads::WaitForJobs(futures);
 
-        for (auto &render_future : futures)
-        {
+        for (auto &render_future : futures) {
             auto result = render_future.get();
 
-            if (result.error)
-            {
+            if (result.error) {
                 return errors::report<OptimizationResult>(result.error);
             }
 
@@ -336,8 +300,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     // (Will reuse one of the renderers for this since there's no reason to make
     // a new one.)
     auto solution = optimizer->GetEstimate();
-    if (!solution.has_value())
-    {
+    if (!solution.has_value()) {
         return errors::report<OptimizationResult>(solution.error());
     }
 
@@ -348,8 +311,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     renderer.Render(image_abstraction);
 
     auto final_cost = ComputeCost(_config.comparison_metric, reference, renderer.DrawingSurface());
-    if (!final_cost.has_value())
-    {
+    if (!final_cost.has_value()) {
         return errors::report<OptimizationResult>(final_cost.error());
     }
 
@@ -361,16 +323,17 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .iterations = iterations,
         .shapes = _config.shapes,
         .seed = prng_generator.BaseSeed(),
-        .timing = TimingReport{
-            .total_time = end_to_end_time,
-            .initialization_time = init_timing.GetTiming().total,
-            .pgpe_optimization_time = FromOperationTiming(pgpe_timing),
-            .solution_sampling_time = FromOperationTiming(sampling_timing),
-            .rendering_time = FromOperationTiming(render_timing),
-        },
+        .timing =
+            TimingReport{
+                .total_time = end_to_end_time,
+                .initialization_time = init_timing.GetTiming().total,
+                .pgpe_optimization_time = FromOperationTiming(pgpe_timing),
+                .solution_sampling_time = FromOperationTiming(sampling_timing),
+                .rendering_time = FromOperationTiming(render_timing),
+            },
     };
 
     return result;
 }
 
-}
+}  // namespace abstractions

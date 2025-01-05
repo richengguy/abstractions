@@ -1,13 +1,13 @@
 #pragma once
 
-#include <abstractions/math/random.h>
-#include <abstractions/render/shapes.h>
-#include <abstractions/pgpe.h>
 #include <abstractions/image.h>
+#include <abstractions/math/random.h>
+#include <abstractions/pgpe.h>
+#include <abstractions/render/shapes.h>
 #include <abstractions/types.h>
 
-#include <optional>
 #include <functional>
+#include <optional>
 #include <vector>
 
 namespace abstractions {
@@ -158,7 +158,8 @@ public:
     /// @param config engine configuration
     /// @param optim_settings optional optimizer configuration
     /// @return the initialized engine or an error if the configuraiton failed
-    Expected<Engine> Create(const EngineConfig &config, const PgpeOptimizerSettings &optim_settings = PgpeOptimizerSettings());
+    Expected<Engine> Create(const EngineConfig &config,
+                            const PgpeOptimizerSettings &optim_settings = PgpeOptimizerSettings());
 
     /// @brief Generate an abstract representation from the provided reference image.
     /// @param reference reference image

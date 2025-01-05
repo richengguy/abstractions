@@ -189,8 +189,7 @@ TEST_CASE("Can pack/unpack individual shape collections.") {
     CHECK(unpacked.Triangles().Params == test_triangles.Params);
 }
 
-TEST_CASE("Can initialize a packed shape collection with a set number of shapes.")
-{
+TEST_CASE("Can initialize a packed shape collection with a set number of shapes.") {
     // Doing the weird "doctest parameterized test"-thing.  'possible_shapes' is
     // the set of all shape combinations while 'current_shapes' is the currently
     // tested configuration.
@@ -213,31 +212,24 @@ TEST_CASE("Can initialize a packed shape collection with a set number of shapes.
 
     if (current_shapes & AbstractionShape::Circles) {
         CHECK(packed.Circles().NumShapes() == 5);
-    }
-    else
-    {
+    } else {
         CHECK(packed.Circles().Empty());
     }
 
     if (current_shapes & AbstractionShape::Rectangles) {
         CHECK(packed.Rectangles().NumShapes() == 5);
-    }
-    else
-    {
+    } else {
         CHECK(packed.Rectangles().Empty());
     }
 
     if (current_shapes & AbstractionShape::Triangles) {
         CHECK(packed.Triangles().NumShapes() == 5);
-    }
-    else
-    {
+    } else {
         CHECK(packed.Triangles().Empty());
     }
 }
 
-TEST_CASE("Can initialize a completely empty packed collection.")
-{
+TEST_CASE("Can initialize a completely empty packed collection.") {
     PackedShapeCollection empty_collection;
     REQUIRE(empty_collection.CollectionSize() == 0);
     REQUIRE(empty_collection.Circles().Empty());

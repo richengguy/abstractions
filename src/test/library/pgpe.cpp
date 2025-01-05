@@ -148,8 +148,7 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.") {
         line_pt.array();
 
     // Construct the optimizer and try to find a "good" solution
-    auto optimizer = PgpeOptimizer::New(
-        PgpeOptimizerSettings{.max_speed = 0.2, .seed = 3});
+    auto optimizer = PgpeOptimizer::New(PgpeOptimizerSettings{.max_speed = 0.2, .seed = 3});
 
     INFO("Ensure optimizer is created.");
     REQUIRE(optimizer);

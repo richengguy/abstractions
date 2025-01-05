@@ -2,14 +2,13 @@
 
 #include <abstractions/errors.h>
 #include <abstractions/types.h>
-
 #include <fmt/format.h>
 #include <fmt/std.h>
 
-#include <initializer_list>
 #include <any>
 #include <chrono>
 #include <future>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #include <vector>
@@ -43,9 +42,8 @@ public:
     /// @brief Check if the context contains data of the given type.
     /// @tparam T type being checked
     /// @return `true` if there is data and the type matches
-    template<typename T>
-    bool HasValueOfType() const
-    {
+    template <typename T>
+    bool HasValueOfType() const {
         auto &type = typeid(T);
         return _data.has_value() && _data.type() == type;
     }
@@ -53,14 +51,15 @@ public:
     /// @brief Gets a reference to the data stored in the job context.
     /// @tparam T expected data type
     /// @return contained data or an error if it could not be extracted
-    template<typename T>
+    template <typename T>
     Expected<T> Data() const {
         if (!_data.has_value()) {
             return errors::report<T>("Context contains no data.");
         }
 
         if (!HasValueOfType<T>()) {
-            return errors::report<T>(fmt::format("Context contains data of type '{}'; expected '{}'.", _data.type(), typeid(T)));
+            return errors::report<T>(fmt::format(
+                "Context contains data of type '{}'; expected '{}'.", _data.type(), typeid(T)));
         }
 
         return std::any_cast<T>(_data);
@@ -124,11 +123,12 @@ public:
     /// @param payload data the job can access when it executes
     /// @param args constructor arguments
     /// @return a new Job instance
-    template<typename T, typename S, typename... Arg>
-    static Job NewWithPayload(int index, S &&payload, Arg &&...args)
-    {
-        static_assert(std::is_base_of<IJobFunction, T>::value, "'T' must inherit from IJobFunction.");
-        return Job(index, std::make_any<S>(payload), std::make_unique<T>(std::forward<Arg>(args)...));
+    template <typename T, typename S, typename... Arg>
+    static Job NewWithPayload(int index, S &&payload, Arg &&...args) {
+        static_assert(std::is_base_of<IJobFunction, T>::value,
+                      "'T' must inherit from IJobFunction.");
+        return Job(index, std::make_any<S>(payload),
+                   std::make_unique<T>(std::forward<Arg>(args)...));
     }
 
     /// @brief Create a new job.
