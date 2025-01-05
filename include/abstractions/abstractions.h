@@ -1,7 +1,4 @@
 #pragma once
 
-namespace abstractions {
-
-void hello_world();
-
-}  // namespace abstractions
+#include <abstractions/engine.h>
+#include <abstractions/image.h>

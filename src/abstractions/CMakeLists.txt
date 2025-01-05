@@ -29,7 +29,6 @@ set(ABSTRACTIONS_INCLUDES
 )
 
 set (ABSTRACTIONS_SOURCES
-    abstractions.cpp
     console.cpp
     engine.cpp
     errors.cpp
