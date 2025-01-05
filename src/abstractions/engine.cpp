@@ -13,6 +13,37 @@ namespace abstractions
 namespace
 {
 
+/// @brief Compute the comparison costs.
+/// @param metric comparison metric
+/// @param ref reference image
+/// @param tgt target image (what's being compared to the reference)
+/// @return the cost, or an error if something went wrong
+Expected<double> ComputeCost(ImageComparison metric, const Image &ref, const Image &tgt)
+{
+    switch (metric)
+    {
+        case ImageComparison::L1Norm:
+            return CompareImagesAbsDiff(ref, tgt);
+        case ImageComparison::L2Norm:
+            return CompareImagesSquaredDiff(ref, tgt);
+    }
+
+    return errors::report<double>("Unknown comparison metric.");
+}
+
+/// @brief Helper to convert an "internal" data type to an "external" one.
+/// @param op operations timing
+/// @return the process time
+TimingReport::ProcessTime FromOperationTiming(const OperationTiming &op)
+{
+    auto timing = op.GetTiming();
+    return TimingReport::ProcessTime{
+        .total = timing.total,
+        .mean = timing.mean,
+        .standard_deviation = timing.stddev,
+    };
+}
+
 /// @brief Contains the optimizer along with everything it needs to perform
 ///     the "sample" and "optimize" operations.
 struct OptimizerPayload
@@ -30,6 +61,7 @@ struct RenderPayload
     std::vector<render::Renderer> renderers;
     MatrixRef samples;
     ColumnVectorRef costs;
+    const Options<render::AbstractionShape> shapes;
     const ImageComparison comparison_metric;
 };
 
@@ -77,7 +109,23 @@ struct RenderAndCompare : public threads::IJobFunction
             return payload.error();
         }
 
-        // TODO: Figure this out
+        render::PackedShapeCollection sampled_shapes(payload->shapes, payload->samples.row(ctx.Index()));
+
+        // Render the test image, using a random background to avoid biasing
+        // blank areas.
+        auto &renderer = payload->renderers.at(ctx.Index());
+        renderer.UseRandomBackgroundFill(true);
+        renderer.Render(sampled_shapes);
+
+        // Compute the matching cost of the rendered image with the reference.
+        auto cost = ComputeCost(payload->comparison_metric, payload->reference, renderer.DrawingSurface());
+
+        if (!cost.has_value())
+        {
+            return cost.error();
+        }
+
+        payload->costs(ctx.Index()) = *cost;
 
         return errors::no_error;
     }
@@ -165,8 +213,6 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
     // Do the initial abstract shape generation to prime the optimizer with an
     // initial solution.
-    render::PackedShapeCollection image_abstraction;
-
     Matrix samples;
     ColumnVector costs;
 
@@ -194,10 +240,10 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
             triangles = shape_generator.RandomTriangles(_config.num_drawn_shapes);
         }
 
-        image_abstraction = render::PackedShapeCollection(circles, rectangles, triangles);
-        optimizer->Initialize(image_abstraction.AsPackedVector());
+        render::PackedShapeCollection init_shapes(circles, rectangles, triangles);
+        optimizer->Initialize(init_shapes.AsPackedVector());
 
-        samples = Matrix::Zero(_config.num_samples, image_abstraction.TotalDimensions());
+        samples = Matrix::Zero(_config.num_samples, init_shapes.TotalDimensions());
         costs = ColumnVector::Zero(_config.num_samples);
     }
 
@@ -205,7 +251,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     OptimizerPayload optim_payload{
         .optimizer = *optimizer,
         .samples = samples,
-        .costs = costs
+        .costs = costs,
     };
 
     RenderPayload render_payload{
@@ -213,7 +259,8 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .renderers = std::vector<render::Renderer>(),
         .samples = samples,
         .costs = costs,
-        .comparison_metric = _config.comparison_metric
+        .shapes = _config.shapes,
+        .comparison_metric = _config.comparison_metric,
     };
 
     for (int i = 0; i < _config.num_samples; i++)
@@ -234,6 +281,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     OperationTiming render_timing;
     OperationTiming sampling_timing;
 
+    int iterations = 0;
     for (int i = 0; i < _config.max_iterations; i++)
     {
         // Run the sampling step
@@ -280,10 +328,49 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
         // Invoke any callbacks
         // TODO
+
+        iterations++;
     }
 
-    // Wrap things up
+    // Wrap things up by rendering a final image to compute the comparison cost.
+    // (Will reuse one of the renderers for this since there's no reason to make
+    // a new one.)
+    auto solution = optimizer->GetEstimate();
+    if (!solution.has_value())
+    {
+        return errors::report<OptimizationResult>(solution.error());
+    }
+
+    render::PackedShapeCollection image_abstraction(_config.shapes, *solution);
+
+    auto &renderer = render_payload.renderers.front();
+    renderer.SetBackground(0, 0, 0);
+    renderer.Render(image_abstraction);
+
+    auto final_cost = ComputeCost(_config.comparison_metric, reference, renderer.DrawingSurface());
+    if (!final_cost.has_value())
+    {
+        return errors::report<OptimizationResult>(final_cost.error());
+    }
+
     auto end_to_end_time = e2e_timer.GetElapsedTime();
+
+    OptimizationResult result{
+        .solution = *solution,
+        .cost = *final_cost,
+        .iterations = iterations,
+        .shapes = _config.shapes,
+        .seed = prng_generator.BaseSeed(),
+        .timing = TimingReport{
+            .total_time = end_to_end_time,
+            .initialization_time = init_timing.GetTiming().total,
+            .pgpe_optimization_time = FromOperationTiming(pgpe_timing),
+            .solution_sampling_time = FromOperationTiming(sampling_timing),
+            .rendering_time = FromOperationTiming(render_timing),
+        },
+    };
+
+    return result;
 }
 
 }
