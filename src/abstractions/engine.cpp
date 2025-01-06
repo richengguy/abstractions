@@ -219,7 +219,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         render::PackedShapeCollection init_shapes(circles, rectangles, triangles);
         optimizer->Initialize(init_shapes.AsPackedVector());
 
-        samples = Matrix::Zero(_config.num_samples, init_shapes.TotalDimensions());
+        samples = Matrix::Zero(_config.num_samples, init_shapes.TotalDimensions() * _config.num_drawn_shapes);
         costs = ColumnVector::Zero(_config.num_samples);
     }
 
