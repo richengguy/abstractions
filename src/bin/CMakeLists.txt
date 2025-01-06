@@ -6,6 +6,7 @@ add_executable(abstractions-bin
     main.cpp
 
     support.h
+    support.cpp
 
     find.h
     find.cpp

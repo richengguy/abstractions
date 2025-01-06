@@ -10,5 +10,5 @@ CLI::App *RenderCommand::Init(CLI::App &parent)
 
 void RenderCommand::Run() const
 {
-    fmt::println("Not currently implemented.");
+    console.Print("Not currently implemented.");
 }

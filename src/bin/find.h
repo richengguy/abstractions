@@ -2,10 +2,12 @@
 
 #include "support.h"
 
+#include <abstractions/abstractions.h>
+
 #include <optional>
 #include <filesystem>
 
-class FindCommand : public ICommand
+class FindCommand : public Command
 {
 public:
     CLI::App *Init(CLI::App &parent) override;
@@ -13,5 +15,6 @@ public:
 
 private:
     std::filesystem::path _image;
-    std::optional<int> _seed;
+    abstractions::EngineConfig _config;
+    abstractions::PgpeOptimizerSettings _optim_settings;
 };

@@ -2,7 +2,7 @@
 
 #include "support.h"
 
-class RenderCommand : public ICommand
+class RenderCommand : public Command
 {
 public:
     CLI::App *Init(CLI::App &parent) override;
