@@ -1,5 +1,7 @@
 #include "find.h"
 
+#include <abstractions/errors.h>
+
 #include <fmt/format.h>
 #include <fmt/std.h>
 
@@ -11,10 +13,11 @@ using namespace abstractions;
 namespace {
 
 constexpr const char *kEngineOptions = "Abstraction Engine";
-constexpr const char *kGeneralOptions = "General";
+constexpr const char *kGeneralOptions = "General Options";
 constexpr const char *kPgpeOptions = "PGPE Optimizer";
 
 constexpr const double kDefaultMaxSolutionVelocity = 0.15;
+constexpr const double kDefaultImageScale = 1.0;
 
 static cli_helpers::EnumValidator<ImageComparison> ImageComparisonEnum("METRIC",
                                                                        {ImageComparison::L1Norm,
@@ -57,9 +60,12 @@ CLI::App *FindCommand::Init(CLI::App &parent) {
     app->description("Find the abstract representation of an image.");
 
     app->add_option("image", _image, "Source image file")->check(CLI::ExistingFile)->required();
+    app->add_option("output", _output, "Output path")->required();
 
     // General options
-    app->add_option("--seed", _config.seed, "PRNG seed")->group(kGeneralOptions);
+    app->add_option("--seed", _config.seed, "Set a fixed PRNG seed.")->group(kGeneralOptions);
+    app->add_option("--save-intermediate", _per_stage_output, "Optional location where the results at each optimization iteration are stored.")->capture_default_str()->group(kGeneralOptions);
+    app->add_option("--scale", _image_scale, "Scale the image by the about before finding the abstract representation.")->capture_default_str()->group(kGeneralOptions);
 
     // Engine configuration options
     app->add_option("-n,--iterations", _config.max_iterations,
@@ -125,5 +131,22 @@ CLI::App *FindCommand::Init(CLI::App &parent) {
 }
 
 void FindCommand::Run() const {
-    console.Print("Do something!!!!");
+    console.Print("Abstracting {}", _image);
+    console.Separator();
+    console.Print("         Shapes  - {} [{}]", _config.shapes, _config.num_drawn_shapes);
+    console.Print("         Samples - {}", _config.num_samples);
+    console.Print("         Scale   - {}", _image_scale.value_or(kDefaultImageScale));
+    console.Print("  Max Iterations - {}", _config.max_iterations);
+    console.Separator();
+
+    auto image = Image::Load(_image);
+    abstractions_check(image);
+
+    auto engine = Engine::Create(_config, _optim_settings);
+    abstractions_check(engine);
+
+    auto result = engine->GenerateAbstraction(*image);
+    abstractions_check(result);
+
+    console.Print("Finished in {}", result->timing.total_time);
 }

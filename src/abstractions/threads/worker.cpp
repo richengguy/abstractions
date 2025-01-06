@@ -29,10 +29,12 @@ void WorkerState::RunJobs(Queue &queue) const {
             continue;
         }
 
-        // There is a job, so run it.  Errors shouldn't happen, so if the
-        // worker encounters one it should cause the program to halt.
-        auto results = job->Run(id);
-        abstractions_check(results.error);
+        // There is a job, so run it.  The job is expected to handle any errors
+        // and avoid throwing an exception.  If somethings goes wrong, then it
+        // should be providing the error (and reason) through a promise object.
+        // If an exception does get through then it means the program itself
+        // needs to be shutdown.
+        job->Run(id);
     }
 }
 
