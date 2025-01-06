@@ -2,6 +2,7 @@
 
 #include <CLI/CLI.hpp>
 
+#include "support.h"
 #include "render.h"
 #include "find.h"
 

@@ -5,7 +5,7 @@ find_package(indicators REQUIRED)
 add_executable(abstractions-bin
     main.cpp
 
-    command.h
+    support.h
 
     find.h
     find.cpp

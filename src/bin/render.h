@@ -1,6 +1,6 @@
 #pragma once
 
-#include "command.h"
+#include "support.h"
 
 class RenderCommand : public ICommand
 {
