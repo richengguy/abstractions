@@ -182,6 +182,15 @@ private:
     PgpeOptimizerSettings _optim_settings;
 };
 
+/// @brief Render an image abstraction with the provided configuration.
+/// @param width output image width
+/// @param height output image height
+/// @param shapes shape configuration
+/// @param solution solution vector
+/// @param background_colour (optional) background colour
+/// @return rendered image abstraction
+[[nodiscard]] Expected<Image> RenderImageAbstraction(const int width, const int height, const Options<render::AbstractionShape> shapes, ConstRowVectorRef solution, const Pixel background_colour = Pixel(0, 0, 0, 255));
+
 }  // namespace abstractions
 
 /// @brief Custom formatter for the ImageComparison type.

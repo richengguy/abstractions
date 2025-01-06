@@ -343,6 +343,21 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     return result;
 }
 
+Expected<Image> RenderImageAbstraction(const int width, const int height, const Options<render::AbstractionShape> shapes, ConstRowVectorRef solution, const Pixel background_colour)
+{
+    auto renderer = render::Renderer::Create(width, height);
+    if (!renderer.has_value())
+    {
+        errors::report<Image>(renderer.error());
+    }
+
+    render::PackedShapeCollection packed_shapes(shapes, solution);
+
+    renderer->SetBackground(background_colour);
+    renderer->Render(packed_shapes);
+    return renderer->DrawingSurface();
+}
+
 }  // namespace abstractions
 
 using namespace abstractions;

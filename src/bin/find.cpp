@@ -148,5 +148,12 @@ void FindCommand::Run() const {
     auto result = engine->GenerateAbstraction(*image);
     abstractions_check(result);
 
+    auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, result->solution);
+    abstractions_check(output);
+
+    auto output_image_file = _output;
+    output_image_file.replace_extension(".png");
+    abstractions_check(output->Save(output_image_file));
+
     console.Print("Finished in {}", result->timing.total_time);
 }

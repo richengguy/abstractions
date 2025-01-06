@@ -36,6 +36,11 @@ public:
     /// @param alpha alpha value; defaults to "fully opaque"
     void SetBackground(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 255);
 
+    /// @brief Set the background fill colour.  This is ignored when the random
+    ///     background fill is enabled.
+    /// @param pixel background colour
+    void SetBackground(const Pixel &pixel);
+
     /// @brief Draw the packed collection.
     /// @param shapes set of shapes for the renderer to draw
     /// @return the rendering result
