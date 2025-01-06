@@ -2,6 +2,10 @@
 
 #include <abstractions/math/matrices.h>
 
+#include <fmt/ranges.h>
+
+#include <vector>
+
 namespace abstractions::render {
 
 namespace {
@@ -214,6 +218,7 @@ RowVector PackedShapeCollection::AsPackedVector() const {
 }  // namespace abstractions::render
 
 using namespace fmt;
+using namespace abstractions;
 using namespace abstractions::render;
 
 format_context::iterator formatter<AbstractionShape>::format(AbstractionShape shape, format_context &ctx) const
@@ -232,4 +237,23 @@ format_context::iterator formatter<AbstractionShape>::format(AbstractionShape sh
             break;
     }
     return formatter<string_view>::format(name, ctx);
+}
+
+format_context::iterator formatter<Options<AbstractionShape>>::format(Options<AbstractionShape> options, format_context &ctx) const
+{
+    std::vector<AbstractionShape> selected;
+    if (options & AbstractionShape::Circles) {
+        selected.push_back(AbstractionShape::Circles);
+    }
+
+    if (options & AbstractionShape::Rectangles) {
+        selected.push_back(AbstractionShape::Rectangles);
+    }
+
+    if (options & AbstractionShape::Triangles) {
+        selected.push_back(AbstractionShape::Triangles);
+    }
+
+    string_view out = fmt::format("{{ {} }}", fmt::join(selected, " "));
+    return formatter<string_view>::format(out, ctx);
 }

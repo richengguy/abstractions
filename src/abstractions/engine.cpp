@@ -339,3 +339,21 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 }
 
 }  // namespace abstractions
+
+using namespace abstractions;
+using namespace fmt;
+
+format_context::iterator formatter<ImageComparison>::format(ImageComparison metric, format_context &ctx) const
+{
+    string_view name = "undefined";
+    switch (metric)
+    {
+        case ImageComparison::L1Norm:
+            name = "L1";
+            break;
+        case ImageComparison::L2Norm:
+            name = "L2";
+            break;
+    }
+    return formatter<string_view>::format(name, ctx);
+}

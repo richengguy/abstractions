@@ -6,9 +6,6 @@
 
 #include <fmt/base.h>
 
-#include <optional>
-#include <vector>
-
 namespace abstractions::render {
 
 /// @brief A collection of shape parameter vectors.
@@ -211,4 +208,11 @@ template<>
 struct fmt::formatter<abstractions::render::AbstractionShape> : fmt::formatter<fmt::string_view>
 {
     fmt::format_context::iterator format(abstractions::render::AbstractionShape shape, fmt::format_context &ctx) const;
+};
+
+/// @brief Custom formatter for Options<AbstractionShape>
+template<>
+struct fmt::formatter<abstractions::Options<abstractions::render::AbstractionShape>> : fmt::formatter<fmt::string_view>
+{
+    fmt::format_context::iterator format(abstractions::Options<abstractions::render::AbstractionShape> options, fmt::format_context &ctx) const;
 };

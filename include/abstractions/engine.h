@@ -6,6 +6,8 @@
 #include <abstractions/render/shapes.h>
 #include <abstractions/types.h>
 
+#include <fmt/base.h>
+
 #include <functional>
 #include <optional>
 #include <vector>
@@ -175,3 +177,10 @@ private:
 };
 
 }  // namespace abstractions
+
+/// @brief Custom formatter for the ImageComparison type.
+template<>
+struct fmt::formatter<abstractions::ImageComparison> : fmt::formatter<string_view>
+{
+    fmt::format_context::iterator format(abstractions::ImageComparison metric, fmt::format_context &ctx) const;
+};
