@@ -2,8 +2,23 @@
 
 #include <CLI/CLI.hpp>
 
+#include <filesystem>
 #include <type_traits>
 
+// Custom type names used in CLI11
+
+namespace CLI::detail
+{
+
+template<>
+constexpr const char *type_name<std::filesystem::path>()
+{
+    return "PATH";
+}
+
+}
+
+/// @brief Standard format for a CLI command.
 struct ICommand
 {
     virtual CLI::App *Init(CLI::App &parent) = 0;
@@ -11,6 +26,10 @@ struct ICommand
     virtual ~ICommand() = default;
 };
 
+/// @brief Register a CLI command with the parent app.
+/// @tparam T command type
+/// @param parent parent app
+/// @param command command being registered
 template<typename T>
 void Register(CLI::App &parent, T &command)
 {
