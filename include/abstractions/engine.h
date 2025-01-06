@@ -39,6 +39,13 @@ struct EngineConfig {
     /// solutions are.
     int num_samples = 32;
 
+    /// @brief Linearize the sample costs prior to performing a PGPE update.
+    ///
+    /// This is a pre-processing step the ClipUp paper recommends to improve
+    /// performance.  It takes all costs and then maps them onto [-0.5, 0.5] to
+    /// mitigate against very large differences in computed costs.
+    bool costs_ranking = false;
+
     /// @brief Have the optimizer stop if it looks like it has found a possible
     ///     solution.
     ///

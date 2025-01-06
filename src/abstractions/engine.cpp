@@ -45,6 +45,7 @@ struct OptimizerPayload {
     std::reference_wrapper<PgpeOptimizer> optimizer;
     MatrixRef samples;
     ColumnVectorRef costs;
+    bool rank_linearize;
 };
 
 /// @brief Contains everything needed to render a single image and compute the
@@ -80,6 +81,10 @@ struct RunOptimizer : public threads::IJobFunction {
         }
 
         auto &optim = payload->optimizer.get();
+        if (payload->rank_linearize)
+        {
+            optim.RankLinearize(payload->costs);
+        }
         return optim.Update(payload->samples, payload->costs);
     }
 };
@@ -224,6 +229,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .optimizer = *optimizer,
         .samples = samples,
         .costs = costs,
+        .rank_linearize = _config.costs_ranking,
     };
 
     RenderPayload render_payload{
