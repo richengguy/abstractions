@@ -212,3 +212,24 @@ RowVector PackedShapeCollection::AsPackedVector() const {
 }
 
 }  // namespace abstractions::render
+
+using namespace fmt;
+using namespace abstractions::render;
+
+format_context::iterator formatter<AbstractionShape>::format(AbstractionShape shape, format_context &ctx) const
+{
+    string_view name = "undefined";
+    switch(shape)
+    {
+        case AbstractionShape::Circles:
+            name = "Circles";
+            break;
+        case AbstractionShape::Rectangles:
+            name = "Rectangles";
+            break;
+        case AbstractionShape::Triangles:
+            name = "Triangles";
+            break;
+    }
+    return formatter<string_view>::format(name, ctx);
+}

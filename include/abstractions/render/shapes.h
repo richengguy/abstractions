@@ -4,6 +4,8 @@
 #include <abstractions/math/random.h>
 #include <abstractions/types.h>
 
+#include <fmt/base.h>
+
 #include <optional>
 #include <vector>
 
@@ -203,3 +205,10 @@ private:
 };
 
 }  // namespace abstractions::render
+
+/// @brief Custom formatter for AbstractionShape
+template<>
+struct fmt::formatter<abstractions::render::AbstractionShape> : fmt::formatter<fmt::string_view>
+{
+    fmt::format_context::iterator format(abstractions::render::AbstractionShape shape, fmt::format_context &ctx) const;
+};
