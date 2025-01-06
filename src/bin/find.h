@@ -1,14 +1,13 @@
 #pragma once
 
-#include "support.h"
-
 #include <abstractions/abstractions.h>
 
-#include <optional>
 #include <filesystem>
+#include <optional>
 
-class FindCommand : public Command
-{
+#include "support.h"
+
+class FindCommand : public Command {
 public:
     CLI::App *Init(CLI::App &parent) override;
     void Run() const override;

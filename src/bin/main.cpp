@@ -1,8 +1,8 @@
 #include <CLI/CLI.hpp>
 
-#include "support.h"
-#include "render.h"
 #include "find.h"
+#include "render.h"
+#include "support.h"
 
 int main(int nargs, char **args) {
     CLI::App app;

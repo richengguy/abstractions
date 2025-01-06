@@ -1,7 +1,6 @@
 #include "abstractions/render/shapes.h"
 
 #include <abstractions/math/matrices.h>
-
 #include <fmt/ranges.h>
 
 #include <vector>
@@ -221,11 +220,10 @@ using namespace fmt;
 using namespace abstractions;
 using namespace abstractions::render;
 
-format_context::iterator formatter<AbstractionShape>::format(AbstractionShape shape, format_context &ctx) const
-{
+format_context::iterator formatter<AbstractionShape>::format(AbstractionShape shape,
+                                                             format_context &ctx) const {
     string_view name = "undefined";
-    switch(shape)
-    {
+    switch (shape) {
         case AbstractionShape::Circles:
             name = "Circles";
             break;
@@ -239,8 +237,8 @@ format_context::iterator formatter<AbstractionShape>::format(AbstractionShape sh
     return formatter<string_view>::format(name, ctx);
 }
 
-format_context::iterator formatter<Options<AbstractionShape>>::format(Options<AbstractionShape> options, format_context &ctx) const
-{
+format_context::iterator formatter<Options<AbstractionShape>>::format(
+    Options<AbstractionShape> options, format_context &ctx) const {
     std::vector<AbstractionShape> selected;
     if (options & AbstractionShape::Circles) {
         selected.push_back(AbstractionShape::Circles);

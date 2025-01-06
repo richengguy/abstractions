@@ -81,8 +81,7 @@ struct RunOptimizer : public threads::IJobFunction {
         }
 
         auto &optim = payload->optimizer.get();
-        if (payload->rank_linearize)
-        {
+        if (payload->rank_linearize) {
             optim.RankLinearize(payload->costs);
         }
         return optim.Update(payload->samples, payload->costs);
@@ -349,11 +348,10 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 using namespace abstractions;
 using namespace fmt;
 
-format_context::iterator formatter<ImageComparison>::format(ImageComparison metric, format_context &ctx) const
-{
+format_context::iterator formatter<ImageComparison>::format(ImageComparison metric,
+                                                            format_context &ctx) const {
     string_view name = "undefined";
-    switch (metric)
-    {
+    switch (metric) {
         case ImageComparison::L1Norm:
             name = "L1";
             break;

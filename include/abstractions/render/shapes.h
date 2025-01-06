@@ -3,7 +3,6 @@
 #include <abstractions/errors.h>
 #include <abstractions/math/random.h>
 #include <abstractions/types.h>
-
 #include <fmt/base.h>
 
 namespace abstractions::render {
@@ -204,15 +203,17 @@ private:
 }  // namespace abstractions::render
 
 /// @brief Custom formatter for AbstractionShape
-template<>
-struct fmt::formatter<abstractions::render::AbstractionShape> : fmt::formatter<fmt::string_view>
-{
-    fmt::format_context::iterator format(abstractions::render::AbstractionShape shape, fmt::format_context &ctx) const;
+template <>
+struct fmt::formatter<abstractions::render::AbstractionShape> : fmt::formatter<fmt::string_view> {
+    fmt::format_context::iterator format(abstractions::render::AbstractionShape shape,
+                                         fmt::format_context &ctx) const;
 };
 
 /// @brief Custom formatter for Options<AbstractionShape>
-template<>
-struct fmt::formatter<abstractions::Options<abstractions::render::AbstractionShape>> : fmt::formatter<fmt::string_view>
-{
-    fmt::format_context::iterator format(abstractions::Options<abstractions::render::AbstractionShape> options, fmt::format_context &ctx) const;
+template <>
+struct fmt::formatter<abstractions::Options<abstractions::render::AbstractionShape>>
+    : fmt::formatter<fmt::string_view> {
+    fmt::format_context::iterator format(
+        abstractions::Options<abstractions::render::AbstractionShape> options,
+        fmt::format_context &ctx) const;
 };
