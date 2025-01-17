@@ -256,6 +256,8 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     OperationTiming render_timing;
     OperationTiming sampling_timing;
 
+    fmt::println("Init:\n{}", optimizer->GetEstimate());
+
     int iterations = 0;
     for (int i = 0; i < _config.max_iterations; i++) {
         // Run the sampling step
@@ -288,7 +290,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         }
 
         // Run the optimizer and update its state.
-        auto update_job = thread_pool.SubmitWithPayload<GenerateSolutionSamples>(0, optim_payload);
+        auto update_job = thread_pool.SubmitWithPayload<RunOptimizer>(0, optim_payload);
         auto update_result = update_job.get();
 
         if (update_result.error) {
@@ -310,6 +312,8 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     if (!solution.has_value()) {
         return errors::report<OptimizationResult>(solution.error());
     }
+
+    fmt::println("final:\n{}", solution);
 
     render::PackedShapeCollection image_abstraction(_config.shapes, *solution);
 
