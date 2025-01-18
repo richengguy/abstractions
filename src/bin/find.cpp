@@ -136,6 +136,10 @@ void FindCommand::Run() const {
     console.Print("         Shapes  - {} [{}]", _config.shapes, _config.num_drawn_shapes);
     console.Print("         Samples - {}", _config.num_samples);
     console.Print("         Scale   - {}", _image_scale.value_or(kDefaultImageScale));
+    if (_config.seed)
+    {
+        console.Print("         Seed    - {}", *_config.seed);
+    }
     console.Print("  Max Iterations - {}", _config.max_iterations);
     console.Separator();
 
@@ -144,6 +148,28 @@ void FindCommand::Run() const {
 
     auto engine = Engine::Create(_config, _optim_settings);
     abstractions_check(engine);
+
+    if (!_per_stage_output.empty())
+    {
+        console.Print("Outputting steps {}", _per_stage_output);
+        std::filesystem::remove_all(_per_stage_output);
+        std::filesystem::create_directories(_per_stage_output);
+
+        engine->SetCallback([this, &image](int i, double cost, ConstRowVectorRef params)
+        {
+            if (i % 25 != 0)
+            {
+                return;
+            }
+
+            std::string file_name = fmt::format("image-{:0>5}.png", i);
+            console.Print("Rendering {}", file_name);
+
+            auto step = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, params);
+            auto out_path = _per_stage_output / file_name;
+            abstractions_check(step->Save(out_path));
+        });
+    }
 
     auto result = engine->GenerateAbstraction(*image);
     abstractions_check(result);

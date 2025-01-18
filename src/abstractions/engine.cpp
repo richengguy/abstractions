@@ -300,7 +300,19 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         pgpe_timing.AddSample(update_result.time);
 
         // Invoke any callbacks
+        if (_callback)
+        {
+            _callback(i, -1.0f, *optimizer->GetEstimate());
+        }
+
         // TODO
+        // if (i > 300)
+        // {
+        //     fmt::println("iter: {}", i);
+        //     fmt::println("vel: ({})", optimizer->GetSolutionVelocity());
+        //     fmt::println("std: ({})", optimizer->GetSolutionStdDev());
+        //     fmt::println("est: ({})", optimizer->GetEstimate());
+        // }
 
         iterations++;
     }
@@ -345,6 +357,11 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     };
 
     return result;
+}
+
+void Engine::SetCallback(const std::function<void(int, double, ConstRowVectorRef)> &cb)
+{
+    _callback = cb;
 }
 
 Expected<Image> RenderImageAbstraction(const int width, const int height, const Options<render::AbstractionShape> shapes, ConstRowVectorRef solution, const Pixel background_colour)

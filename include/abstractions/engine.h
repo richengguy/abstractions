@@ -176,10 +176,16 @@ public:
     [[nodiscard]]
     Expected<OptimizationResult> GenerateAbstraction(const Image &reference) const;
 
+    /// @brief Set the callback that runs after an optimization step.
+    /// @param cb a callback function that takes the current iteration, total
+    ///     number of iterations, solution cost, and the current solution
+    void SetCallback(const std::function<void(int, double, ConstRowVectorRef)> &cb);
+
 private:
     Engine(const EngineConfig &config, const PgpeOptimizerSettings &settings);
     EngineConfig _config;
     PgpeOptimizerSettings _optim_settings;
+    std::function<void(int, double, ConstRowVectorRef)> _callback;
 };
 
 /// @brief Render an image abstraction with the provided configuration.
