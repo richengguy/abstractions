@@ -252,6 +252,6 @@ format_context::iterator formatter<Options<AbstractionShape>>::format(
         selected.push_back(AbstractionShape::Triangles);
     }
 
-    string_view out = fmt::format("{{ {} }}", fmt::join(selected, " "));
+    auto out = fmt::format("{{ {} }}", fmt::join(selected, " "));
     return formatter<string_view>::format(out, ctx);
 }

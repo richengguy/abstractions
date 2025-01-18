@@ -7,6 +7,7 @@ endfunction()
 
 option(ABSTRACTIONS_BUILD_TESTS "Build the application tests." OFF)
 option(ABSTRACTIONS_ASSERTS     "Enable the internal library asserts" ON)
+option(ABSTRACTIONS_ENABLE_ASAN "Enable AddressSanitizer with build" OFF)
 
 set(CMAKE_CXX_STANDARD 23)
 add_compile_options(-Wall)
@@ -19,12 +20,18 @@ endif()
 
 if (ABSTRACTIONS_ASSERTS)
     log_message("Enabling library asserts")
-    add_compile_definitions(-DABSTRACTIONS_ENABLE_ASSERTS)
+    add_compile_definitions(ABSTRACTIONS_ENABLE_ASSERTS)
 
     if (ABSTRACTIONS_BUILD_TESTS)
         log_message("Setting asserts to \"throw only\" mode.")
-        add_compile_definitions(-DABSTRACTIONS_ASSERTS_THROW_ONLY)
+        add_compile_definitions(ABSTRACTIONS_ASSERTS_THROW_ONLY)
     endif()
+endif()
+
+if (ABSTRACTIONS_ENABLE_ASAN)
+    log_message("Enabling AddressSanitizer")
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
 endif()
 
 include(CTest)
