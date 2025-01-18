@@ -157,6 +157,8 @@ void FindCommand::Run() const {
 
         engine->SetCallback([this, &image](int i, double cost, ConstRowVectorRef params)
         {
+            console.Print("iter {}", i);
+
             if (i % 25 != 0)
             {
                 return;

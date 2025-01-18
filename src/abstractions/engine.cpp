@@ -97,8 +97,11 @@ struct RenderAndCompare : public threads::IJobFunction {
             return payload.error();
         }
 
-        render::PackedShapeCollection sampled_shapes(payload->shapes,
-                                                     payload->samples.row(ctx.Index()));
+        RowVector row = payload->samples.row(ctx.Index());
+        fmt::println("{}, {}", ctx.Index(), row);
+
+        render::PackedShapeCollection sampled_shapes(payload->shapes, row);
+                                                     //payload->samples.row(ctx.Index()));
 
         // Render the test image, using a random background to avoid biasing
         // blank areas.
@@ -289,6 +292,9 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
             render_timing.AddSample(result.time);
         }
 
+        RowVector bleh = costs.transpose();
+        // fmt::println("costs({})[{}] =\n{}", i, costs.mean(), bleh);
+
         // Run the optimizer and update its state.
         auto update_job = thread_pool.SubmitWithPayload<RunOptimizer>(0, optim_payload);
         auto update_result = update_job.get();
@@ -304,15 +310,6 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         {
             _callback(i, -1.0f, *optimizer->GetEstimate());
         }
-
-        // TODO
-        // if (i > 300)
-        // {
-        //     fmt::println("iter: {}", i);
-        //     fmt::println("vel: ({})", optimizer->GetSolutionVelocity());
-        //     fmt::println("std: ({})", optimizer->GetSolutionStdDev());
-        //     fmt::println("est: ({})", optimizer->GetEstimate());
-        // }
 
         iterations++;
     }
