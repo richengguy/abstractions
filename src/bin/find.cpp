@@ -16,7 +16,7 @@ constexpr const char *kEngineOptions = "Abstraction Engine";
 constexpr const char *kGeneralOptions = "General Options";
 constexpr const char *kPgpeOptions = "PGPE Optimizer";
 
-constexpr const double kDefaultMaxSolutionVelocity = 0.15;
+constexpr const double kDefaultMaxSolutionVelocity = 0.05;
 constexpr const double kDefaultImageScale = 1.0;
 
 static cli_helpers::EnumValidator<ImageComparison> ImageComparisonEnum("METRIC",
@@ -99,11 +99,6 @@ CLI::App *FindCommand::Init(CLI::App &parent) {
         ->default_str(fmt::format("{}", _config.comparison_metric))
         ->group(kEngineOptions);
 
-    app->add_flag("--costs-ranking", _config.costs_ranking,
-                  "Maps all costs onto [-0.5, 0.5] to mitigate against outliers.")
-        ->capture_default_str()
-        ->group(kEngineOptions);
-
     // Optimizer configuration options
     _optim_settings.max_speed = kDefaultMaxSolutionVelocity;
 
@@ -157,8 +152,6 @@ void FindCommand::Run() const {
 
         engine->SetCallback([this, &image](int i, double cost, ConstRowVectorRef params)
         {
-            console.Print("iter {}", i);
-
             if (i % 25 != 0)
             {
                 return;
@@ -176,7 +169,7 @@ void FindCommand::Run() const {
     auto result = engine->GenerateAbstraction(*image);
     abstractions_check(result);
 
-    auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, result->solution);
+    auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, result->solution, Pixel(255, 255, 255));
     abstractions_check(output);
 
     auto output_image_file = _output;

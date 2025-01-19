@@ -1,6 +1,7 @@
 #include "abstractions/render/canvas.h"
 
 #include <abstractions/errors.h>
+#include <abstractions/math/matrices.h>
 #include <fmt/format.h>
 
 #include <algorithm>
@@ -54,6 +55,12 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
 
     const double scale = _context.targetHeight() - 1;
 
+    // Force the shapes to be *mostly* inside of the frame but keep the colour
+    // values clamped on [0, 1] since anything outside that doesn't make any
+    // sense.
+
+    // TODO!!!
+
     for (int i = 0; i < num_circles; i++) {
         const RowVector row = params.row(i);
 
@@ -84,17 +91,26 @@ Error Canvas::DrawFilledTriangles(ConstMatrixRef params) {
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 
-    const double scale = _context.targetHeight() - 1;
+    const double x_scale = _context.targetWidth() - 1;
+    const double y_scale = _context.targetHeight() - 1;
+
+    // Force the shapes to be *mostly* inside of the frame but keep the colour
+    // values clamped on [0, 1] since anything outside that doesn't make any
+    // sense.
+
+    Matrix prepped = params;
+    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
+    prepped.rightCols(6) = 1.1 * RescaleValuesColumnWise(prepped.rightCols(6)).array() - 0.05;
 
     for (int i = 0; i < num_triangles; i++) {
-        const RowVector row = params.row(i);
+        const RowVector row = prepped.row(i);
 
-        const BLRgba colour(row[6], row[7], row[8], row[9]);
+        const BLRgba colour(row[6], row[7], row[8], 0.8 * row[9]);
         // clang-format off
         const BLTriangle triangle(
-            scale * row[0], scale * row[1],
-            scale * row[2], scale * row[3],
-            scale * row[4], scale * row[5]
+            x_scale * row[0], y_scale * row[1],
+            x_scale * row[2], y_scale * row[3],
+            x_scale * row[4], y_scale * row[5]
         );
         // clang-format on
         _context.fillTriangle(triangle, colour);
@@ -115,6 +131,12 @@ Error Canvas::DrawFilledRectangles(ConstMatrixRef params) {
     // of multiplying by the height.
 
     const double scale = _context.targetHeight() - 1;
+
+    // Force the shapes to be *mostly* inside of the frame but keep the colour
+    // values clamped on [0, 1] since anything outside that doesn't make any
+    // sense.
+
+    // TODO!!!
 
     for (int i = 0; i < num_rects; i++) {
         const RowVector row = params.row(i);

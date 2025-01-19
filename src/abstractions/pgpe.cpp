@@ -107,11 +107,11 @@ void PgpeOptimizer::SetPrngSeed(DefaultRngType::result_type seed) {
 
 void PgpeOptimizer::Initialize(ConstRowVectorRef x_init) {
     const int num_dim = x_init.cols();
-    const double stddev_magnitdue = _settings.init_search_radius * _settings.max_speed;
+    const double stddev_magnitude = _settings.init_search_radius * _settings.max_speed;
     const double stddev_unit_norm = 1.0 / std::sqrt(num_dim);
 
     _current_state = x_init;
-    _current_standard_deviation = RowVector::Ones(num_dim) * stddev_magnitdue * stddev_unit_norm;
+    _current_standard_deviation = RowVector::Ones(num_dim) * stddev_magnitude * stddev_unit_norm;
     _current_velocity = RowVector::Zero(num_dim);
     _is_initialized = true;
 }
@@ -199,10 +199,10 @@ Error PgpeOptimizer::Update(ConstMatrixRef samples, ConstColumnVectorRef costs) 
     const RowVector updated_state = _current_state + updated_velocity;
 
     // Find the next standard deviation estimation, clamping the estimate so
-    // that it never goes to zero or gets too large
+    // that it never goes to zero or gets too large.
     const RowVector stddev_upper = (1 + _settings.stddev_max_change) * _current_standard_deviation;
     const RowVector stddev_lower =
-        ((1 - _settings.stddev_max_change) * _current_standard_deviation).cwiseMax(1e-5);
+        ((1 - _settings.stddev_max_change) * _current_standard_deviation).cwiseMax(1e-9);
     const RowVector updated_stddev =
         (_current_standard_deviation + _settings.stddev_learning_rate * grad_stddev)
             .cwiseMin(stddev_upper)

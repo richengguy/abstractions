@@ -45,7 +45,6 @@ struct OptimizerPayload {
     std::reference_wrapper<PgpeOptimizer> optimizer;
     MatrixRef samples;
     ColumnVectorRef costs;
-    bool rank_linearize;
 };
 
 /// @brief Contains everything needed to render a single image and compute the
@@ -81,9 +80,12 @@ struct RunOptimizer : public threads::IJobFunction {
         }
 
         auto &optim = payload->optimizer.get();
-        if (payload->rank_linearize) {
-            optim.RankLinearize(payload->costs);
-        }
+
+        // The costs ranking step is commented out since it was producing
+        // inconsistent results when compared with using the costs directly.
+
+        // optim.RankLinearize(payload->costs);
+
         return optim.Update(payload->samples, payload->costs);
     }
 };
@@ -97,11 +99,8 @@ struct RenderAndCompare : public threads::IJobFunction {
             return payload.error();
         }
 
-        RowVector row = payload->samples.row(ctx.Index());
-        fmt::println("{}, {}", ctx.Index(), row);
-
-        render::PackedShapeCollection sampled_shapes(payload->shapes, row);
-                                                     //payload->samples.row(ctx.Index()));
+        render::PackedShapeCollection sampled_shapes(payload->shapes,
+                                                     payload->samples.row(ctx.Index()));
 
         // Render the test image, using a random background to avoid biasing
         // blank areas.
@@ -231,7 +230,6 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .optimizer = *optimizer,
         .samples = samples,
         .costs = costs,
-        .rank_linearize = _config.costs_ranking,
     };
 
     RenderPayload render_payload{
@@ -259,7 +257,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     OperationTiming render_timing;
     OperationTiming sampling_timing;
 
-    fmt::println("Init:\n{}", optimizer->GetEstimate());
+    // fmt::println("Init:\n{}", optimizer->GetEstimate());
 
     int iterations = 0;
     for (int i = 0; i < _config.max_iterations; i++) {
@@ -292,8 +290,9 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
             render_timing.AddSample(result.time);
         }
 
-        RowVector bleh = costs.transpose();
+        // RowVector bleh = costs.transpose();
         // fmt::println("costs({})[{}] =\n{}", i, costs.mean(), bleh);
+        // fmt::println("stddev({}) = \n{}", i, *optimizer->GetSolutionStdDev());
 
         // Run the optimizer and update its state.
         auto update_job = thread_pool.SubmitWithPayload<RunOptimizer>(0, optim_payload);
@@ -322,7 +321,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         return errors::report<OptimizationResult>(solution.error());
     }
 
-    fmt::println("final:\n{}", solution);
+    // fmt::println("final:\n{}", solution);
 
     render::PackedShapeCollection image_abstraction(_config.shapes, *solution);
 
