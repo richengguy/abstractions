@@ -80,11 +80,7 @@ struct RunOptimizer : public threads::IJobFunction {
         }
 
         auto &optim = payload->optimizer.get();
-
-        // The costs ranking step is commented out since it was producing
-        // inconsistent results when compared with using the costs directly.
-
-        // optim.RankLinearize(payload->costs);
+        optim.RankLinearize(payload->costs);
 
         return optim.Update(payload->samples, payload->costs);
     }
@@ -127,7 +123,7 @@ struct RenderAndCompare : public threads::IJobFunction {
 }  // namespace
 
 Error EngineConfig::Validate() const {
-    if (max_iterations < 1) {
+    if (iterations < 1) {
         return "Maximum number of iterations cannot be negative.";
     }
 
@@ -260,7 +256,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     // fmt::println("Init:\n{}", optimizer->GetEstimate());
 
     int iterations = 0;
-    for (int i = 0; i < _config.max_iterations; i++) {
+    for (int i = 0; i < _config.iterations; i++) {
         // Run the sampling step
         auto sample_job = thread_pool.SubmitWithPayload<GenerateSolutionSamples>(0, optim_payload);
         auto sample_result = sample_job.get();

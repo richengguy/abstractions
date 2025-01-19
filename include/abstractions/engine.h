@@ -25,28 +25,14 @@ enum class ImageComparison {
 /// @brief Engine configuration options.
 struct EngineConfig {
     /// @brief Total number of optimizer iterations.
-    ///
-    /// This is the most iterations that the optimizer will try before it
-    /// "gives up".  It may stop early if the stop_on_convergence option is set
-    /// to `true`.
-    int max_iterations = 10000;
+    int iterations = 10000;
 
     /// @brief The number of samples to draw when calculating the reward costs.
     ///
     /// The PGPE optimizer generates a set of random samples around the current
     /// "best" solution.  It then expects the user to tell it how "good" the
     /// solutions are.
-    int num_samples = 32;
-
-    /// @brief Have the optimizer stop if it looks like it has found a possible
-    ///     solution.
-    ///
-    /// The PGPE algorithm looks to maximize reward so it moves towards the
-    /// solution with the highest cost.  It's possible for it to find that
-    /// solution long before it hits the maximum number of iterations.  Setting
-    /// this to `true` will have the optimizer check if the solution and costs
-    /// have stabilized.
-    bool stop_on_convergence = true;
+    int num_samples = 256;
 
     /// @brief The set of shapes to use for the image abstraction.
     ///

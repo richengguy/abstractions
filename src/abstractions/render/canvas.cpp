@@ -53,13 +53,18 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 
-    const double scale = _context.targetHeight() - 1;
+    const double x_scale = _context.targetWidth() - 1;
+    const double y_scale = _context.targetHeight() - 1;
+    const double r_scale = y_scale;
 
     // Force the shapes to be *mostly* inside of the frame but keep the colour
     // values clamped on [0, 1] since anything outside that doesn't make any
     // sense.
 
-    // TODO!!!
+    Matrix prepped = params;
+    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
+    prepped.rightCols(2) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(2)).array() - 0.1;
+    prepped.col(2) = ClampValues(prepped.col(2), 0, 0.5 * y_scale / x_scale);
 
     for (int i = 0; i < num_circles; i++) {
         const RowVector row = params.row(i);
@@ -67,9 +72,9 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
         const BLRgba colour(row[3], row[4], row[5], row[6]);
         // clang-format off
         const BLCircle circle(
-            scale * row[0],
-            scale * row[1],
-            scale * std::abs(row[2])
+            x_scale * row[0],
+            y_scale * row[1],
+            r_scale * std::abs(row[2])
         );
         // clang-format on
         _context.fillCircle(circle, colour);
@@ -100,12 +105,12 @@ Error Canvas::DrawFilledTriangles(ConstMatrixRef params) {
 
     Matrix prepped = params;
     prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
-    prepped.rightCols(6) = 1.1 * RescaleValuesColumnWise(prepped.rightCols(6)).array() - 0.05;
+    prepped.rightCols(6) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(6)).array() - 0.1;
 
     for (int i = 0; i < num_triangles; i++) {
         const RowVector row = prepped.row(i);
 
-        const BLRgba colour(row[6], row[7], row[8], 0.8 * row[9]);
+        const BLRgba colour(row[6], row[7], row[8], row[9]);
         // clang-format off
         const BLTriangle triangle(
             x_scale * row[0], y_scale * row[1],
@@ -130,21 +135,24 @@ Error Canvas::DrawFilledRectangles(ConstMatrixRef params) {
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 
-    const double scale = _context.targetHeight() - 1;
+    const double x_scale = _context.targetWidth() - 1;
+    const double y_scale = _context.targetHeight() - 1;
 
     // Force the shapes to be *mostly* inside of the frame but keep the colour
     // values clamped on [0, 1] since anything outside that doesn't make any
     // sense.
 
-    // TODO!!!
+    Matrix prepped = params;
+    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
+    prepped.rightCols(4) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(4)).array() - 0.1;
 
     for (int i = 0; i < num_rects; i++) {
         const RowVector row = params.row(i);
 
-        const double x1 = scale * row[0];
-        const double y1 = scale * row[1];
-        const double x2 = scale * row[2];
-        const double y2 = scale * row[3];
+        const double x1 = x_scale * row[0];
+        const double y1 = y_scale * row[1];
+        const double x2 = x_scale * row[2];
+        const double y2 = y_scale * row[3];
 
         const double x = std::min(x1, x2);
         const double y = std::min(y1, y2);

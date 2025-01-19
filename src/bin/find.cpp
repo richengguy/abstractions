@@ -68,7 +68,7 @@ CLI::App *FindCommand::Init(CLI::App &parent) {
     app->add_option("--scale", _image_scale, "Scale the image by the about before finding the abstract representation.")->capture_default_str()->group(kGeneralOptions);
 
     // Engine configuration options
-    app->add_option("-n,--iterations", _config.max_iterations,
+    app->add_option("-n,--iterations", _config.iterations,
                     "Maximum number of optimizer iterations.")
         ->capture_default_str()
         ->group(kEngineOptions);
@@ -135,7 +135,7 @@ void FindCommand::Run() const {
     {
         console.Print("         Seed    - {}", *_config.seed);
     }
-    console.Print("  Max Iterations - {}", _config.max_iterations);
+    console.Print("  Max Iterations - {}", _config.iterations);
     console.Separator();
 
     auto image = Image::Load(_image);
