@@ -3,6 +3,8 @@
 #include <abstractions/math/matrices.h>
 #include <abstractions/errors.h>
 
+#include <numbers>
+
 #include "support.h"
 
 ABSTRACTIONS_FEATURE_TEST()
