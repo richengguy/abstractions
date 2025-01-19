@@ -20,6 +20,18 @@ auto ClampValues(const Eigen::MatrixBase<M> &matrix, double min = 0, double max 
     return matrix.cwiseMin(max).cwiseMax(min);
 }
 
+/// @brief Rescale the matrix so the values along a column are between 0 and 1.
+/// @tparam M Eigen matrix type
+/// @param matrix matrix or matrix expression
+/// @return rescaled matrix
+template <typename M>
+Matrix RescaleValuesColumnWise(const Eigen::MatrixBase<M> &matrix)
+{
+    Eigen::Matrix<typename M::Scalar, 1, Eigen::Dynamic> min_values = matrix.array().colwise().minCoeff();
+    Eigen::Matrix<typename M::Scalar, 1, Eigen::Dynamic> max_values = matrix.array().colwise().maxCoeff();
+    return (matrix.rowwise() - min_values).array().rowwise() / (max_values - min_values).array();
+}
+
 /// @brief Initialize a matrix with random values.
 /// @tparam G Prng generator type
 /// @tparam D statistical distribution type
