@@ -32,9 +32,15 @@ ABSTRACTIONS_FEATURE_TEST()
     RowVector initial_solution = 10.24 * RandomMatrix(1, kNumDim, uniform_distribution).array() - 5.12;
 
     // Create the optimizer and initialize it.
-    auto optimizer = PgpeOptimizer::New({.max_speed = 0.05, .seed = prng.seed() + 1});
+    auto optimizer = PgpeOptimizer::New({.max_speed = 0.1, .seed = prng.seed() + 1});
     abstractions_check(optimizer);
     optimizer->Initialize(initial_solution);
+
+    console.Print("Initial Guess:");
+    console.Print("sln: {}", initial_solution);
+    console.Print("vel: {}", *optimizer->GetSolutionVelocity());
+    console.Print("std: {}", *optimizer->GetSolutionStdDev());
+    console.Separator();
 
     // Now run the optimization loop.
     console.Print("Running optimization...");
@@ -58,7 +64,9 @@ ABSTRACTIONS_FEATURE_TEST()
             auto solution = optimizer->GetEstimate();
             abstractions_check(solution);
             console.Print("{} -> {}", i, rastrigin_fn(*solution));
-            console.Print("std:  {}", optimizer->GetSolutionStdDev());
+            console.Print("sln:  {}", *solution);
+            console.Print("vel:  {}", *optimizer->GetSolutionVelocity());
+            console.Print("std:  {}", *optimizer->GetSolutionStdDev());
         }
     }
 
