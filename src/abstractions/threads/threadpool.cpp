@@ -1,6 +1,6 @@
 #include "abstractions/threads/threadpool.h"
 
-#include <abstractions/console.h>
+#include <abstractions/terminal/console.h>
 #include <abstractions/errors.h>
 
 #include <chrono>

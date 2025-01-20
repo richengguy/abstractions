@@ -1,4 +1,4 @@
-#include "abstractions/console.h"
+#include "abstractions/terminal/console.h"
 
 #include <fmt/color.h>
 

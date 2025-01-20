@@ -6,7 +6,6 @@ set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
 
 set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/abstractions.h
-    ${ABSTRACTIONS_INCLUDE_DIR}/console.h
     ${ABSTRACTIONS_INCLUDE_DIR}/engine.h
     ${ABSTRACTIONS_INCLUDE_DIR}/errors.h
     ${ABSTRACTIONS_INCLUDE_DIR}/image.h
@@ -26,10 +25,11 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/queue.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/threadpool.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/worker.h
+
+    ${ABSTRACTIONS_INCLUDE_DIR}/terminal/console.h
 )
 
 set (ABSTRACTIONS_SOURCES
-    console.cpp
     engine.cpp
     errors.cpp
     image.cpp
@@ -43,6 +43,8 @@ set (ABSTRACTIONS_SOURCES
     threads/queue.cpp
     threads/threadpool.cpp
     threads/worker.cpp
+
+    terminal/console.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})

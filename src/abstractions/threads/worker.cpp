@@ -1,6 +1,6 @@
 #include "abstractions/threads/worker.h"
 
-#include <abstractions/console.h>
+#include <abstractions/terminal/console.h>
 
 #include <chrono>
 

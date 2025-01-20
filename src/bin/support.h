@@ -1,6 +1,6 @@
 #pragma once
 
-#include <abstractions/console.h>
+#include <abstractions/terminal/console.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
@@ -77,7 +77,7 @@ struct EnumValidator : public ::CLI::Validator {
 class Command {
 public:
     Command() :
-        console{"abstractions"} {}
+        console{"abstractions"} { console.ShowPrefix(false); }
     virtual CLI::App *Init(CLI::App &parent) = 0;
     virtual void Run() const = 0;
     virtual ~Command() = default;
