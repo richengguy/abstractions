@@ -83,7 +83,7 @@ public:
     virtual ~Command() = default;
 
 protected:
-    abstractions::Console console;
+    abstractions::terminal::Console console;
 };
 
 /// @brief Register a CLI command with the parent app.

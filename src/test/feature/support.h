@@ -43,7 +43,7 @@ public:
 
     /// @brief Initialize the test storage folder.
     void Init() {
-        Console console(_folder.stem(), "{} ::");
+        terminal::Console console(_folder.stem(), "{} ::");
 
         if (std::filesystem::exists(_folder)) {
             auto removed = std::filesystem::remove_all(_folder);
@@ -128,7 +128,7 @@ public:
 protected:
     void Func(Prng<> &prng) const;
 
-    Console console;
+    terminal::Console console;
     TestOutputFolder output_folder;
 
 private:

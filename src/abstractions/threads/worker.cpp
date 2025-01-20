@@ -4,6 +4,7 @@
 
 #include <chrono>
 
+using namespace abstractions::terminal;
 using namespace std::chrono_literals;
 
 namespace abstractions::threads {

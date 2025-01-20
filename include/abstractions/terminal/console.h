@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace abstractions {
+namespace abstractions::terminal {
 
 /// @brief A simple console printer.
 ///

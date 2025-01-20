@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-namespace abstractions {
+namespace abstractions::terminal {
 
 Console::Console(const std::string &name) :
     Console(name, "[{}]") {}

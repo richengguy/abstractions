@@ -5,6 +5,8 @@
 
 #include <chrono>
 
+using namespace abstractions::terminal;
+
 namespace abstractions::threads {
 
 namespace {
