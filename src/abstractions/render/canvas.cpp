@@ -59,12 +59,13 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
 
     // Force the shapes to be *mostly* inside of the frame but keep the colour
     // values clamped on [0, 1] since anything outside that doesn't make any
-    // sense.
+    // sense.  The circle radii also have to be constrained more than other
+    // shapes as they can easily grow to cover the entire image.
 
     Matrix prepped = params;
     prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
     prepped.rightCols(2) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(2)).array() - 0.1;
-    prepped.col(2) = ClampValues(prepped.col(2), 0, 0.5 * y_scale / x_scale);
+    prepped.col(2) = ClampValues(0.1 * prepped.col(2), 0, 0.1);
 
     for (int i = 0; i < num_circles; i++) {
         const RowVector row = params.row(i);

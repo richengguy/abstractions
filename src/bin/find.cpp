@@ -176,6 +176,13 @@ void FindCommand::Run() const {
         indicators::option::MaxProgress{_config.iterations}
     };
 
+    if (!_per_stage_output.empty())
+    {
+        console.Print("Storing optimizer steps to {}", _per_stage_output);
+        std::filesystem::remove_all(_per_stage_output);
+        std::filesystem::create_directories(_per_stage_output);
+    }
+
     engine->SetCallback([&, this](int i, double cost, ConstRowVectorRef params)
     {
         progbar.set_option(indicators::option::PrefixText{fmt::format("Running Optimizer (Iteration {:>5})", i+1)});

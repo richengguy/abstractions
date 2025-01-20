@@ -30,6 +30,12 @@ ShapeGenerator::ShapeGenerator(const double aspect, Prng<> prng) :
 CircleCollection ShapeGenerator::RandomCircles(const int num) {
     CircleCollection collection(num);
     RandomMatrix(collection.Params, _dist);
+
+    // The circle's initial radii is reduced since it's very easy for a single
+    // circle to cover the entire image (the RNG just has to set the radius to
+    // '1' to make it twice the size of the image).
+    collection.Params.col(2) *= 0.25;
+
     return collection;
 }
 
