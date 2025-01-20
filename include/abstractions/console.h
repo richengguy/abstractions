@@ -10,7 +10,7 @@ namespace abstractions {
 /// @brief A simple console printer.
 ///
 /// This is mainly to make all of the program output look "consistent" for all
-/// standard debugging output.
+/// standard console output.
 class Console {
 public:
     /// @brief Create a new Console instance.
@@ -22,10 +22,21 @@ public:
     /// @param fmt the format string used for the output prefix
     Console(const std::string &name, const std::string &fmt);
 
-    void Print(const std::string &msg) {
+    /// @brief Get the prefix shown at the start of a line.
+    std::string_view Prefix() const;
+
+    /// @brief Show or hide the prefix string show at the start of a console line.
+    void ShowPrefix(bool show);
+
+    /// @brief Print a message to stdout.
+    /// @param msg message string
+    void Print(const std::string &msg) const {
         PrintToStdout(msg, fmt::format_args{});
     }
 
+    /// @brief Print a formatted messag to stdout
+    /// @param fmt format string
+    /// @param args values for the format string
     template <typename... T>
     void Print(fmt::format_string<T...> fmt, T &&...args) const {
         PrintToStdout(fmt, fmt::make_format_args(args...));
@@ -41,6 +52,7 @@ private:
 
     std::string _prefix;
     std::string _separator;
+    bool _show_prefix;
 };
 
 }  // namespace abstractions
