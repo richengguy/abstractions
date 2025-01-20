@@ -26,21 +26,22 @@ void Console::ShowPrefix(bool show)
     _show_prefix = show;
 }
 
-void Console::PrintToStdout(fmt::string_view msg, fmt::format_args args) const {
+void Console::PrintToStdout(fmt::string_view msg) const
+{
     if (_show_prefix)
     {
-        fmt::println("{} {}", _prefix, fmt::vformat(msg, args));
+        fmt::println("{} {}", _prefix, msg);
     }
     else
     {
-        fmt::println("{}", fmt::vformat(msg, args));
+        fmt::println("{}", msg);
     }
 }
 
 void Console::Separator(int length, const std::string &separator) const {
     auto sepfmt = fmt::format("{{:{}^{{}}}}", separator);
     auto sepstr = fmt::format(fmt::runtime(sepfmt), "", length);
-    PrintToStdout(sepstr, fmt::format_args());
+    PrintToStdout(sepstr);
 }
 
 }  // namespace abstractions
