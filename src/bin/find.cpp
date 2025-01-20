@@ -1,6 +1,11 @@
 #include "find.h"
 
 #include <abstractions/errors.h>
+#include <abstractions/terminal/table.h>
+
+#include <indicators/cursor_control.hpp>
+#include <indicators/cursor_movement.hpp>
+#include <indicators/progress_bar.hpp>
 
 #include <fmt/format.h>
 #include <fmt/std.h>
@@ -16,7 +21,7 @@ constexpr const char *kEngineOptions = "Abstraction Engine";
 constexpr const char *kGeneralOptions = "General Options";
 constexpr const char *kPgpeOptions = "PGPE Optimizer";
 
-constexpr const double kDefaultMaxSolutionVelocity = 0.05;
+constexpr const double kDefaultMaxSolutionVelocity = 0.15;
 constexpr const double kDefaultImageScale = 1.0;
 
 static cli_helpers::EnumValidator<ImageComparison> ImageComparisonEnum("METRIC",
@@ -128,14 +133,28 @@ CLI::App *FindCommand::Init(CLI::App &parent) {
 void FindCommand::Run() const {
     console.Print("Abstracting {}", _image);
     console.Separator();
-    console.Print("         Shapes  - {} [{}]", _config.shapes, _config.num_drawn_shapes);
-    console.Print("         Samples - {}", _config.num_samples);
-    console.Print("         Scale   - {}", _image_scale.value_or(kDefaultImageScale));
+
+    terminal::Table table;
+    table
+        .AddRow("Shapes", fmt::format("{} [{}]", _config.shapes, _config.num_drawn_shapes))
+        .AddRow("Samples", _config.num_samples)
+        .AddRow("Scale", _image_scale.value_or(kDefaultImageScale));
+
     if (_config.seed)
     {
-        console.Print("         Seed    - {}", *_config.seed);
+        table.AddRow("Seed", *_config.seed);
     }
-    console.Print("  Max Iterations - {}", _config.iterations);
+
+    table.AddRow("Iterations", _config.iterations);
+    table
+        .OuterBorders(false)
+        .RowDividers(false)
+        .VerticalSeparator("-")
+        .Justify(0, terminal::TextJustification::Right)
+        .Pad(1);
+
+    table.Render(console);
+
     console.Separator();
 
     auto image = Image::Load(_image);
@@ -144,30 +163,46 @@ void FindCommand::Run() const {
     auto engine = Engine::Create(_config, _optim_settings);
     abstractions_check(engine);
 
-    if (!_per_stage_output.empty())
+    indicators::ProgressBar progbar
     {
-        console.Print("Outputting steps {}", _per_stage_output);
-        std::filesystem::remove_all(_per_stage_output);
-        std::filesystem::create_directories(_per_stage_output);
+        indicators::option::BarWidth{50},
+        indicators::option::Start{" ["},
+        indicators::option::Fill{"="},
+        indicators::option::Lead{">"},
+        indicators::option::Remainder{"\u00b7"},
+        indicators::option::End{"] "},
+        indicators::option::ShowElapsedTime{true},
+        indicators::option::ShowRemainingTime{true},
+        indicators::option::MaxProgress{_config.iterations}
+    };
 
-        engine->SetCallback([this, &image](int i, double cost, ConstRowVectorRef params)
+    engine->SetCallback([&, this](int i, double cost, ConstRowVectorRef params)
+    {
+        progbar.set_option(indicators::option::PrefixText{fmt::format("Running Optimizer (Iteration {:>5})", i+1)});
+        progbar.tick();
+
+        if (_per_stage_output.empty())
         {
-            if (i % 25 != 0)
-            {
-                return;
-            }
+            return;
+        }
 
-            std::string file_name = fmt::format("image-{:0>5}.png", i);
-            console.Print("Rendering {}", file_name);
+        if (i % 25 != 0)
+        {
+            return;
+        }
 
-            auto step = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, params);
-            auto out_path = _per_stage_output / file_name;
-            abstractions_check(step->Save(out_path));
-        });
-    }
+        auto file_name = fmt::format("iter-{:0>5}.png", i);
+        auto out_path = _per_stage_output / file_name;
+        auto iteration_output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, params);
+        abstractions_check(iteration_output);
+        abstractions_check(iteration_output->Save(out_path));
+    });
 
     auto result = engine->GenerateAbstraction(*image);
     abstractions_check(result);
+
+    indicators::move_up(1);
+    indicators::erase_line();
 
     auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, result->solution, Pixel(255, 255, 255));
     abstractions_check(output);

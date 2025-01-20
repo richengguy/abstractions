@@ -27,6 +27,7 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/worker.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/console.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/terminal/table.h
 )
 
 set (ABSTRACTIONS_SOURCES
@@ -45,6 +46,7 @@ set (ABSTRACTIONS_SOURCES
     threads/worker.cpp
 
     terminal/console.cpp
+    terminal/table.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})

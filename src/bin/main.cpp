@@ -1,6 +1,7 @@
 #include <CLI/CLI.hpp>
 
 #include <abstractions/errors.h>
+#include <indicators/cursor_control.hpp>
 
 #include "find.h"
 #include "render.h"
@@ -19,6 +20,8 @@ int main(int nargs, char **args) {
     Register(app, cmd_find);
     Register(app, cmd_render);
 
+    indicators::show_console_cursor(false);
+
     try
     {
         app.parse(nargs, args);
@@ -29,9 +32,12 @@ int main(int nargs, char **args) {
     }
     catch (const AbstractionsError &exc)
     {
+        indicators::show_console_cursor(true);
         exc.Print();
         return 1;
     }
+
+    indicators::show_console_cursor(true);
 
     return 0;
 }
