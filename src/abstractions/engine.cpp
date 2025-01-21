@@ -303,8 +303,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
             samples.row(0) = *optimizer->GetEstimate();
             auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(0, render_payload);
             auto render_status = render_job.get();
-            if (render_status.error)
-            {
+            if (render_status.error) {
                 return errors::report<OptimizationResult>(render_status.error);
             }
 
