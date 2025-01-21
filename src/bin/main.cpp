@@ -3,7 +3,7 @@
 #include <abstractions/errors.h>
 #include <indicators/cursor_control.hpp>
 
-#include "find.h"
+#include "generate.h"
 #include "render.h"
 #include "support.h"
 
@@ -11,13 +11,13 @@ using abstractions::errors::AbstractionsError;
 
 int main(int nargs, char **args) {
     CLI::App app;
-    app.description("Generate abstract images.");
+    app.description("Create abstract image representations.");
     app.require_subcommand(1);
 
-    FindCommand cmd_find;
+    GenerateCommand cmd_generate;
     RenderCommand cmd_render;
 
-    Register(app, cmd_find);
+    Register(app, cmd_generate);
     Register(app, cmd_render);
 
     indicators::show_console_cursor(false);

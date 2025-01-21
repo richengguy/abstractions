@@ -7,7 +7,7 @@
 
 #include "support.h"
 
-class FindCommand : public Command {
+class GenerateCommand : public Command {
 public:
     CLI::App *Init(CLI::App &parent) override;
     void Run() const override;

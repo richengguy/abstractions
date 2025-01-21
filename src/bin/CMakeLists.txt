@@ -8,8 +8,8 @@ add_executable(abstractions-bin
     support.h
     support.cpp
 
-    find.h
-    find.cpp
+    generate.h
+    generate.cpp
 
     render.h
     render.cpp

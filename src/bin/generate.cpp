@@ -1,4 +1,4 @@
-#include "find.h"
+#include "generate.h"
 
 #include <abstractions/errors.h>
 #include <abstractions/terminal/table.h>
@@ -47,7 +47,7 @@ constexpr const char *type_name<render::AbstractionShape>() {
 
 }  // namespace CLI::detail
 
-CLI::App *FindCommand::Init(CLI::App &parent) {
+CLI::App *GenerateCommand::Init(CLI::App &parent) {
     CLI::callback_t shapes_cb = [this](CLI::results_t results) {
         _config.shapes = Options<render::AbstractionShape>();
         for (const auto &result : results) {
@@ -61,8 +61,8 @@ CLI::App *FindCommand::Init(CLI::App &parent) {
         return true;
     };
 
-    auto app = parent.add_subcommand("find");
-    app->description("Find the abstract representation of an image.");
+    auto app = parent.add_subcommand("generate");
+    app->description("Generate the abstract representation of an image.");
 
     app->add_option("image", _image, "Source image file")->check(CLI::ExistingFile)->required();
     app->add_option("output", _output, "Output path")->required();
@@ -130,7 +130,7 @@ CLI::App *FindCommand::Init(CLI::App &parent) {
     return app;
 }
 
-void FindCommand::Run() const {
+void GenerateCommand::Run() const {
     console.Print("Abstracting {}", _image);
     console.Separator();
 
