@@ -28,6 +28,7 @@ int main(int nargs, char **args) {
     }
     catch (const CLI::ParseError &exc)
     {
+        indicators::show_console_cursor(true);
         return app.exit(exc);
     }
     catch (const AbstractionsError &exc)

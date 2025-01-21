@@ -13,7 +13,8 @@ namespace
 
 std::string replicate(const std::string &str, int times)
 {
-    return fmt::format("{}", fmt::join(std::views::repeat(str, times), ""));
+    std::vector<std::string> repeated(times, str);
+    return fmt::format("{}", fmt::join(repeated, ""));
 }
 
 }
