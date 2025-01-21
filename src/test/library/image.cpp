@@ -157,15 +157,18 @@ TEST_CASE("Can compare images.") {
     SUBCASE("Comparing against a blank image produces the sum (or squared sum) of the input.") {
         auto pixels = test_image1->Pixels();
 
-        int64_t sum_abs = 0;
-        int64_t sum_sq = 0;
+        double sum_abs = 0;
+        double sum_sq = 0;
 
         for (int y = 0; y < pixels.Height(); y++) {
             for (int x = 0; x < pixels.Width(); x++) {
                 auto pixel = pixels.Get(x, y);
-                sum_abs += (pixel.Red() + pixel.Green() + pixel.Blue());
-                sum_sq += (pixel.Red() * pixel.Red() + pixel.Green() * pixel.Green() +
-                           pixel.Blue() * pixel.Blue());
+                auto r = pixel.Red() / 255.0;
+                auto g = pixel.Green() / 255.0;
+                auto b = pixel.Blue() / 255.0;
+
+                sum_abs += r + g + b;
+                sum_sq += r * r + g * g + b * b;
             }
         }
 

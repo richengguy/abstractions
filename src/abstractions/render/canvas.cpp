@@ -1,11 +1,12 @@
 #include "abstractions/render/canvas.h"
 
 #include <abstractions/errors.h>
+#include <abstractions/math/matrices.h>
 #include <fmt/format.h>
 
 #include <algorithm>
 
-namespace abstractions {
+namespace abstractions::render {
 
 Canvas::Canvas(Expected<Image> &image, std::optional<DefaultRngType::result_type> seed) :
     _prng{seed.value_or(PrngGenerator<DefaultRngType>::DrawRandomSeed())} {
@@ -18,6 +19,10 @@ Canvas::Canvas(Expected<Image> &image, Prng<DefaultRngType> prng) :
     abstractions_check(image);
     _context = BLContext(*image);
 }
+
+Canvas::Canvas(Image &image, Prng<DefaultRngType> prng) :
+    _context{BLContext(image)},
+    _prng{prng} {}
 
 Canvas::~Canvas() {
     _context.end();
@@ -48,7 +53,19 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 
-    const double scale = _context.targetHeight() - 1;
+    const double x_scale = _context.targetWidth() - 1;
+    const double y_scale = _context.targetHeight() - 1;
+    const double r_scale = y_scale;
+
+    // Force the shapes to be *mostly* inside of the frame but keep the colour
+    // values clamped on [0, 1] since anything outside that doesn't make any
+    // sense.  The circle radii also have to be constrained more than other
+    // shapes as they can easily grow to cover the entire image.
+
+    Matrix prepped = params;
+    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
+    prepped.rightCols(2) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(2)).array() - 0.1;
+    prepped.col(2) = ClampValues(0.1 * prepped.col(2), 0, 0.1);
 
     for (int i = 0; i < num_circles; i++) {
         const RowVector row = params.row(i);
@@ -56,9 +73,9 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
         const BLRgba colour(row[3], row[4], row[5], row[6]);
         // clang-format off
         const BLCircle circle(
-            scale * row[0],
-            scale * row[1],
-            scale * std::abs(row[2])
+            x_scale * row[0],
+            y_scale * row[1],
+            r_scale * std::abs(row[2])
         );
         // clang-format on
         _context.fillCircle(circle, colour);
@@ -80,17 +97,26 @@ Error Canvas::DrawFilledTriangles(ConstMatrixRef params) {
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 
-    const double scale = _context.targetHeight() - 1;
+    const double x_scale = _context.targetWidth() - 1;
+    const double y_scale = _context.targetHeight() - 1;
+
+    // Force the shapes to be *mostly* inside of the frame but keep the colour
+    // values clamped on [0, 1] since anything outside that doesn't make any
+    // sense.
+
+    Matrix prepped = params;
+    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
+    prepped.rightCols(6) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(6)).array() - 0.1;
 
     for (int i = 0; i < num_triangles; i++) {
-        const RowVector row = params.row(i);
+        const RowVector row = prepped.row(i);
 
         const BLRgba colour(row[6], row[7], row[8], row[9]);
         // clang-format off
         const BLTriangle triangle(
-            scale * row[0], scale * row[1],
-            scale * row[2], scale * row[3],
-            scale * row[4], scale * row[5]
+            x_scale * row[0], y_scale * row[1],
+            x_scale * row[2], y_scale * row[3],
+            x_scale * row[4], y_scale * row[5]
         );
         // clang-format on
         _context.fillTriangle(triangle, colour);
@@ -110,15 +136,24 @@ Error Canvas::DrawFilledRectangles(ConstMatrixRef params) {
     // [0, aspect].  This means getting to the full size image is just a matter
     // of multiplying by the height.
 
-    const double scale = _context.targetHeight() - 1;
+    const double x_scale = _context.targetWidth() - 1;
+    const double y_scale = _context.targetHeight() - 1;
+
+    // Force the shapes to be *mostly* inside of the frame but keep the colour
+    // values clamped on [0, 1] since anything outside that doesn't make any
+    // sense.
+
+    Matrix prepped = params;
+    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
+    prepped.rightCols(4) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(4)).array() - 0.1;
 
     for (int i = 0; i < num_rects; i++) {
         const RowVector row = params.row(i);
 
-        const double x1 = scale * row[0];
-        const double y1 = scale * row[1];
-        const double x2 = scale * row[2];
-        const double y2 = scale * row[3];
+        const double x1 = x_scale * row[0];
+        const double y1 = y_scale * row[1];
+        const double x2 = x_scale * row[2];
+        const double y2 = y_scale * row[3];
 
         const double x = std::min(x1, x2);
         const double y = std::min(y1, y2);
@@ -163,4 +198,4 @@ Error Canvas::SetCompositeMode(const CompositeMode mode) {
     return errors::no_error;
 }
 
-}  // namespace abstractions
+}  // namespace abstractions::render

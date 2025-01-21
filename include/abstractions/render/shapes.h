@@ -2,11 +2,10 @@
 
 #include <abstractions/errors.h>
 #include <abstractions/math/random.h>
-#include <abstractions/math/types.h>
+#include <abstractions/types.h>
+#include <fmt/base.h>
 
-#include <tuple>
-
-namespace abstractions {
+namespace abstractions::render {
 
 /// @brief A collection of shape parameter vectors.
 /// @tparam D number of dimensions needed to describe a shape
@@ -20,10 +19,14 @@ struct ShapeCollection {
     /// @brief Total number of dimensions in a shape vector, including colour.
     static constexpr int TotalDimensions = D + 4;
 
+    /// @brief Create an empty ShapeCollection.
+    ShapeCollection() :
+        ShapeCollection(0) {}
+
     /// @brief Create a new ShapeCollection instance.
     /// @param num_shapes number of shapes in the collection
     ShapeCollection(int num_shapes) {
-        abstractions_assert(num_shapes > 0);
+        abstractions_assert(num_shapes >= 0);
         Params = Matrix::Zero(num_shapes, TotalDimensions);
     }
 
@@ -31,9 +34,14 @@ struct ShapeCollection {
     ///      length.
     Matrix Params;
 
+    /// @brief Determine if the collection is empty.
+    bool Empty() const {
+        return Params.size() == 0;
+    }
+
     /// @brief Get a view of the parameters matrix as a single vector.
     auto AsVector() const {
-        return Params.reshaped();
+        return Params.transpose().reshaped();
     }
 
     /// @brief Only get the submatrix containing the shape parameters.
@@ -56,12 +64,12 @@ struct ShapeCollection {
 /// @brief Store circles as `(x,y,r)` points, where `r` is the radius.
 using CircleCollection = ShapeCollection<3>;
 
+/// @brief Store rectangles as set of corners in a `(x1,y1,x2,y2)` format.
+using RectangleCollection = ShapeCollection<4>;
+
 /// @brief Store triangles as a set of three points in `(x1,y1,x2,y2,x3,y3)`
 ///     format.
 using TriangleCollection = ShapeCollection<6>;
-
-/// @brief Store rectangles as set of corners in a `(x1,y1,x2,y2)` format.
-using RectangleCollection = ShapeCollection<4>;
 
 /// @brief Generate shape parameter matrices.
 ///
@@ -75,12 +83,12 @@ public:
     /// @param width canvas width
     /// @param height canvas height
     /// @param prng random number generator
-    ShapeGenerator(const int width, const int height, Prng<> &prng);
+    ShapeGenerator(const int width, const int height, Prng<> prng);
 
     /// @brief Create a new ShapeGenerator for a canvas with a given aspect ratio.
     /// @param aspect canvas aspect ratio (height/width)
     /// @param prng random number generator
-    ShapeGenerator(const double aspect, Prng<> &prng);
+    ShapeGenerator(const double aspect, Prng<> prng);
 
     /// @brief Generate a set of random circles with random colours.
     /// @param num number of circles
@@ -107,4 +115,105 @@ private:
     UniformDistribution<> _dist;
 };
 
-}  // namespace abstractions
+/// @brief Available shapes for the image abstraction.
+enum class AbstractionShape { Circles, Rectangles, Triangles };
+
+ABSTRACTIONS_OPTIONS_ENUM(AbstractionShape)
+
+/// @brief Provides access to the individual shape collections when multiple
+///     collections are inside a single parameter vector.
+/// @see AbstractionShape
+///
+/// The packed collection always stores all available shape types.  The
+/// particular collection will be empty if the provided packed collections
+/// configuration doesn't contain that shape.
+///
+/// One limitation of this structure is that each collection must contain the
+/// same number of shapes.
+class PackedShapeCollection {
+public:
+    /// @brief Create a completely empty collection.
+    PackedShapeCollection();
+
+    /// @brief Create a new packed shape collection.
+    /// @param shapes shapes stored in the packed parameters vector
+    /// @param params packed shape parameters vector
+    PackedShapeCollection(Options<AbstractionShape> shapes, ConstRowVectorRef params);
+
+    /// @brief Creates a new packed shape collection, allocating space to store
+    ///     the requested shapes.
+    /// @param shapes shape stored in the packed collection
+    /// @param num_shapes the number of shapes in the individual collections
+    PackedShapeCollection(Options<AbstractionShape> shapes, int num_shapes);
+
+    /// @brief Create a new packed shape collection.
+    /// @param circles set of circles
+    /// @param rectangles set of rectangles
+    /// @param triangles set of triangles
+    ///
+    /// The individual shape collections must be the same size or be empty.
+    PackedShapeCollection(const CircleCollection &circles, const RectangleCollection &rectangles,
+                          const TriangleCollection &triangles);
+
+    /// @brief The options used to describe this shape collection.
+    Options<AbstractionShape> Shapes() const;
+
+    /// @brief Get the total length of a parameter vector from a shape configuration.
+    /// @return total number of dimensions
+    ///
+    /// This is the sum of the ShapeCollection<>::TotalDimensions property for
+    /// the individual collections contained in the packed shape.
+    int TotalDimensions() const;
+
+    /// @brief The size of the individual collections.
+    int CollectionSize() const;
+
+    /// @brief Convert the internal collections into their packed representation.
+    /// @return a row vector with the packed parameters
+    RowVector AsPackedVector() const;
+
+    CircleCollection &Circles() {
+        return _circles;
+    }
+    const CircleCollection &Circles() const {
+        return _circles;
+    }
+
+    RectangleCollection &Rectangles() {
+        return _rectangles;
+    }
+    const RectangleCollection &Rectangles() const {
+        return _rectangles;
+    }
+
+    TriangleCollection &Triangles() {
+        return _triangles;
+    }
+    const TriangleCollection &Triangles() const {
+        return _triangles;
+    }
+
+private:
+    int _collection_size;
+    CircleCollection _circles;
+    RectangleCollection _rectangles;
+    TriangleCollection _triangles;
+};
+
+}  // namespace abstractions::render
+
+/// @brief Custom formatter for AbstractionShape
+template <>
+struct fmt::formatter<abstractions::render::AbstractionShape> : fmt::formatter<fmt::string_view> {
+    fmt::format_context::iterator format(abstractions::render::AbstractionShape shape,
+                                         fmt::format_context &ctx) const;
+};
+
+/// @brief Custom formatter for Options<AbstractionShape>
+template <>
+struct fmt::formatter<abstractions::Options<abstractions::render::AbstractionShape>>
+    : fmt::formatter<fmt::string_view> {
+    fmt::format_context::iterator format(
+        abstractions::Options<abstractions::render::AbstractionShape> options,
+        fmt::format_context &ctx) const;
+};

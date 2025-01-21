@@ -19,9 +19,6 @@ struct PgpeOptimizerSettings {
     /// update that the optimizer can make.
     double max_speed = std::numeric_limits<double>::signaling_NaN();
 
-    /// @brief Smooth out gradient estimates by scaling and ranking the sample costs.
-    bool costs_ranking = false;
-
     /// @brief The initial distribution search radius.
     double init_search_radius = 15;
 
@@ -67,7 +64,7 @@ struct PgpeOptimizerSettings {
 /// RowVector solution = InitialGuess();
 /// Matrix samples = Allocate();
 ///
-/// auto optimizer = PgpeOptimizer::Create(settings);
+/// auto optimizer = PgpeOptimizer::New(settings);
 /// optimizer.Initialize(solution);
 ///
 /// while (!converged) {
@@ -82,7 +79,7 @@ public:
     /// @param settings optimizer settings
     /// @return The configured optimizer or an Error instance if the creation
     ///     failed.
-    static Expected<PgpeOptimizer> Create(const PgpeOptimizerSettings &settings);
+    static Expected<PgpeOptimizer> New(const PgpeOptimizerSettings &settings);
 
     /// @brief Create an optimizer from another one.
     /// @param other other optimizer
@@ -110,6 +107,14 @@ public:
     /// @brief Get the settings used for this optimizer.
     [[nodiscard]]
     const PgpeOptimizerSettings &GetSettings() const;
+
+    /// @brief Replace the internl PRNG with a new with the provided seed.
+    /// @param seed new PRNG seed
+    ///
+    /// This is mainly for when the optimizer is being used as part of a larger
+    /// system.  This allows the internal PRNG to be configured with a new seed
+    /// post-initialization.  This has the effect of also resetting the PRNG.
+    void SetPrngSeed(DefaultRngType::result_type seed);
 
     /// @brief Initialize the optimizer to some starting state.
     /// @param x_init The initial state (parameters) vector
@@ -157,7 +162,7 @@ private:
 
     bool _is_initialized;
     PgpeOptimizerSettings _settings;
-    Prng<std::mt19937> _prng;
+    Prng<> _prng;
 
     RowVector _current_state;
     RowVector _current_standard_deviation;

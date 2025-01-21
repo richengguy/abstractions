@@ -1,9 +1,11 @@
 #include "abstractions/threads/threadpool.h"
 
-#include <abstractions/console.h>
 #include <abstractions/errors.h>
+#include <abstractions/terminal/console.h>
 
 #include <chrono>
+
+using namespace abstractions::terminal;
 
 namespace abstractions::threads {
 
@@ -78,7 +80,7 @@ Job::Future ThreadPool::Submit(Job &job) {
     Console console(kConsoleName);
 
     if (_debug) {
-        console.Print("Submitting Job#{}", job.Id());
+        console.Print("Submitting Job #{}", job.Index());
     }
 
     Job::Promise status_promise;

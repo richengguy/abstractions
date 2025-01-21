@@ -1,9 +1,9 @@
 #pragma once
 
-#include <abstractions/console.h>
 #include <abstractions/errors.h>
 #include <abstractions/math/random.h>
 #include <abstractions/profile.h>
+#include <abstractions/terminal/console.h>
 #include <fmt/chrono.h>
 #include <fmt/color.h>
 #include <fmt/format.h>
@@ -39,8 +39,11 @@ namespace abstractions::tests {
 class TestOutputFolder {
 public:
     TestOutputFolder(const std::string &test_name) :
-        _folder{kResultsPath / "s" / test_name} {
-        Console console(test_name, "{} ::");
+        _folder{kResultsPath / "s" / test_name} {}
+
+    /// @brief Initialize the test storage folder.
+    void Init() {
+        terminal::Console console(_folder.stem(), "{} ::");
 
         if (std::filesystem::exists(_folder)) {
             auto removed = std::filesystem::remove_all(_folder);
@@ -94,6 +97,8 @@ public:
         _app.add_option("-s,--seed", seed, "Set the seed used by the feature test.");
         CLI11_PARSE(_app, nargs, args);
 
+        output_folder.Init();
+
         console.Print(seed ? fmt::format("Seed: {}", *seed) : "Seed: N/A");
         console.Separator();
 
@@ -123,7 +128,7 @@ public:
 protected:
     void Func(Prng<> &prng) const;
 
-    Console console;
+    terminal::Console console;
     TestOutputFolder output_folder;
 
 private:

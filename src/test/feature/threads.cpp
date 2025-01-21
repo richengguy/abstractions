@@ -1,4 +1,8 @@
 #include <abstractions/threads/threadpool.h>
+#include <fmt/ranges.h>
+
+#include <functional>
+#include <vector>
 
 #include "support.h"
 
@@ -10,10 +14,38 @@ std::mutex mutex;
 struct SimpleJob : public IJobFunction {
     Error operator()(JobContext &ctx) const override {
         std::unique_lock lock{mutex};
-        fmt::print("-- Running job#{} ({})\n", ctx.Id(), ctx.Worker());
+        fmt::print("-- Running job#{} ({})\n", ctx.Index(), ctx.Worker());
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        return abstractions::errors::no_error;
+        return errors::no_error;
+    }
+};
+
+struct ReadOnlyJob : public IJobFunction {
+    Error operator()(JobContext &ctx) const override {
+        auto msg = ctx.Data<std::string>();
+        if (!msg.has_value()) {
+            return msg.error();
+        }
+
+        std::unique_lock lock{mutex};
+        fmt::print("-- Running job#{} ({}) with payload: {}\n", ctx.Index(), ctx.Worker(), *msg);
+        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+
+        return errors::no_error;
+    }
+};
+
+struct WriteOnlyJob : public IJobFunction {
+    Error operator()(JobContext &ctx) const override {
+        auto array = std::any_cast<int *>(ctx.Data());
+        std::unique_lock lock{mutex};
+        fmt::print("-- Running job#{} ({}) - Old value: {}\n", ctx.Index(), ctx.Worker(),
+                   array[ctx.Index()]);
+
+        array[ctx.Index()] = 123;
+        fmt::print("-- New value: {}\n", array[ctx.Index()]);
+        return errors::no_error;
     }
 };
 
@@ -38,12 +70,21 @@ ABSTRACTIONS_FEATURE_TEST() {
     auto future5 = thread_pool.Submit<SimpleJob>(5);
     auto future6 = thread_pool.Submit<SimpleJob>(6);
 
-    future1.wait();
-    future2.wait();
-    future3.wait();
-    future4.wait();
-    future5.wait();
-    future6.wait();
+    WaitForJobs({&future1, &future2, &future3, &future4, &future5, &future6});
+
+    std::vector<Job::Future> futures;
+    std::string msg = "This is some message.";
+    futures.push_back(thread_pool.SubmitWithPayload<ReadOnlyJob>(10, msg));
+
+    std::string msg2 = "This is another message";
+    futures.push_back(thread_pool.SubmitWithPayload<ReadOnlyJob>(11, msg2));
+
+    WaitForJobs(futures);
+
+    std::vector<int> array{0, 1, 2, 3, 4};
+    auto future_w_update = thread_pool.SubmitWithPayload<WriteOnlyJob>(2, array.data());
+    future_w_update.wait();
+    console.Print("Array after thread: [{}]", fmt::join(array, ", "));
 }
 
 ABSTRACTIONS_FEATURE_TEST_MAIN("threads", "Run the ThreadPool through a simple work scenario.");

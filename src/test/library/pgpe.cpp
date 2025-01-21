@@ -6,13 +6,15 @@
 #include <Eigen/Core>
 #include <numbers>
 
+using namespace abstractions;
+
 TEST_SUITE_BEGIN("pgpe");
 
 TEST_CASE("Can validate PGPE optimizer settings.") {
     const std::string kMaxSpeedNotSet = "PGPE optimizer requires a maximum update speed parameter.";
 
     SUBCASE("Empty option returned when settings are correct.") {
-        abstractions::PgpeOptimizerSettings settings;
+        PgpeOptimizerSettings settings;
         settings.max_speed = 1.0;
 
         auto err = settings.Validate();
@@ -20,7 +22,7 @@ TEST_CASE("Can validate PGPE optimizer settings.") {
     }
 
     SUBCASE("Error when max_speed isn't set.") {
-        abstractions::PgpeOptimizerSettings settings;
+        PgpeOptimizerSettings settings;
 
         auto err = settings.Validate();
         REQUIRE(err.has_value() == true);
@@ -28,14 +30,14 @@ TEST_CASE("Can validate PGPE optimizer settings.") {
     }
 
     SUBCASE("Error when max_speed is negative.") {
-        abstractions::PgpeOptimizerSettings settings{.max_speed = -1};
+        PgpeOptimizerSettings settings{.max_speed = -1};
 
         auto err = settings.Validate();
         REQUIRE(err.value() != kMaxSpeedNotSet);
     }
 
     SUBCASE("Error when another value is negative.") {
-        abstractions::PgpeOptimizerSettings settings{
+        PgpeOptimizerSettings settings{
             .max_speed = 1,
             .init_search_radius = -1,
         };
@@ -47,17 +49,17 @@ TEST_CASE("Can validate PGPE optimizer settings.") {
 
 TEST_CASE("Can create an optimizer using PgpeOptimizer::Create()") {
     SUBCASE("Error when settings are invalid.") {
-        abstractions::PgpeOptimizerSettings settings{};
-        auto optim = abstractions::PgpeOptimizer::Create(settings);
+        PgpeOptimizerSettings settings{};
+        auto optim = PgpeOptimizer::New(settings);
         REQUIRE_FALSE(optim.has_value());
     }
 
     SUBCASE("No error when the settings are valid.") {
-        abstractions::PgpeOptimizerSettings settings{
+        PgpeOptimizerSettings settings{
             .max_speed = 1,
             .momentum = 123,
         };
-        auto optim = abstractions::PgpeOptimizer::Create(settings);
+        auto optim = PgpeOptimizer::New(settings);
         REQUIRE(optim.has_value());
         CHECK(optim->GetSettings().max_speed == 1);
         CHECK(optim->GetSettings().momentum == 123);
@@ -65,11 +67,6 @@ TEST_CASE("Can create an optimizer using PgpeOptimizer::Create()") {
 }
 
 TEST_CASE("Costs can be correctly rank-linearized.") {
-    using abstractions::ColumnVector;
-    using abstractions::Matrix;
-    using abstractions::PgpeOptimizer;
-    using abstractions::PgpeOptimizerSettings;
-
     ColumnVector costs(5);
     costs << 8, 7, 1, 9, 6;
     // Rank: 3  2  0  4  1
@@ -79,7 +76,7 @@ TEST_CASE("Costs can be correctly rank-linearized.") {
     ColumnVector expected(5);
     expected << 0.25, 0.0, -0.5, 0.5, -0.25;
 
-    auto optimizer = PgpeOptimizer::Create(PgpeOptimizerSettings{.max_speed = 1.0});
+    auto optimizer = PgpeOptimizer::New(PgpeOptimizerSettings{.max_speed = 1.0});
     optimizer->RankLinearize(costs);
 
     INFO("Linearized Costs: ", costs.transpose());
@@ -88,14 +85,6 @@ TEST_CASE("Costs can be correctly rank-linearized.") {
 }
 
 TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.") {
-    using abstractions::ColumnVector;
-    using abstractions::Matrix;
-    using abstractions::NormalDistribution;
-    using abstractions::PgpeOptimizer;
-    using abstractions::PgpeOptimizerSettings;
-    using abstractions::Prng;
-    using abstractions::RandomMatrix;
-
     // Constants
     constexpr int kIterations = 2500;
     constexpr int kNumPoints = 100;
@@ -148,8 +137,7 @@ TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.") {
         line_pt.array();
 
     // Construct the optimizer and try to find a "good" solution
-    auto optimizer = PgpeOptimizer::Create(
-        PgpeOptimizerSettings{.max_speed = 0.2, .costs_ranking = false, .seed = 3});
+    auto optimizer = PgpeOptimizer::New(PgpeOptimizerSettings{.max_speed = 0.2, .seed = 3});
 
     INFO("Ensure optimizer is created.");
     REQUIRE(optimizer);

@@ -6,7 +6,7 @@ set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
 
 set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/abstractions.h
-    ${ABSTRACTIONS_INCLUDE_DIR}/console.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/engine.h
     ${ABSTRACTIONS_INCLUDE_DIR}/errors.h
     ${ABSTRACTIONS_INCLUDE_DIR}/image.h
     ${ABSTRACTIONS_INCLUDE_DIR}/pgpe.h
@@ -18,28 +18,35 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/math/types.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/render/canvas.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/render/renderer.h
     ${ABSTRACTIONS_INCLUDE_DIR}/render/shapes.h
 
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/job.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/queue.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/threadpool.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/worker.h
+
+    ${ABSTRACTIONS_INCLUDE_DIR}/terminal/console.h
+    ${ABSTRACTIONS_INCLUDE_DIR}/terminal/table.h
 )
 
 set (ABSTRACTIONS_SOURCES
-    abstractions.cpp
-    console.cpp
+    engine.cpp
     errors.cpp
     image.cpp
     pgpe.cpp
 
     render/canvas.cpp
+    render/renderer.cpp
     render/shapes.cpp
 
     threads/job.cpp
     threads/queue.cpp
     threads/threadpool.cpp
     threads/worker.cpp
+
+    terminal/console.cpp
+    terminal/table.cpp
 )
 
 add_library(abstractions ${ABSTRACTIONS_INCLUDES} ${ABSTRACTIONS_SOURCES})

@@ -19,6 +19,7 @@ set(ABSTRACTIONS_TESTS
     library/render.cpp
     library/shapes.cpp
     library/threads.cpp
+    library/types.cpp
 
     ${abstractions_BINARY_DIR}/tests/test-paths.h
     ${abstractions_SOURCE_DIR}/src/test/library/support.h
@@ -77,4 +78,6 @@ endfunction()
 
 add_feature_test(assert)
 add_feature_test(canvas)
+add_feature_test(optimizer)
+add_feature_test(renderer)
 add_feature_test(threads)

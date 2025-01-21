@@ -1,16 +1,21 @@
 #pragma once
 
+#include <abstractions/errors.h>
 #include <abstractions/types.h>
+#include <fmt/format.h>
+#include <fmt/std.h>
 
+#include <any>
 #include <chrono>
 #include <future>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #include <vector>
 
 namespace abstractions::threads {
 
-// Forware declarations
+// Forward declarations
 class Job;
 class JobContext;
 
@@ -30,13 +35,42 @@ struct IJobFunction {
 class JobContext {
 public:
     /// @brief Create a new job context.
-    /// @param job_id job ID
+    /// @param index job ID
     /// @param worker_id worker ID
-    JobContext(int job_id, int worker_id);
+    JobContext(int index, int worker_id, std::any &data);
+
+    /// @brief Check if the context contains data of the given type.
+    /// @tparam T type being checked
+    /// @return `true` if there is data and the type matches
+    template <typename T>
+    bool HasValueOfType() const {
+        auto &type = typeid(T);
+        return _data.has_value() && _data.type() == type;
+    }
+
+    /// @brief Gets a reference to the data stored in the job context.
+    /// @tparam T expected data type
+    /// @return contained data or an error if it could not be extracted
+    template <typename T>
+    Expected<T> Data() const {
+        if (!_data.has_value()) {
+            return errors::report<T>("Context contains no data.");
+        }
+
+        if (!HasValueOfType<T>()) {
+            return errors::report<T>(fmt::format(
+                "Context contains data of type '{}'; expected '{}'.", _data.type(), typeid(T)));
+        }
+
+        return std::any_cast<T>(_data);
+    }
+
+    /// @brief Gets a reference to the data stored in the job context.
+    std::any &Data();
 
     /// @brief ID of the particular job.
-    int Id() const {
-        return _job_id;
+    int Index() const {
+        return _index;
     }
 
     /// @brief ID of the worker that executes the job.
@@ -45,14 +79,15 @@ public:
     }
 
 private:
-    int _job_id;
+    int _index;
     int _worker_id;
+    std::any &_data;
 };
 
 /// @brief The status of a job once it completes.
 struct JobStatus {
     /// @brief The ID of the finished job.
-    int job_id;
+    int index;
 
     /// @brief The job's error status.
     Error error;
@@ -70,19 +105,42 @@ public:
     /// @brief Create a new job.
     /// @tparam T IJobFunction class type
     /// @tparam Arg IJobFunction constructor argument types
-    /// @param id user-specified job ID
+    /// @param index user-specified job ID
     /// @param args constructor arguments
+    /// @return a new Job instance
     template <typename T, typename... Arg>
-    static Job New(int id, Arg &&...args) {
+    static Job New(int index, Arg &&...args) {
         static_assert(std::is_base_of<IJobFunction, T>::value,
                       "'T' must inherit from IJobFunction.");
-        return Job(id, std::make_unique<T>(std::forward<Arg>(args)...));
+        return Job(index, std::make_unique<T>(std::forward<Arg>(args)...));
     }
 
     /// @brief Create a new job.
-    /// @param id job ID
+    /// @tparam T IJobFunction class type
+    /// @tparam S payload type
+    /// @tparam Arg IJobFunction constructor argument types
+    /// @param index user-specified job ID
+    /// @param payload data the job can access when it executes
+    /// @param args constructor arguments
+    /// @return a new Job instance
+    template <typename T, typename S, typename... Arg>
+    static Job NewWithPayload(int index, S &&payload, Arg &&...args) {
+        static_assert(std::is_base_of<IJobFunction, T>::value,
+                      "'T' must inherit from IJobFunction.");
+        return Job(index, std::make_any<S>(payload),
+                   std::make_unique<T>(std::forward<Arg>(args)...));
+    }
+
+    /// @brief Create a new job.
+    /// @param index job ID
     /// @param fn function the job executes
-    Job(int id, std::unique_ptr<IJobFunction> fn);
+    Job(int index, std::unique_ptr<IJobFunction> fn);
+
+    /// @brief Create a new job.
+    /// @param index job ID
+    /// @param payload data that goes to the job when it runs
+    /// @param fn function the job executes
+    Job(int index, std::any payload, std::unique_ptr<IJobFunction> fn);
 
     /// @brief Run the job.
     /// @param worker_id ID of the worker executing the job
@@ -98,7 +156,7 @@ public:
     void SetPromise(Promise &promise);
 
     /// @brief The user-specified job ID.
-    int Id() const;
+    int Index() const;
 
     Job(const Job &) = delete;
     Job &operator=(const Job &) = delete;
@@ -106,9 +164,18 @@ public:
     Job &operator=(Job &&) = default;
 
 private:
-    int _id;
+    int _index;
     std::unique_ptr<IJobFunction> _fn;
+    std::unique_ptr<std::any> _payload;
     std::promise<JobStatus> _job_status;
 };
+
+/// @brief Have the current thread wait for a set of jobs to complete.
+/// @param futures pointers to a set of job futures
+void WaitForJobs(std::initializer_list<const Job::Future *> futures);
+
+/// @brief Have the current thread wait for a set of jobs to complete.
+/// @param futures set of job futures
+void WaitForJobs(const std::vector<Job::Future> &futures);
 
 }  // namespace abstractions::threads

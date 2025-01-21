@@ -9,14 +9,14 @@ namespace abstractions {
 namespace {
 
 struct PixelDiff {
-    const int red;
-    const int green;
-    const int blue;
+    const double red;
+    const double green;
+    const double blue;
 
     PixelDiff(uint32_t a, uint32_t b) :
-        red{detail::GetRedValue(a) - detail::GetRedValue(b)},
-        green{detail::GetGreenValue(a) - detail::GetGreenValue(b)},
-        blue{detail::GetBlueValue(a) - detail::GetBlueValue(b)} {}
+        red{(detail::GetRedValue(a) - detail::GetRedValue(b)) / 255.0},
+        green{(detail::GetGreenValue(a) - detail::GetGreenValue(b)) / 255.0},
+        blue{(detail::GetBlueValue(a) - detail::GetBlueValue(b)) / 255.0} {}
 };
 
 template <typename AccFn>
@@ -40,7 +40,7 @@ Expected<double> PixelwiseComparison(const Expected<Image> &first, const Expecte
     PixelData ref = first->Pixels();
     PixelData tgt = second->Pixels();
 
-    uint64_t sum = 0;
+    double sum = 0;
     for (int y = 0; y < height; y++) {
         auto row_ref = ref.Row(y);
         auto row_tgt = tgt.Row(y);
@@ -51,7 +51,7 @@ Expected<double> PixelwiseComparison(const Expected<Image> &first, const Expecte
         }
     }
 
-    return static_cast<double>(sum) / (width * height);
+    return sum / (width * height);
 }
 
 }  // namespace

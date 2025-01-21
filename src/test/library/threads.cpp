@@ -34,7 +34,7 @@ TEST_CASE("Can push/pop to the job queue. (Non-blocking)") {
         for (int i = 0; i < 5; i++) {
             auto job = queue.NextJob();
             REQUIRE(job);
-            CHECK(job->Id() == i);
+            CHECK(job->Index() == i);
         }
 
         REQUIRE(queue.Size() == 0);
@@ -65,7 +65,7 @@ TEST_CASE("Can push/pop to the job queue. (Non-blocking)") {
 
         auto job = queue.NextJob();
         REQUIRE(job);
-        INFO("Popping job ", job->Id());
+        INFO("Popping job ", job->Index());
 
         CHECK_FALSE(queue.IsFull());
         INFO("Pushing new job.");
@@ -107,22 +107,22 @@ TEST_CASE("Can push/pop to job queue asynchronously. (Blocking)") {
     auto job0 = queue.NextJob();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     REQUIRE(job0);
-    CHECK(job0->Id() == 0);
+    CHECK(job0->Index() == 0);
     CHECK(queue.IsFull());
 
     // Now, pull the remaining jobs. The last one should have the job created
     // from the other thread (job ID '10').
     auto job1 = queue.NextJob();
     REQUIRE(job1);
-    CHECK(job1->Id() == 1);
+    CHECK(job1->Index() == 1);
 
     auto job2 = queue.NextJob();
     REQUIRE(job2);
-    CHECK(job2->Id() == 2);
+    CHECK(job2->Index() == 2);
 
     auto job10 = queue.NextJob();
     REQUIRE(job10);
-    CHECK(job10->Id() == 10);
+    CHECK(job10->Index() == 10);
 
     // Do the final clean-up.
     thread.join();
