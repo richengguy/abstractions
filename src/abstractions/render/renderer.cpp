@@ -27,8 +27,7 @@ void Renderer::SetBackground(uint8_t red, uint8_t green, uint8_t blue, uint8_t a
     _background_colour = Pixel(red, green, blue, alpha);
 }
 
-void Renderer::SetBackground(const Pixel &background)
-{
+void Renderer::SetBackground(const Pixel &background) {
     _background_colour = background;
 }
 

@@ -77,7 +77,9 @@ struct EnumValidator : public ::CLI::Validator {
 class Command {
 public:
     Command() :
-        console{"abstractions"} { console.ShowPrefix(false); }
+        console{"abstractions"} {
+        console.ShowPrefix(false);
+    }
     virtual CLI::App *Init(CLI::App &parent) = 0;
     virtual void Run() const = 0;
     virtual ~Command() = default;

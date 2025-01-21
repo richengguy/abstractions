@@ -145,8 +145,9 @@ public:
     /// @param config engine configuration
     /// @param optim_settings optional optimizer configuration
     /// @return the initialized engine or an error if the configuraiton failed
-    static Expected<Engine> Create(const EngineConfig &config,
-                                   const PgpeOptimizerSettings &optim_settings = PgpeOptimizerSettings());
+    static Expected<Engine> Create(
+        const EngineConfig &config,
+        const PgpeOptimizerSettings &optim_settings = PgpeOptimizerSettings());
 
     /// @brief Generate an abstract representation from the provided reference image.
     /// @param reference reference image
@@ -174,7 +175,9 @@ private:
 /// @param solution solution vector
 /// @param background_colour (optional) background colour
 /// @return rendered image abstraction
-[[nodiscard]] Expected<Image> RenderImageAbstraction(const int width, const int height, const Options<render::AbstractionShape> shapes, ConstRowVectorRef solution, const Pixel background_colour = Pixel(0, 0, 0, 255));
+[[nodiscard]] Expected<Image> RenderImageAbstraction(
+    const int width, const int height, const Options<render::AbstractionShape> shapes,
+    ConstRowVectorRef solution, const Pixel background_colour = Pixel(0, 0, 0, 255));
 
 }  // namespace abstractions
 

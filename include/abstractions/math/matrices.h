@@ -25,10 +25,11 @@ auto ClampValues(const Eigen::MatrixBase<M> &matrix, double min = 0, double max 
 /// @param matrix matrix or matrix expression
 /// @return rescaled matrix
 template <typename M>
-Matrix RescaleValuesColumnWise(const Eigen::MatrixBase<M> &matrix)
-{
-    Eigen::Matrix<typename M::Scalar, 1, Eigen::Dynamic> min_values = matrix.array().colwise().minCoeff();
-    Eigen::Matrix<typename M::Scalar, 1, Eigen::Dynamic> max_values = matrix.array().colwise().maxCoeff();
+Matrix RescaleValuesColumnWise(const Eigen::MatrixBase<M> &matrix) {
+    Eigen::Matrix<typename M::Scalar, 1, Eigen::Dynamic> min_values =
+        matrix.array().colwise().minCoeff();
+    Eigen::Matrix<typename M::Scalar, 1, Eigen::Dynamic> max_values =
+        matrix.array().colwise().maxCoeff();
     return (matrix.rowwise() - min_values).array().rowwise() / (max_values - min_values).array();
 }
 

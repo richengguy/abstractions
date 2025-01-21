@@ -16,24 +16,18 @@ Console::Console(const std::string &name, const std::string &fmt) {
     _show_prefix = true;
 }
 
-std::string_view Console::Prefix() const
-{
+std::string_view Console::Prefix() const {
     return _prefix;
 }
 
-void Console::ShowPrefix(bool show)
-{
+void Console::ShowPrefix(bool show) {
     _show_prefix = show;
 }
 
-void Console::PrintToStdout(fmt::string_view msg) const
-{
-    if (_show_prefix)
-    {
+void Console::PrintToStdout(fmt::string_view msg) const {
+    if (_show_prefix) {
         fmt::println("{} {}", _prefix, msg);
-    }
-    else
-    {
+    } else {
         fmt::println("{}", msg);
     }
 }
@@ -44,4 +38,4 @@ void Console::Separator(int length, const std::string &separator) const {
     PrintToStdout(sepstr);
 }
 
-}  // namespace abstractions
+}  // namespace abstractions::terminal

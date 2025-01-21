@@ -57,4 +57,4 @@ private:
     bool _show_prefix;
 };
 
-}  // namespace abstractions
+}  // namespace abstractions::terminal

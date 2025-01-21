@@ -2,14 +2,12 @@
 
 #include <abstractions/errors.h>
 #include <abstractions/terminal/table.h>
+#include <fmt/format.h>
+#include <fmt/std.h>
 
 #include <indicators/cursor_control.hpp>
 #include <indicators/cursor_movement.hpp>
 #include <indicators/progress_bar.hpp>
-
-#include <fmt/format.h>
-#include <fmt/std.h>
-
 #include <iostream>
 #include <map>
 
@@ -69,8 +67,15 @@ CLI::App *GenerateCommand::Init(CLI::App &parent) {
 
     // General options
     app->add_option("--seed", _config.seed, "Set a fixed PRNG seed.")->group(kGeneralOptions);
-    app->add_option("--save-intermediate", _per_stage_output, "Optional location where the results at each optimization iteration are stored.")->capture_default_str()->group(kGeneralOptions);
-    app->add_option("--scale", _image_scale, "Scale the image by the about before finding the abstract representation.")->capture_default_str()->group(kGeneralOptions);
+    app->add_option(
+           "--save-intermediate", _per_stage_output,
+           "Optional location where the results at each optimization iteration are stored.")
+        ->capture_default_str()
+        ->group(kGeneralOptions);
+    app->add_option("--scale", _image_scale,
+                    "Scale the image by the about before finding the abstract representation.")
+        ->capture_default_str()
+        ->group(kGeneralOptions);
 
     // Engine configuration options
     app->add_option("-n,--iterations", _config.iterations,
@@ -135,19 +140,16 @@ void GenerateCommand::Run() const {
     console.Separator();
 
     terminal::Table table;
-    table
-        .AddRow("Shapes", fmt::format("{} [{}]", _config.shapes, _config.num_drawn_shapes))
+    table.AddRow("Shapes", fmt::format("{} [{}]", _config.shapes, _config.num_drawn_shapes))
         .AddRow("Samples", _config.num_samples)
         .AddRow("Scale", _image_scale.value_or(kDefaultImageScale));
 
-    if (_config.seed)
-    {
+    if (_config.seed) {
         table.AddRow("Seed", *_config.seed);
     }
 
     table.AddRow("Iterations", _config.iterations);
-    table
-        .OuterBorders(false)
+    table.OuterBorders(false)
         .RowDividers(false)
         .VerticalSeparator("-")
         .Justify(0, terminal::TextJustification::Right)
@@ -163,44 +165,39 @@ void GenerateCommand::Run() const {
     auto engine = Engine::Create(_config, _optim_settings);
     abstractions_check(engine);
 
-    indicators::ProgressBar progbar
-    {
-        indicators::option::BarWidth{50},
-        indicators::option::Start{" ["},
-        indicators::option::Fill{"="},
-        indicators::option::Lead{">"},
-        indicators::option::Remainder{"\u00b7"},
-        indicators::option::End{"] "},
-        indicators::option::ShowElapsedTime{true},
-        indicators::option::ShowRemainingTime{true},
-        indicators::option::MaxProgress{_config.iterations}
-    };
+    indicators::ProgressBar progbar{indicators::option::BarWidth{50},
+                                    indicators::option::Start{" ["},
+                                    indicators::option::Fill{"="},
+                                    indicators::option::Lead{">"},
+                                    indicators::option::Remainder{"\u00b7"},
+                                    indicators::option::End{"] "},
+                                    indicators::option::ShowElapsedTime{true},
+                                    indicators::option::ShowRemainingTime{true},
+                                    indicators::option::MaxProgress{_config.iterations}};
 
-    if (!_per_stage_output.empty())
-    {
-        console.Print("Storing optimizer steps to {}", _per_stage_output);
+    if (!_per_stage_output.empty()) {
+        console.Print("Storing optimizer steps to '{}'", _per_stage_output);
         std::filesystem::remove_all(_per_stage_output);
         std::filesystem::create_directories(_per_stage_output);
     }
 
-    engine->SetCallback([&, this](int i, double cost, ConstRowVectorRef params)
-    {
-        progbar.set_option(indicators::option::PrefixText{fmt::format("Running Optimizer (Iteration {:>5})", i+1)});
+    engine->SetCallback([&, this](int i, double cost, ConstRowVectorRef params) {
+        progbar.set_option(indicators::option::PrefixText{
+            fmt::format("Running Optimizer (Iteration {:>5} [{:4.3g}])", i + 1, cost)});
         progbar.tick();
 
-        if (_per_stage_output.empty())
-        {
+        if (_per_stage_output.empty()) {
             return;
         }
 
-        if (i % 25 != 0)
-        {
+        if (i % 25 != 0) {
             return;
         }
 
         auto file_name = fmt::format("iter-{:0>5}.png", i);
         auto out_path = _per_stage_output / file_name;
-        auto iteration_output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, params);
+        auto iteration_output =
+            RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, params);
         abstractions_check(iteration_output);
         abstractions_check(iteration_output->Save(out_path));
     });
@@ -211,7 +208,8 @@ void GenerateCommand::Run() const {
     indicators::move_up(1);
     indicators::erase_line();
 
-    auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, result->solution, Pixel(255, 255, 255));
+    auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes,
+                                         result->solution, Pixel(255, 255, 255));
     abstractions_check(output);
 
     auto output_image_file = _output;

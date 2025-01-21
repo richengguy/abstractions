@@ -217,7 +217,8 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         render::PackedShapeCollection init_shapes(circles, rectangles, triangles);
         optimizer->Initialize(init_shapes.AsPackedVector());
 
-        samples = Matrix::Zero(_config.num_samples, init_shapes.TotalDimensions() * _config.num_drawn_shapes);
+        samples = Matrix::Zero(_config.num_samples,
+                               init_shapes.TotalDimensions() * _config.num_drawn_shapes);
         costs = ColumnVector::Zero(_config.num_samples);
     }
 
@@ -286,10 +287,6 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
             render_timing.AddSample(result.time);
         }
 
-        // RowVector bleh = costs.transpose();
-        // fmt::println("costs({})[{}] =\n{}", i, costs.mean(), bleh);
-        // fmt::println("stddev({}) = \n{}", i, *optimizer->GetSolutionStdDev());
-
         // Run the optimizer and update its state.
         auto update_job = thread_pool.SubmitWithPayload<RunOptimizer>(0, optim_payload);
         auto update_result = update_job.get();
@@ -300,10 +297,18 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
         pgpe_timing.AddSample(update_result.time);
 
-        // Invoke any callbacks
-        if (_callback)
-        {
-            _callback(i, -1.0f, *optimizer->GetEstimate());
+        // Invoke any callbacks.  A render job is dispatched to get the current
+        // solution cost before calling the callback.
+        if (_callback) {
+            samples.row(0) = *optimizer->GetEstimate();
+            auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(0, render_payload);
+            auto render_status = render_job.get();
+            if (render_status.error)
+            {
+                return errors::report<OptimizationResult>(render_status.error);
+            }
+
+            _callback(i, costs(0), *optimizer->GetEstimate());
         }
 
         iterations++;
@@ -316,8 +321,6 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     if (!solution.has_value()) {
         return errors::report<OptimizationResult>(solution.error());
     }
-
-    // fmt::println("final:\n{}", solution);
 
     render::PackedShapeCollection image_abstraction(_config.shapes, *solution);
 
@@ -351,16 +354,15 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     return result;
 }
 
-void Engine::SetCallback(const std::function<void(int, double, ConstRowVectorRef)> &cb)
-{
+void Engine::SetCallback(const std::function<void(int, double, ConstRowVectorRef)> &cb) {
     _callback = cb;
 }
 
-Expected<Image> RenderImageAbstraction(const int width, const int height, const Options<render::AbstractionShape> shapes, ConstRowVectorRef solution, const Pixel background_colour)
-{
+Expected<Image> RenderImageAbstraction(const int width, const int height,
+                                       const Options<render::AbstractionShape> shapes,
+                                       ConstRowVectorRef solution, const Pixel background_colour) {
     auto renderer = render::Renderer::Create(width, height);
-    if (!renderer.has_value())
-    {
+    if (!renderer.has_value()) {
         errors::report<Image>(renderer.error());
     }
 

@@ -1,6 +1,6 @@
-#include <CLI/CLI.hpp>
-
 #include <abstractions/errors.h>
+
+#include <CLI/CLI.hpp>
 #include <indicators/cursor_control.hpp>
 
 #include "generate.h"
@@ -22,17 +22,12 @@ int main(int nargs, char **args) {
 
     indicators::show_console_cursor(false);
 
-    try
-    {
+    try {
         app.parse(nargs, args);
-    }
-    catch (const CLI::ParseError &exc)
-    {
+    } catch (const CLI::ParseError &exc) {
         indicators::show_console_cursor(true);
         return app.exit(exc);
-    }
-    catch (const AbstractionsError &exc)
-    {
+    } catch (const AbstractionsError &exc) {
         indicators::show_console_cursor(true);
         exc.Print();
         return 1;

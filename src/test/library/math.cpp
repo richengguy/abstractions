@@ -36,15 +36,12 @@ TEST_CASE("Can clamp a matrix to some set range.") {
     }
 }
 
-TEST_CASE("Can rescale values in a matrix along its columns.")
-{
-    using abstractions::RescaleValuesColumnWise;
+TEST_CASE("Can rescale values in a matrix along its columns.") {
     using abstractions::Matrix;
+    using abstractions::RescaleValuesColumnWise;
 
     Matrix matrix = Matrix::Zero(3, 4);
-    matrix << 1, 3, 6, 9,
-              2, 2, 7, 6,
-              3, 1, 8, 3;
+    matrix << 1, 3, 6, 9, 2, 2, 7, 6, 3, 1, 8, 3;
 
     // The values in the rescale matrix should have columns of [0, .5, 1].  The
     // direction will alternate between even and odd columns.
@@ -54,16 +51,14 @@ TEST_CASE("Can rescale values in a matrix along its columns.")
     REQUIRE(rescaled.cols() == 4);
 
     // Even columns
-    for (int i = 0; i < 4; i+=2)
-    {
+    for (int i = 0; i < 4; i += 2) {
         CHECK(rescaled(0, i) == 0);
         CHECK(rescaled(1, i) == 0.5);
         CHECK(rescaled(2, i) == 1);
     }
 
     // Odd columns
-    for (int i = 1; i < 4; i += 2)
-    {
+    for (int i = 1; i < 4; i += 2) {
         CHECK(rescaled(0, i) == 1);
         CHECK(rescaled(1, i) == 0.5);
         CHECK(rescaled(2, i) == 0);
