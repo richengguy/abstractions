@@ -254,8 +254,6 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     OperationTiming render_timing;
     OperationTiming sampling_timing;
 
-    // fmt::println("Init:\n{}", optimizer->GetEstimate());
-
     int iterations = 0;
     for (int i = 0; i < _config.iterations; i++) {
         // Run the sampling step

@@ -47,3 +47,14 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+### Compiling
+
+Run the command below to build abstractions in release mode:
+
+```shell
+conan build . -pr:a profiles/$PROFILE --build=missing
+```
+
+`$PROFILE` is one of the files in the `profiles` directory.  The file will
+depend on the OS.

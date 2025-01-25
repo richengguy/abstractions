@@ -15,6 +15,7 @@ class AbstractionsRecipe(ConanFile):
         "doctest/2.4.11",
         "eigen/3.4.0",
         "fmt/11.0.2",
+        "gperftools/2.16",
         "indicators/2.3",
         "nlohmann_json/3.11.3",
     ]
@@ -25,6 +26,10 @@ class AbstractionsRecipe(ConanFile):
 
     def layout(self) -> None:
         cmake_layout(self)
+
+    def configure(self) -> None:
+        self.options["gperftools/*"].build_cpu_profiler = True
+        self.options["gperftools/*"].build_heap_profiler = True
 
     def validate(self) -> None:
         # TODO: figure this out

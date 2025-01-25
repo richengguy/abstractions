@@ -11,6 +11,10 @@
 #include <tuple>
 #include <type_traits>
 
+#ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+#include <gperftools/profiler.h>
+#endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+
 // Custom type names used in CLI11
 
 namespace CLI::detail {
@@ -76,10 +80,7 @@ struct EnumValidator : public ::CLI::Validator {
 /// @brief Standard format for a CLI command.
 class Command {
 public:
-    Command() :
-        console{"abstractions"} {
-        console.ShowPrefix(false);
-    }
+    Command();
     virtual CLI::App *Init(CLI::App &parent) = 0;
     virtual void Run() const = 0;
     virtual ~Command() = default;
@@ -96,5 +97,16 @@ template <typename T>
 void Register(CLI::App &parent, T &command) {
     static_assert(std::is_base_of_v<Command, T>, "'T' must implement ICommand.");
     auto subcmd = command.Init(parent);
-    subcmd->callback([&command]() { command.Run(); });
+    subcmd->callback([&command]() {
+        #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+        fmt::println("⚠️ Profiling enabled; saving to 'abstractions.profile'.");
+        ProfilerStart("abstractions.profile");
+        #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+
+        command.Run();
+
+        #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+        ProfilerStop();
+        #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+    });
 }

@@ -17,3 +17,9 @@ std::string to_lower(std::string_view str) {
 }
 
 }  // namespace cli_helpers
+
+Command::Command()
+    : console{"abstractions"}
+{
+    console.ShowPrefix(false);
+}
