@@ -27,18 +27,6 @@ Expected<double> ComputeCost(ImageComparison metric, const Image &ref, const Ima
     return errors::report<double>("Unknown comparison metric.");
 }
 
-/// @brief Helper to convert an "internal" data type to an "external" one.
-/// @param op operations timing
-/// @return the process time
-TimingReport::ProcessTime FromOperationTiming(const OperationTiming &op) {
-    auto timing = op.GetTiming();
-    return TimingReport::ProcessTime{
-        .total = timing.total,
-        .mean = timing.mean,
-        .standard_deviation = timing.stddev,
-    };
-}
-
 /// @brief Contains the optimizer along with everything it needs to perform
 ///     the "sample" and "optimize" operations.
 struct OptimizerPayload {
@@ -165,6 +153,12 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
     Timer e2e_timer;
 
+    // Allocate storage for the timing report.
+    TimingReport timing_report;
+    timing_report.pgpe_optimization_time = std::vector<TimingReport::Duration>(_config.iterations);
+    timing_report.solution_sampling_time = std::vector<TimingReport::Duration>(_config.iterations);
+    timing_report.rendering_time = std::vector<TimingReport::Duration>(_config.iterations * _config.num_samples);
+
     // The bulk of the work is done on the thread pool.  It is set up to have
     // enough resources for processing all sample rendering requests, along with
     // some buffer.  The number of workers, unless overridden in the engine
@@ -221,6 +215,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
                                init_shapes.TotalDimensions() * _config.num_drawn_shapes);
         costs = ColumnVector::Zero(_config.num_samples);
     }
+    timing_report.initialization_time = init_timing.GetTiming().total;
 
     // Setup the thread payloads.
     OptimizerPayload optim_payload{
@@ -250,9 +245,6 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
     // Now run the "sample->render->optimize" loop, keeping track of how the
     // solution is performing.
-    OperationTiming pgpe_timing;
-    OperationTiming render_timing;
-    OperationTiming sampling_timing;
 
     int iterations = 0;
     for (int i = 0; i < _config.iterations; i++) {
@@ -264,7 +256,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
             return errors::report<OptimizationResult>(sample_result.error);
         }
 
-        sampling_timing.AddSample(sample_result.time);
+        timing_report.solution_sampling_time[i] = sample_result.time;
 
         // Render images from the generated samples and compute the costs.
         std::vector<threads::Job::Future> futures;
@@ -275,14 +267,14 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
 
         threads::WaitForJobs(futures);
 
-        for (auto &render_future : futures) {
-            auto result = render_future.get();
+        for (int j = 0; j < _config.num_samples; j++) {
+            auto result = futures[j].get();
 
             if (result.error) {
                 return errors::report<OptimizationResult>(result.error);
             }
 
-            render_timing.AddSample(result.time);
+            timing_report.rendering_time[i * _config.iterations + j] = result.time;
         }
 
         // Run the optimizer and update its state.
@@ -293,7 +285,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
             return errors::report<OptimizationResult>(update_result.error);
         }
 
-        pgpe_timing.AddSample(update_result.time);
+        timing_report.pgpe_optimization_time[i] = update_result.time;
 
         // Invoke any callbacks.  A render job is dispatched to get the current
         // solution cost before calling the callback.
@@ -330,7 +322,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         return errors::report<OptimizationResult>(final_cost.error());
     }
 
-    auto end_to_end_time = e2e_timer.GetElapsedTime();
+    timing_report.total_time = e2e_timer.GetElapsedTime();
 
     OptimizationResult result{
         .solution = *solution,
@@ -338,14 +330,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .iterations = iterations,
         .shapes = _config.shapes,
         .seed = prng_generator.BaseSeed(),
-        .timing =
-            TimingReport{
-                .total_time = end_to_end_time,
-                .initialization_time = init_timing.GetTiming().total,
-                .pgpe_optimization_time = FromOperationTiming(pgpe_timing),
-                .solution_sampling_time = FromOperationTiming(sampling_timing),
-                .rendering_time = FromOperationTiming(render_timing),
-            },
+        .timing = timing_report,
     };
 
     return result;

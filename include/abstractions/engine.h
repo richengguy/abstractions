@@ -82,18 +82,6 @@ struct TimingReport {
     /// @brief Alias for "microseconds".
     using Duration = std::chrono::microseconds;
 
-    /// @brief Information about a repeated process.
-    struct ProcessTime {
-        /// @brief The total time spent on this one process.
-        Duration total;
-
-        /// @brief The mean time for a single iteration of the process.
-        Duration mean;
-
-        /// @brief The standard deviation for a single iteration of the process.
-        Duration standard_deviation;
-    };
-
     /// @brief The total time the abstraction generation took.
     Duration total_time;
 
@@ -101,14 +89,16 @@ struct TimingReport {
     Duration initialization_time;
 
     /// @brief The time spent by the PGPE optimizer.
-    ProcessTime pgpe_optimization_time;
+    std::vector<Duration> pgpe_optimization_time;
 
     /// @brief The time spent generating solution samples.
-    ProcessTime solution_sampling_time;
+    std::vector<Duration> solution_sampling_time;
 
     /// @brief The time spent rendering and comparing abstract images to the
     ///     source image.
-    ProcessTime rendering_time;
+    ///
+    /// The samples are stored as a `<iterations> x <samples>` array.
+    std::vector<Duration> rendering_time;
 };
 
 /// @brief The results of an optimization from the abstractions Engine.
