@@ -1,26 +1,22 @@
 #include "abstractions/terminal/chrono.h"
 
-#include <chrono>
-
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 
-namespace abstractions::terminal
-{
+#include <chrono>
 
-namespace
-{
+namespace abstractions::terminal {
 
-template<typename T>
-std::string ToDuration(detail::Duration duration)
-{
+namespace {
+
+template <typename T>
+std::string ToDuration(detail::Duration duration) {
     return fmt::format("{}", std::chrono::duration_cast<T>(duration));
 }
 
-}
+}  // namespace
 
-std::string FormatDuration(detail::Duration duration)
-{
+std::string FormatDuration(detail::Duration duration) {
     using namespace std::chrono_literals;
 
     if (duration > 1s) {
@@ -38,11 +34,13 @@ std::string FormatDuration(detail::Duration duration)
     return ToDuration<std::chrono::microseconds>(duration);
 }
 
-}
+}  // namespace abstractions::terminal
 
-fmt::format_context::iterator fmt::formatter<abstractions::OperationTiming>::format(const abstractions::OperationTiming &timing, fmt::format_context &ctx) const
-{
+fmt::format_context::iterator fmt::formatter<abstractions::OperationTiming>::format(
+    const abstractions::OperationTiming &timing, fmt::format_context &ctx) const {
     auto stats = timing.GetTiming();
-    std::string output = fmt::format("{} \u00b1 {}", abstractions::terminal::FormatDuration(stats.mean), abstractions::terminal::FormatDuration(stats.stddev));
+    std::string output =
+        fmt::format("{} \u00b1 {}", abstractions::terminal::FormatDuration(stats.mean),
+                    abstractions::terminal::FormatDuration(stats.stddev));
     return fmt::formatter<std::string>::format(output, ctx);
 }

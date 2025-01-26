@@ -143,14 +143,12 @@ struct TimingReport {
     TimingReport(int iterations, int samples);
 
     /// @brief Number of iterations.
-    int NumIterations() const
-    {
+    int NumIterations() const {
         return iterations.optimize.size();
     }
 
     /// @brief Number of samples during the render-and-compare step.
-    int NumSamples() const
-    {
+    int NumSamples() const {
         return iterations.render_and_compare.size() / NumIterations();
     }
 };

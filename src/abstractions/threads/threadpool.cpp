@@ -1,8 +1,8 @@
 #include "abstractions/threads/threadpool.h"
 
 #include <abstractions/errors.h>
-#include <abstractions/terminal/console.h>
 #include <abstractions/profile.h>
+#include <abstractions/terminal/console.h>
 
 #include <chrono>
 
@@ -84,8 +84,7 @@ Job::Future ThreadPool::Submit(Job &job) {
     job.SetPromise(status_promise);
     _job_queue.Enqueue(job);
 
-    if (_debug)
-    {
+    if (_debug) {
         Console console(kConsoleName);
         console.Print("Submitted job #{} in {}", job.Index(), timer.GetElapsedTime());
     }

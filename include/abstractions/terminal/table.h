@@ -1,7 +1,7 @@
 #pragma once
 
-#include <abstractions/terminal/console.h>
 #include <abstractions/terminal/chrono.h>
+#include <abstractions/terminal/console.h>
 #include <fmt/format.h>
 
 #include <initializer_list>
@@ -142,9 +142,8 @@ private:
         row.push_back(fmt::format("{}", arg));
     }
 
-    template<>
-    void AddColumns(std::vector<std::string> &row, detail::Duration duration)
-    {
+    template <>
+    void AddColumns(std::vector<std::string> &row, detail::Duration duration) {
         row.push_back(FormatDuration(duration));
     }
 

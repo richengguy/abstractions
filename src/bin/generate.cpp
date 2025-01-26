@@ -14,7 +14,7 @@
 
 #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
 #include <gperftools/profiler.h>
-#endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+#endif  // ABSTRACTIONS_ENABLE_GPERFTOOLS
 
 using namespace abstractions;
 
@@ -28,19 +28,22 @@ constexpr const double kDefaultMaxSolutionVelocity = 0.15;
 constexpr const double kDefaultImageScale = 1.0;
 
 static cli_helpers::EnumValidator<ImageComparison> ImageComparisonEnum("METRIC",
-                                                                       {ImageComparison::L1Norm,
-                                                                        ImageComparison::L2Norm,});
+                                                                       {
+                                                                           ImageComparison::L1Norm,
+                                                                           ImageComparison::L2Norm,
+                                                                       });
 
 static cli_helpers::EnumValidator<render::AbstractionShape> AbstractionShapeEnum(
-    "SHAPE", {render::AbstractionShape::Circles, render::AbstractionShape::Rectangles,
-              render::AbstractionShape::Triangles,});
+    "SHAPE", {
+                 render::AbstractionShape::Circles,
+                 render::AbstractionShape::Rectangles,
+                 render::AbstractionShape::Triangles,
+             });
 
-void ShowTimingReport(const terminal::Console &console, const TimingReport &report)
-{
+void ShowTimingReport(const terminal::Console &console, const TimingReport &report) {
     OperationTiming sampling, rendering, optimizing, callback;
 
-    for (int i = 0; i < report.NumIterations(); i++)
-    {
+    for (int i = 0; i < report.NumIterations(); i++) {
         sampling.AddSample(report.iterations.sample[i]);
         optimizing.AddSample(report.iterations.optimize[i]);
         callback.AddSample(report.iterations.callback[i]);
@@ -55,10 +58,12 @@ void ShowTimingReport(const terminal::Console &console, const TimingReport &repo
     {
         auto prcnt_init = terminal::ToPercentage(report.stages.initialization, report.total_time);
         auto prcnt_sample = terminal::ToPercentage(report.stages.sample, report.total_time);
-        auto prcnt_render = terminal::ToPercentage(report.stages.render_and_compare, report.total_time);
+        auto prcnt_render =
+            terminal::ToPercentage(report.stages.render_and_compare, report.total_time);
         auto prcnt_optimize = terminal::ToPercentage(report.stages.optimize, report.total_time);
         auto prcnt_callback = terminal::ToPercentage(report.stages.callback, report.total_time);
 
+        // clang-format off
         terminal::Table table;
         table
             .AddRow("Initialization",       prcnt_init,     report.stages.initialization)
@@ -70,19 +75,22 @@ void ShowTimingReport(const terminal::Console &console, const TimingReport &repo
             .Justify(1, terminal::TextJustification::Right)
             .Justify(2, terminal::TextJustification::Right)
             .Render(console);
+        // clang-format on
     }
 
     console.Print();
     console.Print("Iteration Stats");
     {
+        // clang-format off
         terminal::Table table;
         table
-            .AddRow("Sampling", sampling)
-            .AddRow("Render-and-Compare", rendering)
-            .AddRow("Optimize", optimizing)
-            .AddRow("Callbacks", callback)
+            .AddRow("Sampling",             sampling)
+            .AddRow("Render-and-Compare",   rendering)
+            .AddRow("Optimize",             optimizing)
+            .AddRow("Callbacks",            callback)
             .Justify(1, terminal::TextJustification::Right)
             .Render(console);
+        // clang-format on
     }
 }
 
@@ -134,12 +142,13 @@ CLI::App *GenerateCommand::Init(CLI::App &parent) {
         ->capture_default_str()
         ->group(kGeneralOptions);
 
-    #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+#ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
     _profile = {};
-    app->add_option("--profile", _profile, "Enable profiling and save the results to this location.")
-       ->capture_default_str()
-       ->group(kGeneralOptions);
-    #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+    app->add_option("--profile", _profile,
+                    "Enable profiling and save the results to this location.")
+        ->capture_default_str()
+        ->group(kGeneralOptions);
+#endif  // ABSTRACTIONS_ENABLE_GPERFTOOLS
 
     // Engine configuration options
     app->add_option("-n,--iterations", _config.iterations,
@@ -239,13 +248,12 @@ void GenerateCommand::Run() const {
         std::filesystem::create_directories(_per_stage_output);
     }
 
-    #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
-    if (_profile)
-    {
+#ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+    if (_profile) {
         console.Print("⚠️ Profiling enabled; saving to '{}'.", *_profile);
         ProfilerStart(_profile->c_str());
     }
-    #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+#endif  // ABSTRACTIONS_ENABLE_GPERFTOOLS
 
     // Load the image, configure and then run the abstraction engine.
     auto image = Image::Load(_image);
@@ -282,12 +290,11 @@ void GenerateCommand::Run() const {
     indicators::move_up(1);
     indicators::erase_line();
 
-    #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
-    if (_profile)
-    {
+#ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+    if (_profile) {
         ProfilerStop();
     }
-    #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+#endif  // ABSTRACTIONS_ENABLE_GPERFTOOLS
 
     // Generate the final output.
     auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes,

@@ -110,8 +110,7 @@ struct RenderAndCompare : public threads::IJobFunction {
 
 }  // namespace
 
-TimingReport::TimingReport(int num_iter, int num_samples)
-{
+TimingReport::TimingReport(int num_iter, int num_samples) {
     iterations.sample = std::vector<TimingReport::Duration>(num_iter);
     iterations.optimize = std::vector<TimingReport::Duration>(num_iter);
     iterations.callback = std::vector<TimingReport::Duration>(num_iter);
@@ -258,7 +257,8 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         // Run the sampling step
         {
             Profile profiler{sample_timing};
-            auto sample_job = thread_pool.SubmitWithPayload<GenerateSolutionSamples>(0, optim_payload);
+            auto sample_job =
+                thread_pool.SubmitWithPayload<GenerateSolutionSamples>(0, optim_payload);
             auto sample_result = sample_job.get();
 
             if (sample_result.error) {
@@ -274,7 +274,8 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         {
             Profile profiler{render_and_compare_timing};
             for (int j = 0; j < _config.num_samples; j++) {
-                auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(j, render_payload);
+                auto render_job =
+                    thread_pool.SubmitWithPayload<RenderAndCompare>(j, render_payload);
                 futures.at(j) = std::move(render_job);
             }
 
@@ -285,7 +286,8 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
                     return errors::report<OptimizationResult>(result.error);
                 }
 
-                timing_report.iterations.render_and_compare[i * _config.num_samples + j] = result.time;
+                timing_report.iterations.render_and_compare[i * _config.num_samples + j] =
+                    result.time;
             }
         }
 

@@ -99,7 +99,5 @@ template <typename T>
 void Register(CLI::App &parent, T &command) {
     static_assert(std::is_base_of_v<Command, T>, "'T' must implement ICommand.");
     auto subcmd = command.Init(parent);
-    subcmd->callback([&command]() {
-        command.Run();
-    });
+    subcmd->callback([&command]() { command.Run(); });
 }
