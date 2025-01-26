@@ -26,6 +26,7 @@ class AbstractionsRecipe(ConanFile):
     def configure(self) -> None:
         self.options["gperftools/*"].build_cpu_profiler = True  # type: ignore
         self.options["gperftools/*"].build_heap_profiler = True  # type: ignore
+        self.options["gperftools/*"].enable_libunwind = self.settings.os != "Macos"  # type: ignore
 
     def validate(self) -> None:
         # TODO: figure this out
