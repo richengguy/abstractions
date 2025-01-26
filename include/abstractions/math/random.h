@@ -10,7 +10,7 @@
 namespace abstractions {
 
 /// @brief The default random number generator type.
-using DefaultRngType = std::mt19937;
+using DefaultRngType = std::default_random_engine;
 
 /// @brief A lightweight adapter to a random number engine to make it easier to
 ///     keep track of what seed it used.  This complies with the
