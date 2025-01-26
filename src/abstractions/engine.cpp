@@ -110,6 +110,14 @@ struct RenderAndCompare : public threads::IJobFunction {
 
 }  // namespace
 
+TimingReport::TimingReport(int num_iter, int num_samples)
+{
+    iterations.sample = std::vector<TimingReport::Duration>(num_iter);
+    iterations.optimize = std::vector<TimingReport::Duration>(num_iter);
+    iterations.callback = std::vector<TimingReport::Duration>(num_iter);
+    iterations.render_and_compare = std::vector<TimingReport::Duration>(num_iter * num_samples);
+}
+
 Error EngineConfig::Validate() const {
     if (iterations < 1) {
         return "Maximum number of iterations cannot be negative.";
@@ -152,12 +160,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     const int height = reference.Height();
 
     Timer e2e_timer;
-
-    // Allocate storage for the timing report.
-    TimingReport timing_report;
-    timing_report.pgpe_optimization_time = std::vector<TimingReport::Duration>(_config.iterations);
-    timing_report.solution_sampling_time = std::vector<TimingReport::Duration>(_config.iterations);
-    timing_report.rendering_time = std::vector<TimingReport::Duration>(_config.iterations * _config.num_samples);
+    TimingReport timing_report(_config.iterations, _config.num_samples);
 
     // The bulk of the work is done on the thread pool.  It is set up to have
     // enough resources for processing all sample rendering requests, along with
@@ -215,7 +218,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
                                init_shapes.TotalDimensions() * _config.num_drawn_shapes);
         costs = ColumnVector::Zero(_config.num_samples);
     }
-    timing_report.initialization_time = init_timing.GetTiming().total;
+    timing_report.stages.initialization = init_timing.GetTiming().total;
 
     // Setup the thread payloads.
     OptimizerPayload optim_payload{
@@ -243,53 +246,72 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         render_payload.renderers.push_back(*renderer);
     }
 
+    // Create the timers used for the various stages of the optimization pipeline.
+    OperationTiming sample_timing, render_and_compare_timing, optimize_timing, callback_timing;
+
     // Now run the "sample->render->optimize" loop, keeping track of how the
     // solution is performing.
 
     int iterations = 0;
     for (int i = 0; i < _config.iterations; i++) {
         // Run the sampling step
-        auto sample_job = thread_pool.SubmitWithPayload<GenerateSolutionSamples>(0, optim_payload);
-        auto sample_result = sample_job.get();
+        {
+            Profile profiler{sample_timing};
+            auto sample_job = thread_pool.SubmitWithPayload<GenerateSolutionSamples>(0, optim_payload);
+            auto sample_result = sample_job.get();
 
-        if (sample_result.error) {
-            return errors::report<OptimizationResult>(sample_result.error);
-        }
-
-        timing_report.solution_sampling_time[i] = sample_result.time;
-
-        // Render images from the generated samples and compute the costs.
-        std::vector<threads::Job::Future> futures;
-        for (int j = 0; j < _config.num_samples; j++) {
-            auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(j, render_payload);
-            futures.push_back(std::move(render_job));
-        }
-
-        threads::WaitForJobs(futures);
-
-        for (int j = 0; j < _config.num_samples; j++) {
-            auto result = futures[j].get();
-
-            if (result.error) {
-                return errors::report<OptimizationResult>(result.error);
+            if (sample_result.error) {
+                return errors::report<OptimizationResult>(sample_result.error);
             }
 
-            timing_report.rendering_time[i * _config.iterations + j] = result.time;
+            timing_report.iterations.sample[i] = sample_result.time;
+        }
+
+        // Render images from the generated samples and compute the costs.
+        {
+            Profile profiler{render_and_compare_timing};
+            std::vector<threads::Job::Future> futures;
+            for (int j = 0; j < _config.num_samples; j++) {
+                auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(j, render_payload);
+                futures.push_back(std::move(render_job));
+            }
+
+            threads::WaitForJobs(futures);
+
+            for (int j = 0; j < _config.num_samples; j++) {
+                auto result = futures[j].get();
+
+                if (result.error) {
+                    return errors::report<OptimizationResult>(result.error);
+                }
+
+                timing_report.iterations.render_and_compare[i * _config.iterations + j] = result.time;
+            }
         }
 
         // Run the optimizer and update its state.
-        auto update_job = thread_pool.SubmitWithPayload<RunOptimizer>(0, optim_payload);
-        auto update_result = update_job.get();
+        {
+            Profile profiler{optimize_timing};
+            auto update_job = thread_pool.SubmitWithPayload<RunOptimizer>(0, optim_payload);
+            auto update_result = update_job.get();
 
-        if (update_result.error) {
-            return errors::report<OptimizationResult>(update_result.error);
+            if (update_result.error) {
+                return errors::report<OptimizationResult>(update_result.error);
+            }
+
+            timing_report.iterations.optimize[i] = update_result.time;
         }
-
-        timing_report.pgpe_optimization_time[i] = update_result.time;
 
         // Invoke any callbacks.  A render job is dispatched to get the current
         // solution cost before calling the callback.
         if (_callback) {
+            Profile profiler{callback_timing};
+
+            // Need this timer because we need to estimate how long this
+            // particular invocation took.
+            Timer timer;
+
+            // Spawn a render job to compute the sample cost.
             samples.row(0) = *optimizer->GetEstimate();
             auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(0, render_payload);
             auto render_status = render_job.get();
@@ -297,7 +319,10 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
                 return errors::report<OptimizationResult>(render_status.error);
             }
 
+            // *Now* invoke the callback.
             _callback(i, costs(0), *optimizer->GetEstimate());
+
+            timing_report.iterations.callback[i] = timer.GetElapsedTime();
         }
 
         iterations++;
@@ -322,7 +347,13 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         return errors::report<OptimizationResult>(final_cost.error());
     }
 
+    // Generate the final timing report by collecting all of the individual
+    // timers and profilers.
     timing_report.total_time = e2e_timer.GetElapsedTime();
+    timing_report.stages.sample = sample_timing.GetTiming().total;
+    timing_report.stages.render_and_compare = render_and_compare_timing.GetTiming().total;
+    timing_report.stages.optimize = optimize_timing.GetTiming().total;
+    timing_report.stages.callback = callback_timing.GetTiming().total;
 
     OptimizationResult result{
         .solution = *solution,

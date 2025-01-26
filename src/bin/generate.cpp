@@ -1,6 +1,7 @@
 #include "generate.h"
 
 #include <abstractions/errors.h>
+#include <abstractions/terminal/chrono.h>
 #include <abstractions/terminal/table.h>
 #include <fmt/format.h>
 #include <fmt/std.h>
@@ -24,10 +25,62 @@ constexpr const double kDefaultImageScale = 1.0;
 
 static cli_helpers::EnumValidator<ImageComparison> ImageComparisonEnum("METRIC",
                                                                        {ImageComparison::L1Norm,
-                                                                        ImageComparison::L2Norm});
+                                                                        ImageComparison::L2Norm,});
+
 static cli_helpers::EnumValidator<render::AbstractionShape> AbstractionShapeEnum(
     "SHAPE", {render::AbstractionShape::Circles, render::AbstractionShape::Rectangles,
-              render::AbstractionShape::Triangles});
+              render::AbstractionShape::Triangles,});
+
+void ShowTimingReport(const terminal::Console &console, const TimingReport &report)
+{
+    OperationTiming sampling, rendering, optimizing, callback;
+
+    for (int i = 0; i < report.NumIterations(); i++)
+    {
+        sampling.AddSample(report.iterations.sample[i]);
+        optimizing.AddSample(report.iterations.optimize[i]);
+        callback.AddSample(report.iterations.callback[i]);
+    }
+
+    for (const auto &duration : report.iterations.render_and_compare) {
+        rendering.AddSample(duration);
+    }
+
+    console.Print();
+    console.Print("Stage Timing");
+    {
+        auto prcnt_init = terminal::ToPercentage(report.stages.initialization, report.total_time);
+        auto prcnt_sample = terminal::ToPercentage(report.stages.sample, report.total_time);
+        auto prcnt_render = terminal::ToPercentage(report.stages.render_and_compare, report.total_time);
+        auto prcnt_optimize = terminal::ToPercentage(report.stages.optimize, report.total_time);
+        auto prcnt_callback = terminal::ToPercentage(report.stages.callback, report.total_time);
+
+        terminal::Table table;
+        table
+            .AddRow("Initialization",       prcnt_init,     report.stages.initialization)
+            .AddRow("Sampling",             prcnt_sample,   report.stages.sample)
+            .AddRow("Render-and-Compare",   prcnt_render,   report.stages.render_and_compare)
+            .AddRow("Optimize",             prcnt_optimize, report.stages.optimize)
+            .AddRow("Callbacks",            prcnt_callback, report.stages.callback)
+            .AddRow("Total",                "--",           report.total_time)
+            .Justify(1, terminal::TextJustification::Right)
+            .Justify(2, terminal::TextJustification::Right)
+            .Render(console);
+    }
+
+    console.Print();
+    console.Print("Iteration Stats");
+    {
+        terminal::Table table;
+        table
+            .AddRow("Sampling", sampling)
+            .AddRow("Render-and-Compare", rendering)
+            .AddRow("Optimize", optimizing)
+            .AddRow("Callbacks", callback)
+            .Justify(1, terminal::TextJustification::Right)
+            .Render(console);
+    }
+}
 
 }  // namespace
 
@@ -159,12 +212,6 @@ void GenerateCommand::Run() const {
 
     console.Separator();
 
-    auto image = Image::Load(_image);
-    abstractions_check(image);
-
-    auto engine = Engine::Create(_config, _optim_settings);
-    abstractions_check(engine);
-
     indicators::ProgressBar progbar{indicators::option::BarWidth{50},
                                     indicators::option::Start{" ["},
                                     indicators::option::Fill{"="},
@@ -180,6 +227,13 @@ void GenerateCommand::Run() const {
         std::filesystem::remove_all(_per_stage_output);
         std::filesystem::create_directories(_per_stage_output);
     }
+
+    // Load the image, configure and then run the abstraction engine.
+    auto image = Image::Load(_image);
+    abstractions_check(image);
+
+    auto engine = Engine::Create(_config, _optim_settings);
+    abstractions_check(engine);
 
     engine->SetCallback([&, this](int i, double cost, ConstRowVectorRef params) {
         progbar.set_option(indicators::option::PrefixText{
@@ -205,9 +259,11 @@ void GenerateCommand::Run() const {
     auto result = engine->GenerateAbstraction(*image);
     abstractions_check(result);
 
+    // Remove the progress bar.
     indicators::move_up(1);
     indicators::erase_line();
 
+    // Generate the final output.
     auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes,
                                          result->solution, Pixel(255, 255, 255));
     abstractions_check(output);
@@ -216,5 +272,8 @@ void GenerateCommand::Run() const {
     output_image_file.replace_extension(".png");
     abstractions_check(output->Save(output_image_file));
 
-    console.Print("Finished in {}", result->timing.total_time);
+    console.Print("Finished in {}", terminal::FormatDuration(result->timing.total_time));
+
+    // Show the timing report.
+    ShowTimingReport(console, result->timing);
 }

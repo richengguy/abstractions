@@ -28,6 +28,11 @@ public:
     /// @brief Show or hide the prefix string show at the start of a console line.
     void ShowPrefix(bool show);
 
+    /// @brief Print an empty line to stdout.
+    void Print() const {
+        PrintToStdout("");
+    }
+
     /// @brief Print a message to stdout.
     /// @param msg message string
     void Print(const std::string &msg) const {
