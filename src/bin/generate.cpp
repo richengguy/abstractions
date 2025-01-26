@@ -237,7 +237,7 @@ void GenerateCommand::Run() const {
 
     engine->SetCallback([&, this](int i, double cost, ConstRowVectorRef params) {
         progbar.set_option(indicators::option::PrefixText{
-            fmt::format("Running Optimizer (Iteration {:>5} [{:4.3g}])", i + 1, cost)});
+            fmt::format("Running Optimizer (Iteration {:>5} [{:>5.3g}])", i + 1, cost)});
         progbar.tick();
 
         if (_per_stage_output.empty()) {
