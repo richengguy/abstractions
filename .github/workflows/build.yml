@@ -63,7 +63,7 @@ jobs:
 
       - name: Build project
         run: |
-          conan build . -pr:a ./profiles/linux-x86_64 -o build_tests=True
+          cmake --build --preset conan-release
 
       - name: Run project tests
         run: |
