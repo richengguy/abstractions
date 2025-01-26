@@ -253,6 +253,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     // solution is performing.
 
     int iterations = 0;
+    std::vector<threads::Job::Future> futures(_config.num_samples);
     for (int i = 0; i < _config.iterations; i++) {
         // Run the sampling step
         {
@@ -270,10 +271,9 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         // Render images from the generated samples and compute the costs.
         {
             Profile profiler{render_and_compare_timing};
-            std::vector<threads::Job::Future> futures;
             for (int j = 0; j < _config.num_samples; j++) {
                 auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(j, render_payload);
-                futures.push_back(std::move(render_job));
+                futures.at(j) = std::move(render_job);
             }
 
             threads::WaitForJobs(futures);

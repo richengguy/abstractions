@@ -7,13 +7,10 @@
 #include <CLI/CLI.hpp>
 #include <filesystem>
 #include <initializer_list>
+#include <optional>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
-
-#ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
-#include <gperftools/profiler.h>
-#endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
 
 // Custom type names used in CLI11
 
@@ -21,6 +18,11 @@ namespace CLI::detail {
 
 template <>
 constexpr const char *type_name<std::filesystem::path>() {
+    return "PATH";
+}
+
+template <>
+constexpr const char *type_name<std::optional<std::filesystem::path>>() {
     return "PATH";
 }
 
@@ -98,15 +100,6 @@ void Register(CLI::App &parent, T &command) {
     static_assert(std::is_base_of_v<Command, T>, "'T' must implement ICommand.");
     auto subcmd = command.Init(parent);
     subcmd->callback([&command]() {
-        #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
-        fmt::println("⚠️ Profiling enabled; saving to 'abstractions.profile'.");
-        ProfilerStart("abstractions.profile");
-        #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
-
         command.Run();
-
-        #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
-        ProfilerStop();
-        #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
     });
 }

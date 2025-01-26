@@ -12,6 +12,10 @@
 #include <iostream>
 #include <map>
 
+#ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+#include <gperftools/profiler.h>
+#endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+
 using namespace abstractions;
 
 namespace {
@@ -130,6 +134,13 @@ CLI::App *GenerateCommand::Init(CLI::App &parent) {
         ->capture_default_str()
         ->group(kGeneralOptions);
 
+    #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+    _profile = {};
+    app->add_option("--profile", _profile, "Enable profiling and save the results to this location.")
+       ->capture_default_str()
+       ->group(kGeneralOptions);
+    #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+
     // Engine configuration options
     app->add_option("-n,--iterations", _config.iterations,
                     "Maximum number of optimizer iterations.")
@@ -228,6 +239,14 @@ void GenerateCommand::Run() const {
         std::filesystem::create_directories(_per_stage_output);
     }
 
+    #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+    if (_profile)
+    {
+        console.Print("⚠️ Profiling enabled; saving to '{}'.", *_profile);
+        ProfilerStart(_profile->c_str());
+    }
+    #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
+
     // Load the image, configure and then run the abstraction engine.
     auto image = Image::Load(_image);
     abstractions_check(image);
@@ -262,6 +281,13 @@ void GenerateCommand::Run() const {
     // Remove the progress bar.
     indicators::move_up(1);
     indicators::erase_line();
+
+    #ifdef ABSTRACTIONS_ENABLE_GPERFTOOLS
+    if (_profile)
+    {
+        ProfilerStop();
+    }
+    #endif // ABSTRACTIONS_ENABLE_GPERFTOOLS
 
     // Generate the final output.
     auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes,
