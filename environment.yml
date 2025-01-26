@@ -5,6 +5,7 @@ channels:
   - defaults
 
 dependencies:
+  - cmake=3.31
   - doxygen=1.11.0
   - python=3.13
   - pip

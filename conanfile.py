@@ -5,10 +5,6 @@ from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 class AbstractionsRecipe(ConanFile):
     settings = ["os", "compiler", "build_type", "arch"]
 
-    tool_requires = [
-        "cmake/3.31.0",
-    ]
-
     requires = [
         "blend2d/0.11.4",
         "cli11/2.4.2",
@@ -22,7 +18,7 @@ class AbstractionsRecipe(ConanFile):
 
     options = {"build_tests": [True, False]}
 
-    default_options = {"build_tests": False}
+    default_options = {"build_tests": True}
 
     def layout(self) -> None:
         cmake_layout(self)
