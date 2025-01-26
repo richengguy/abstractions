@@ -28,8 +28,8 @@ class AbstractionsRecipe(ConanFile):
         cmake_layout(self)
 
     def configure(self) -> None:
-        self.options["gperftools/*"].build_cpu_profiler = True
-        self.options["gperftools/*"].build_heap_profiler = True
+        self.options["gperftools/*"].build_cpu_profiler = True  # type: ignore
+        self.options["gperftools/*"].build_heap_profiler = True  # type: ignore
 
     def validate(self) -> None:
         # TODO: figure this out
