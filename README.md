@@ -3,6 +3,14 @@ Generating abstract images with policy gradients.
 
 ## Building
 
+Building abstractions requires
+
+* CMake 3.23 or higher
+* Clang 19
+
+The conda environment can get a supported version of CMake while the steps for
+installing Clang are below.
+
 ### Getting Clang 19 (Ubuntu)
 
 The easiest way to get Clang (and LLVM) 19 is with the setup script from the
@@ -47,3 +55,30 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+### Running Conan and CMake
+
+Run the commands below to pull all dependencies and build the project:
+
+```shell
+conan install . -pr:a profiles/$PROFILE --build=missing
+cmake --preset conan-release
+cmake --build --preset conan-release
+```
+
+`$PROFILE` is one of the files in the `profiles` directory.  The file will
+depend on the OS.
+
+Add `-s build_type=Debug` to compile a debug build.  Tests are built by default
+for both release and debug builds.  Add `-o "&:build_tests=False` to avoid
+building tests.
+
+There are some additional CMake variables that can be enabled/disabled once the
+build folder is created:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `ABSTRACTIONS_BUILD_TESTS` | Build the unit and feature tests. | `OFF` |
+| `ABSTRACTIONS_ASSERTS` | Enable the internal asserts system. | `ON` |
+| `ABSTRACTIONS_ENABLE_ASAN` | Enable the Clang AddressSanitizer to catch memory leaks and other issues.  Off by default as it has a performance impact. | `OFF`|
+| `ABSTRACTIONS_ENABLE_PROFILING` | Enables linking with gperftools to enable source-level profiling.  This adds a `--profile` option to some of the subcommands. | `OFF` |

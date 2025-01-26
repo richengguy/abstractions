@@ -61,19 +61,20 @@ jobs:
         run: |
           conan install . -pr:a ./profiles/linux-x86_64 --build=missing
 
-      - name: Build project
-        run: |
-          conan build . -pr:a ./profiles/linux-x86_64 -o build_tests=True
-
-      - name: Run project tests
-        run: |
-          cd build/Release
-          ctest
-        timeout-minutes: 5
-
       - name: Save Conan build cache
         id: conan-save-cache
         uses: actions/cache/save@v4
         with:
           path: ${{ steps.install-deps.outputs.CONAN_CONFIG_HOME }}
           key: ${{ steps.conan-restore-cache.outputs.cache-primary-key }}
+
+      - name: Build project
+        run: |
+          cmake --preset conan-release
+          cmake --build --preset conan-release
+
+      - name: Run project tests
+        run: |
+          cd build/Release
+          ctest
+        timeout-minutes: 5

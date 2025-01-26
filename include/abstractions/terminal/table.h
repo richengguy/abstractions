@@ -1,5 +1,6 @@
 #pragma once
 
+#include <abstractions/terminal/chrono.h>
 #include <abstractions/terminal/console.h>
 #include <fmt/format.h>
 
@@ -139,6 +140,11 @@ private:
     template <typename T>
     void AddColumns(std::vector<std::string> &row, T arg) {
         row.push_back(fmt::format("{}", arg));
+    }
+
+    template <>
+    void AddColumns(std::vector<std::string> &row, detail::Duration duration) {
+        row.push_back(FormatDuration(duration));
     }
 
     template <typename T, typename... Args>

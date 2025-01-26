@@ -7,6 +7,7 @@
 #include <CLI/CLI.hpp>
 #include <filesystem>
 #include <initializer_list>
+#include <optional>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
@@ -17,6 +18,11 @@ namespace CLI::detail {
 
 template <>
 constexpr const char *type_name<std::filesystem::path>() {
+    return "PATH";
+}
+
+template <>
+constexpr const char *type_name<std::optional<std::filesystem::path>>() {
     return "PATH";
 }
 
@@ -76,10 +82,7 @@ struct EnumValidator : public ::CLI::Validator {
 /// @brief Standard format for a CLI command.
 class Command {
 public:
-    Command() :
-        console{"abstractions"} {
-        console.ShowPrefix(false);
-    }
+    Command();
     virtual CLI::App *Init(CLI::App &parent) = 0;
     virtual void Run() const = 0;
     virtual ~Command() = default;

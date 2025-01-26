@@ -1,6 +1,7 @@
 #include "abstractions/threads/threadpool.h"
 
 #include <abstractions/errors.h>
+#include <abstractions/profile.h>
 #include <abstractions/terminal/console.h>
 
 #include <chrono>
@@ -77,16 +78,17 @@ ThreadPool::~ThreadPool() {
 }
 
 Job::Future ThreadPool::Submit(Job &job) {
-    Console console(kConsoleName);
-
-    if (_debug) {
-        console.Print("Submitting Job #{}", job.Index());
-    }
-
+    Timer timer;
     Job::Promise status_promise;
     Job::Future status_future = status_promise.get_future();
     job.SetPromise(status_promise);
     _job_queue.Enqueue(job);
+
+    if (_debug) {
+        Console console(kConsoleName);
+        console.Print("Submitted job #{} in {}", job.Index(), timer.GetElapsedTime());
+    }
+
     return status_future;
 }
 
