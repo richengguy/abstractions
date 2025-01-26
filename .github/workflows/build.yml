@@ -63,6 +63,7 @@ jobs:
 
       - name: Build project
         run: |
+          cmake --preset conan-release
           cmake --build --preset conan-release
 
       - name: Run project tests

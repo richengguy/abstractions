@@ -62,7 +62,8 @@ Run the commands below to pull all dependencies and build the project:
 
 ```shell
 conan install . -pr:a profiles/$PROFILE --build=missing
-cmake --preset conan-release --build
+cmake --preset conan-release
+cmake --build --preset conan-release
 ```
 
 `$PROFILE` is one of the files in the `profiles` directory.  The file will
