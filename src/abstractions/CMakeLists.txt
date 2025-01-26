@@ -26,6 +26,7 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/threadpool.h
     ${ABSTRACTIONS_INCLUDE_DIR}/threads/worker.h
 
+    ${ABSTRACTIONS_INCLUDE_DIR}/terminal/chrono.h
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/console.h
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/table.h
 )
@@ -45,6 +46,7 @@ set (ABSTRACTIONS_SOURCES
     threads/threadpool.cpp
     threads/worker.cpp
 
+    terminal/chrono.cpp
     terminal/console.cpp
     terminal/table.cpp
 )
