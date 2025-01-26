@@ -59,7 +59,7 @@ Expected<PgpeOptimizer> PgpeOptimizer::New(const PgpeOptimizerSettings &settings
     if (settings.seed) {
         seed = *settings.seed;
     } else {
-        seed = PrngGenerator<std::mt19937>::DrawRandomSeed();
+        seed = PrngGenerator<>::DrawRandomSeed();
     }
 
     return PgpeOptimizer(settings, seed);
