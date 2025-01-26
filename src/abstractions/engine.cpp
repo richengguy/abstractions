@@ -268,15 +268,15 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
             timing_report.iterations.sample[i] = sample_result.time;
         }
 
-        // Render images from the generated samples and compute the costs.
+        // Render images from the generated samples and compute the costs.  The
+        // first loop launches the jobs while the second one collects all
+        // futures.  The 'get()' will block until the future is available.
         {
             Profile profiler{render_and_compare_timing};
             for (int j = 0; j < _config.num_samples; j++) {
                 auto render_job = thread_pool.SubmitWithPayload<RenderAndCompare>(j, render_payload);
                 futures.at(j) = std::move(render_job);
             }
-
-            threads::WaitForJobs(futures);
 
             for (int j = 0; j < _config.num_samples; j++) {
                 auto result = futures[j].get();
