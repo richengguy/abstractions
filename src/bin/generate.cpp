@@ -307,6 +307,5 @@ void GenerateCommand::Run() const {
 
     console.Print("Finished in {}", terminal::FormatDuration(result->timing.total_time));
 
-    // Show the timing report.
     ShowTimingReport(console, result->timing);
 }
