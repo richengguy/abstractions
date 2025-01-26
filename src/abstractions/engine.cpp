@@ -285,7 +285,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
                     return errors::report<OptimizationResult>(result.error);
                 }
 
-                timing_report.iterations.render_and_compare[i * _config.iterations + j] = result.time;
+                timing_report.iterations.render_and_compare[i * _config.num_samples + j] = result.time;
             }
         }
 
