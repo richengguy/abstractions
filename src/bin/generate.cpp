@@ -25,7 +25,7 @@ constexpr const char *kGeneralOptions = "General Options";
 constexpr const char *kPgpeOptions = "PGPE Optimizer";
 
 constexpr const double kDefaultMaxSolutionVelocity = 0.15;
-constexpr const double kDefaultImageScale = 1.0;
+constexpr const int kDefaultImageSize = 512;
 
 static cli_helpers::EnumValidator<ImageComparison> ImageComparisonEnum("METRIC",
                                                                        {
@@ -131,14 +131,15 @@ CLI::App *GenerateCommand::Init(CLI::App &parent) {
     app->add_option("output", _output, "Output path")->required();
 
     // General options
+    _image_size = kDefaultImageSize;
     app->add_option("--seed", _config.seed, "Set a fixed PRNG seed.")->group(kGeneralOptions);
     app->add_option(
            "--save-intermediate", _per_stage_output,
            "Optional location where the results at each optimization iteration are stored.")
         ->capture_default_str()
         ->group(kGeneralOptions);
-    app->add_option("--scale", _image_scale,
-                    "Scale the image by the about before finding the abstract representation.")
+    app->add_option("--input-size", _image_size,
+                    "Sets the maximum value of an image's largest side.  Images larger than this will be scaled to fit.")
         ->capture_default_str()
         ->group(kGeneralOptions);
 
@@ -212,10 +213,17 @@ void GenerateCommand::Run() const {
     console.Print("Abstracting {}", _image);
     console.Separator();
 
+    // Load the image and scale it to fit into the max allowed image size.
+    auto image = Image::Load(_image);
+    abstractions_check(image);
+    abstractions_check(image->ScaleToFit(_image_size));
+
+    // Show the processing configuration.
     terminal::Table table;
     table.AddRow("Shapes", fmt::format("{} [{}]", _config.shapes, _config.num_drawn_shapes))
         .AddRow("Samples", _config.num_samples)
-        .AddRow("Scale", _image_scale.value_or(kDefaultImageScale));
+        .AddRow("Image Size", fmt::format("{}x{}", image->Width(), image->Height()))
+        .AddRow("Max Size", fmt::format("{}x{}", _image_size, _image_size));
 
     if (_config.seed) {
         table.AddRow("Seed", *_config.seed);
@@ -255,10 +263,7 @@ void GenerateCommand::Run() const {
     }
 #endif  // ABSTRACTIONS_ENABLE_GPERFTOOLS
 
-    // Load the image, configure and then run the abstraction engine.
-    auto image = Image::Load(_image);
-    abstractions_check(image);
-
+    // Create the engine and generate an abstraction from the provided image.
     auto engine = Engine::Create(_config, _optim_settings);
     abstractions_check(engine);
 
