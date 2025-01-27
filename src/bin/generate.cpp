@@ -291,6 +291,10 @@ void GenerateCommand::Run() const {
     auto result = engine->GenerateAbstraction(*image);
     abstractions_check(result);
 
+    auto output_json = _output;
+    output_json.replace_extension(".json");
+    result->Save(output_json);
+
     // Remove the progress bar.
     indicators::move_up(1);
     indicators::erase_line();

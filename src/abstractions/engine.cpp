@@ -4,6 +4,10 @@
 #include <abstractions/render/renderer.h>
 #include <abstractions/threads/threadpool.h>
 
+#include "json.h"
+
+#include <fstream>
+
 #include <functional>
 #include <vector>
 
@@ -135,6 +139,26 @@ Error EngineConfig::Validate() const {
     }
 
     return errors::no_error;
+}
+
+Error OptimizationResult::Save(const std::filesystem::path &file) const
+{
+    nlohmann::json json = {
+        {"iterations", iterations},
+        {"cost", cost},
+        {"shapes", shapes},
+        {"solution", solution},
+    };
+
+    std::ofstream output(file, std::ios::out);
+    output << std::setw(2) << json;
+
+    return errors::no_error;
+}
+
+Expected<OptimizationResult> OptimizationResult::Load(const std::filesystem::path &file)
+{
+    return errors::report<OptimizationResult>("Not yet implemented.");
 }
 
 Expected<Engine> Engine::Create(const EngineConfig &config,

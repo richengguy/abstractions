@@ -1,6 +1,7 @@
-find_package(blend2d)
-find_package(Eigen3)
-find_package(fmt)
+find_package(blend2d REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(fmt REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
 
@@ -35,6 +36,8 @@ set (ABSTRACTIONS_SOURCES
     engine.cpp
     errors.cpp
     image.cpp
+    json.h
+    json.cpp
     pgpe.cpp
 
     render/canvas.cpp
@@ -60,6 +63,7 @@ target_link_libraries(abstractions
     blend2d::blend2d
     Eigen3::Eigen
     fmt::fmt
+    nlohmann_json::nlohmann_json
 )
 
 target_include_directories(abstractions
