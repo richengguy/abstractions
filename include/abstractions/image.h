@@ -228,6 +228,15 @@ public:
     /// @return An object for accessing the pixel data.
     PixelData Pixels() const;
 
+    /// @brief Scale the image to fit within the given dimensions.
+    /// @param dim the maximum size of the image's larger dimension
+    /// @return an Error if the resize operation failed
+    ///
+    /// The image is scaled to fit into a `NxN` box defined by the `dim`
+    /// argument.  If both dimensions are already smaller than this, then no
+    /// resizing happens.
+    Error ScaleToFit(int dim);
+
     /// @brief Save the image to a file.
     /// @param path file path
     /// @return an Error if the save operation failed

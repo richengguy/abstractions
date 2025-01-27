@@ -102,6 +102,42 @@ TEST_CASE("Can pack and unpack pixels into a 32-bit integer.") {
     REQUIRE(pixel.Alpha() == alpha);
 }
 
+TEST_CASE("Can scale an image.") {
+    using abstractions::Image;
+    using abstractions::tests::TempFolder;
+
+    // NOTE: This test image is 256x512.
+    auto image = Image::Load(kSamplesPath / "triangles.jpg");
+
+    SUBCASE("No scaling occurs if the image is already the correct size.")
+    {
+        if (auto err = image->ScaleToFit(1024))
+        {
+            FAIL("Had error: ", err.value());
+        }
+
+        CHECK(image->Width() == 256);
+        CHECK(image->Height() == 512);
+    }
+
+    SUBCASE("Can scale down to 32x64.")
+    {
+        if (auto err = image->ScaleToFit(64))
+        {
+            FAIL("Had error: ", err.value());
+        }
+
+        CHECK(image->Width() == 32);
+        CHECK(image->Height() == 64);
+    }
+
+    SUBCASE("Error when scaling is too small.")
+    {
+        auto err = image->ScaleToFit(4);
+        REQUIRE(err.has_value());
+    }
+}
+
 TEST_CASE("Can save an image.") {
     using abstractions::Image;
     using abstractions::tests::TempFolder;

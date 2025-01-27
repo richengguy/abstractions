@@ -147,11 +147,43 @@ PixelData Image::Pixels() const {
     return PixelData(surface);
 }
 
+Error Image::ScaleToFit(int dim)
+{
+    if (dim < 8)
+    {
+        return "Cannot scale smaller than 8x8.";
+    }
+
+    // Get the size of the longest dimension.  If it's already less than the
+    // maximum dimension size, do nothing.
+    int longest_size = Width() > Height() ? Width() : Height();
+    if (longest_size <= dim)
+    {
+        return errors::no_error;
+    }
+
+    // Compute the new size that will fit into the specified dimensions.
+    double scale = static_cast<double>(dim) / longest_size;
+    int scaled_width = std::round(scale * Width());
+    int scaled_height = std::round(scale * Height());
+
+    BLSizeI scaled_size(scaled_width, scaled_height);
+    BLImage scaled_image;
+    auto err = BLImage::scale(scaled_image, _buffer, scaled_size, BLImageScaleFilter::BL_IMAGE_SCALE_FILTER_LANCZOS);
+    if (err != BL_SUCCESS)
+    {
+        return fmt::format("Could resize image (error {})", err);
+    }
+
+    _buffer = scaled_image;
+    return errors::no_error;
+}
+
 Error Image::Save(const std::filesystem::path &path) const {
     BLResult err;
     err = _buffer.writeToFile(path.c_str());
     if (err != BL_SUCCESS) {
-        return Error(fmt::format("Could not write to '{}' (error {})", path, err));
+        return fmt::format("Could not write to '{}' (error {})", path, err);
     }
 
     return errors::no_error;
