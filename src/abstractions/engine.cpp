@@ -147,6 +147,7 @@ Error OptimizationResult::Save(const std::filesystem::path &file) const
         {"iterations", iterations},
         {"cost", cost},
         {"shapes", shapes},
+        {"seed", seed},
         {"solution", solution},
     };
 
@@ -158,7 +159,36 @@ Error OptimizationResult::Save(const std::filesystem::path &file) const
 
 Expected<OptimizationResult> OptimizationResult::Load(const std::filesystem::path &file)
 {
-    return errors::report<OptimizationResult>("Not yet implemented.");
+    std::ifstream input(file);
+    auto json = nlohmann::json::parse(input);
+
+    if (json["solution"].empty())
+    {
+        return errors::report<OptimizationResult>("Missing solution vector.");
+    }
+
+    if (json["shapes"].empty())
+    {
+        return errors::report<OptimizationResult>("Missing shape configuration.");
+    }
+
+    auto shapes = json["shapes"].get<Options<render::AbstractionShape>>();
+
+    if (shapes == false)
+    {
+        return errors::report<OptimizationResult>("Failed to parse shape configuration.");
+    }
+
+    Eigen::Map<RowVector> solution(json["solution"].get_ptr<RowVector::Scalar *>(), 1, json["solution"].size());
+
+    return OptimizationResult{
+        .solution = solution,
+        .cost = json["cost"].get<double>(),
+        .iterations = json["iterations"].get<int>(),
+        .shapes = shapes,
+        .seed = json["seed"].get<uint32_t>(),
+        .timing = TimingReport(0, 0),
+    };
 }
 
 Expected<Engine> Engine::Create(const EngineConfig &config,

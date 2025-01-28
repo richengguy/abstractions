@@ -6,4 +6,5 @@
 namespace abstractions
 {
 void to_json(nlohmann::json &json, const Options<render::AbstractionShape> shapes);
+void from_json(const nlohmann::json &json, Options<render::AbstractionShape> &shapes);
 }
