@@ -147,18 +147,15 @@ PixelData Image::Pixels() const {
     return PixelData(surface);
 }
 
-Error Image::ScaleToFit(int dim)
-{
-    if (dim < 8)
-    {
+Error Image::ScaleToFit(int dim) {
+    if (dim < 8) {
         return "Cannot scale smaller than 8x8.";
     }
 
     // Get the size of the longest dimension.  If it's already less than the
     // maximum dimension size, do nothing.
     int longest_size = Width() > Height() ? Width() : Height();
-    if (longest_size <= dim)
-    {
+    if (longest_size <= dim) {
         return errors::no_error;
     }
 
@@ -169,9 +166,9 @@ Error Image::ScaleToFit(int dim)
 
     BLSizeI scaled_size(scaled_width, scaled_height);
     BLImage scaled_image;
-    auto err = BLImage::scale(scaled_image, _buffer, scaled_size, BLImageScaleFilter::BL_IMAGE_SCALE_FILTER_LANCZOS);
-    if (err != BL_SUCCESS)
-    {
+    auto err = BLImage::scale(scaled_image, _buffer, scaled_size,
+                              BLImageScaleFilter::BL_IMAGE_SCALE_FILTER_LANCZOS);
+    if (err != BL_SUCCESS) {
         return fmt::format("Could resize image (error {})", err);
     }
 

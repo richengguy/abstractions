@@ -4,12 +4,11 @@
 #include <abstractions/render/renderer.h>
 #include <abstractions/threads/threadpool.h>
 
-#include "json.h"
-
 #include <fstream>
-
 #include <functional>
 #include <vector>
+
+#include "json.h"
 
 namespace abstractions {
 
@@ -141,8 +140,7 @@ Error EngineConfig::Validate() const {
     return errors::no_error;
 }
 
-Error OptimizationResult::Save(const std::filesystem::path &file) const
-{
+Error OptimizationResult::Save(const std::filesystem::path &file) const {
     nlohmann::json json = {
         {"aspectRatio", aspect_ratio},
         {"iterations", iterations},
@@ -158,25 +156,21 @@ Error OptimizationResult::Save(const std::filesystem::path &file) const
     return errors::no_error;
 }
 
-Expected<OptimizationResult> OptimizationResult::Load(const std::filesystem::path &file)
-{
+Expected<OptimizationResult> OptimizationResult::Load(const std::filesystem::path &file) {
     std::ifstream input(file);
     auto json = nlohmann::json::parse(input);
 
-    if (json["solution"].empty())
-    {
+    if (json["solution"].empty()) {
         return errors::report<OptimizationResult>("Missing solution vector.");
     }
 
-    if (json["shapes"].empty())
-    {
+    if (json["shapes"].empty()) {
         return errors::report<OptimizationResult>("Missing shape configuration.");
     }
 
     auto shapes = json["shapes"].get<Options<render::AbstractionShape>>();
 
-    if (shapes == false)
-    {
+    if (shapes == false) {
         return errors::report<OptimizationResult>("Failed to parse shape configuration.");
     }
 

@@ -1,10 +1,9 @@
 #include "render.h"
 
-#include <abstractions/terminal/table.h>
 #include <abstractions/engine.h>
-
-#include <fmt/format.h>
+#include <abstractions/terminal/table.h>
 #include <fmt/color.h>
+#include <fmt/format.h>
 
 using namespace abstractions;
 
@@ -30,9 +29,9 @@ void RenderCommand::Run() const {
 
     console.Print("Rendering {}", _json);
 
-    if (_dim < 32)
-    {
-        console.Print("{} - Output size must be at least '32' pixels.", fmt::styled("Error", fmt::emphasis::italic | fmt::fg(fmt::color::red)));
+    if (_dim < 32) {
+        console.Print("{} - Output size must be at least '32' pixels.",
+                      fmt::styled("Error", fmt::emphasis::italic | fmt::fg(fmt::color::red)));
         return;
     }
 
@@ -42,21 +41,18 @@ void RenderCommand::Run() const {
     int width = 0;
     int height = 0;
 
-    if (_use_width)
-    {
+    if (_use_width) {
         width = _dim;
         height = std::round(_dim / abstraction->aspect_ratio);
     }
 
-    if (_use_height)
-    {
+    if (_use_height) {
         width = std::round(abstraction->aspect_ratio * _dim);
         height = _dim;
     }
 
     terminal::Table config;
-    config
-        .AddRow("Width", width)
+    config.AddRow("Width", width)
         .AddRow("Height", height)
         .AddRow("Output", _output)
         .VerticalSeparator("-")
@@ -66,7 +62,8 @@ void RenderCommand::Run() const {
         .Pad(1)
         .Render(console);
 
-    auto image = RenderImageAbstraction(width, height, abstraction->shapes, abstraction->solution, Pixel(255, 255, 255));
+    auto image = RenderImageAbstraction(width, height, abstraction->shapes, abstraction->solution,
+                                        Pixel(255, 255, 255));
     abstractions_check(image);
     abstractions_check(image->Save(_output));
 }

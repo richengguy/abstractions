@@ -139,7 +139,8 @@ CLI::App *GenerateCommand::Init(CLI::App &parent) {
         ->capture_default_str()
         ->group(kGeneralOptions);
     app->add_option("--input-size", _image_size,
-                    "Sets the maximum value of an image's largest side.  Images larger than this will be scaled to fit.")
+                    "Sets the maximum value of an image's largest side.  Images larger than this "
+                    "will be scaled to fit.")
         ->capture_default_str()
         ->group(kGeneralOptions);
 

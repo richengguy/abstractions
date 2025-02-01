@@ -1,21 +1,18 @@
 #include <abstractions/engine.h>
+#include <abstractions/math/types.h>
 #include <abstractions/render/shapes.h>
 #include <doctest/doctest.h>
-
-#include <abstractions/math/types.h>
 
 #include "support.h"
 
 using namespace abstractions;
 
-TEST_CASE("Can serialize/deserialize OptimizationResult.")
-{
+TEST_CASE("Can serialize/deserialize OptimizationResult.") {
     tests::TempFolder temp_folder;
 
     RowVector solution = RowVector::LinSpaced(14, 1, 14);
 
-    OptimizationResult result
-    {
+    OptimizationResult result{
         .solution = solution,
         .cost = 123,
         .iterations = 456,
