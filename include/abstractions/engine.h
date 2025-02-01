@@ -7,6 +7,7 @@
 #include <abstractions/types.h>
 #include <fmt/base.h>
 
+#include <filesystem>
 #include <functional>
 #include <optional>
 #include <vector>
@@ -164,6 +165,9 @@ struct OptimizationResult {
     /// @brief The number of iterations the optimization ran for.
     int iterations;
 
+    /// @brief Aspect ratio (width over height) of the source image.
+    double aspect_ratio;
+
     /// @brief The shapes used in the reconstruction.
     Options<render::AbstractionShape> shapes;
 
@@ -172,6 +176,16 @@ struct OptimizationResult {
 
     /// @brief Details about how long each stage in the abstraction process took.
     TimingReport timing;
+
+    /// @brief Save the optimization result to a file.
+    /// @param file file name
+    /// @return an Error if the result could not be saved
+    Error Save(const std::filesystem::path &file) const;
+
+    /// @brief Load an optimization result from a file.
+    /// @param file file name
+    /// @return the OptimizationResult or an error if it could not be loaded
+    static Expected<OptimizationResult> Load(const std::filesystem::path &file);
 };
 
 /// @brief Given an image, generate an abstract representation using simple

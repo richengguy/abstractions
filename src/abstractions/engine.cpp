@@ -4,8 +4,11 @@
 #include <abstractions/render/renderer.h>
 #include <abstractions/threads/threadpool.h>
 
+#include <fstream>
 #include <functional>
 #include <vector>
+
+#include "json.h"
 
 namespace abstractions {
 
@@ -135,6 +138,51 @@ Error EngineConfig::Validate() const {
     }
 
     return errors::no_error;
+}
+
+Error OptimizationResult::Save(const std::filesystem::path &file) const {
+    nlohmann::json json = {
+        {"aspectRatio", aspect_ratio},
+        {"iterations", iterations},
+        {"cost", cost},
+        {"shapes", shapes},
+        {"seed", seed},
+        {"solution", solution},
+    };
+
+    std::ofstream output(file, std::ios::out);
+    output << std::setw(2) << json;
+
+    return errors::no_error;
+}
+
+Expected<OptimizationResult> OptimizationResult::Load(const std::filesystem::path &file) {
+    std::ifstream input(file);
+    auto json = nlohmann::json::parse(input);
+
+    if (json["solution"].empty()) {
+        return errors::report<OptimizationResult>("Missing solution vector.");
+    }
+
+    if (json["shapes"].empty()) {
+        return errors::report<OptimizationResult>("Missing shape configuration.");
+    }
+
+    auto shapes = json["shapes"].get<Options<render::AbstractionShape>>();
+
+    if (shapes == false) {
+        return errors::report<OptimizationResult>("Failed to parse shape configuration.");
+    }
+
+    return OptimizationResult{
+        .solution = json["solution"],
+        .cost = json["cost"].get<double>(),
+        .iterations = json["iterations"].get<int>(),
+        .aspect_ratio = json["aspectRatio"].get<double>(),
+        .shapes = shapes,
+        .seed = json["seed"].get<uint32_t>(),
+        .timing = TimingReport(0, 0),
+    };
 }
 
 Expected<Engine> Engine::Create(const EngineConfig &config,
@@ -361,6 +409,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .solution = *solution,
         .cost = *final_cost,
         .iterations = iterations,
+        .aspect_ratio = static_cast<double>(reference.Width()) / reference.Height(),
         .shapes = _config.shapes,
         .seed = prng_generator.BaseSeed(),
         .timing = timing_report,

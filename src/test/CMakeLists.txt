@@ -11,6 +11,7 @@ configure_file(
 set(ABSTRACTIONS_TESTS
     library/main.cpp
 
+    library/engine.cpp
     library/errors.cpp
     library/image.cpp
     library/math.cpp
