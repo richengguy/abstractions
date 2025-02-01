@@ -179,10 +179,8 @@ Expected<OptimizationResult> OptimizationResult::Load(const std::filesystem::pat
         return errors::report<OptimizationResult>("Failed to parse shape configuration.");
     }
 
-    Eigen::Map<RowVector> solution(json["solution"].get_ptr<RowVector::Scalar *>(), 1, json["solution"].size());
-
     return OptimizationResult{
-        .solution = solution,
+        .solution = json["solution"],
         .cost = json["cost"].get<double>(),
         .iterations = json["iterations"].get<int>(),
         .shapes = shapes,
