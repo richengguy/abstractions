@@ -165,6 +165,9 @@ struct OptimizationResult {
     /// @brief The number of iterations the optimization ran for.
     int iterations;
 
+    /// @brief Aspect ratio (width over height) of the source image.
+    double aspect_ratio;
+
     /// @brief The shapes used in the reconstruction.
     Options<render::AbstractionShape> shapes;
 

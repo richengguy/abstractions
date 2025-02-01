@@ -19,6 +19,7 @@ TEST_CASE("Can serialize/deserialize OptimizationResult.")
         .solution = solution,
         .cost = 123,
         .iterations = 456,
+        .aspect_ratio = 2.5,
         .shapes = render::AbstractionShape::Triangles | render::AbstractionShape::Circles,
         .seed = 789,
         .timing = TimingReport(0, 0),
@@ -31,6 +32,7 @@ TEST_CASE("Can serialize/deserialize OptimizationResult.")
     CHECK(result.solution == restored->solution);
     CHECK(result.cost == restored->cost);
     CHECK(result.iterations == restored->iterations);
+    CHECK(result.aspect_ratio == restored->aspect_ratio);
     CHECK(result.shapes == restored->shapes);
     CHECK(result.seed == restored->seed);
 }
