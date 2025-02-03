@@ -3,7 +3,7 @@ find_package(Eigen3 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
+set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions PARENT_SCOPE)
 
 set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/abstractions.h
@@ -30,6 +30,8 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/chrono.h
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/console.h
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/table.h
+
+    PARENT_SCOPE
 )
 
 set (ABSTRACTIONS_SOURCES
