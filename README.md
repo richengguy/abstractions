@@ -29,8 +29,14 @@ sudo apt install g++-12
 
 ### Getting Clang 19 (macOS)
 
-> [!NOTE]
-> TBD
+The easiest way to get Clang 19 is with [Homebrew](https://brew.sh/):
+
+```bash
+brew install llvm@19
+```
+
+The [macOS profile](./profiles/macos-arm64) is configured to use the
+Homebrew-installed Clang instead of the system Clang.
 
 ### Environment Setup
 
