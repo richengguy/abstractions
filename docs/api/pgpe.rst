@@ -6,10 +6,10 @@ PGPE Optimizer
     #include <abstractions/pgpe.h>
     using namespace abstractions;
 
-.. doxygenstruct:: abstractions::PgpeOptimizerSettings
+.. doxygenclass:: abstractions::PgpeOptimizer
     :members:
     :undoc-members:
 
-.. doxygenclass:: abstractions::PgpeOptimizer
+.. doxygenstruct:: abstractions::PgpeOptimizerSettings
     :members:
     :undoc-members:
