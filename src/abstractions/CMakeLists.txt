@@ -3,7 +3,7 @@ find_package(Eigen3 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions PARENT_SCOPE)
+set(ABSTRACTIONS_INCLUDE_DIR ${abstractions_SOURCE_DIR}/include/abstractions)
 
 set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/abstractions.h
@@ -30,8 +30,6 @@ set(ABSTRACTIONS_INCLUDES
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/chrono.h
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/console.h
     ${ABSTRACTIONS_INCLUDE_DIR}/terminal/table.h
-
-    PARENT_SCOPE
 )
 
 set (ABSTRACTIONS_SOURCES
@@ -79,3 +77,7 @@ set_target_properties(abstractions
     ARCHIVE_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/lib
 )
+
+# Ensure the two variables are moved into the parent scope.
+set(ABSTRACTIONS_INCLUDE_DIR ${ABSTRACTIONS_INCLUDE_DIR} PARENT_SCOPE)
+set(ABSTRACTIONS_INCLUDES ${ABSTRACTIONS_INCLUDES} PARENT_SCOPE)
