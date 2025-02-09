@@ -30,6 +30,7 @@ set(ABSTRACTIONS_SPHINX_OUTPUT ${ABSTRACTIONS_DOCS_OUTPUT}/sphinx)
 set(ABSTRACTIONS_RST_FILES
     ${ABSTRACTIONS_DOCS}/index.md
 
+    ${ABSTRACTIONS_DOCS}/abstracting-images.md
     ${ABSTRACTIONS_DOCS}/getting-started.md
 
     ${ABSTRACTIONS_DOCS}/api/api.rst

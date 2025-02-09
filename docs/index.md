@@ -8,6 +8,7 @@ gradients.
 :maxdepth: 1
 
 getting-started
+abstracting-images
 ```
 
 ```{toctree}
