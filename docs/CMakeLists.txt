@@ -32,6 +32,7 @@ set(ABSTRACTIONS_RST_FILES
 
     ${ABSTRACTIONS_DOCS}/abstracting-images.md
     ${ABSTRACTIONS_DOCS}/getting-started.md
+    ${ABSTRACTIONS_DOCS}/how-it-works.md
 
     ${ABSTRACTIONS_DOCS}/api/api.rst
     ${ABSTRACTIONS_DOCS}/api/engine.rst
