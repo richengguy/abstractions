@@ -68,7 +68,7 @@ Expected<PgpeOptimizer> PgpeOptimizer::New(const PgpeOptimizerSettings &settings
 PgpeOptimizer::PgpeOptimizer(const PgpeOptimizerSettings &settings, const uint32_t seed) :
     _is_initialized{true},
     _settings{settings},
-    _prng{seed} {}
+    _dist{Prng(seed), 0, 1} {}
 
 Expected<RowVector> PgpeOptimizer::GetEstimate() const {
     auto err = CheckInitialized();
@@ -102,7 +102,7 @@ const PgpeOptimizerSettings &PgpeOptimizer::GetSettings() const {
 }
 
 void PgpeOptimizer::SetPrngSeed(DefaultRngType::result_type seed) {
-    _prng = Prng(seed);
+    _dist = NormalDistribution(Prng(seed), 0, 1);
 }
 
 void PgpeOptimizer::Initialize(ConstRowVectorRef x_init, std::optional<double> init_stddev) {
@@ -146,7 +146,7 @@ void PgpeOptimizer::RankLinearize(ColumnVectorRef costs) const {
     }
 }
 
-Error PgpeOptimizer::Sample(MatrixRef samples) const {
+Error PgpeOptimizer::Sample(MatrixRef samples) {
     auto err = errors::find_any({CheckInitialized(), ValidateSamples(samples)});
     if (err) {
         return err;
@@ -158,10 +158,9 @@ Error PgpeOptimizer::Sample(MatrixRef samples) const {
     // Fill the samples array with normally distributed values on N(0, 1).  The
     // bottom half is the negation of the top half to prepare to mirror the
     // samples.
-    NormalDistribution normal_distribution(_prng, 0, 1);
 
     const int random_samples = num_samples / 2;
-    samples.topRows(random_samples) = RandomMatrix(random_samples, num_params, normal_distribution);
+    samples.topRows(random_samples) = RandomMatrix(random_samples, num_params, _dist);
     samples.bottomRows(random_samples) = -samples.topRows(random_samples);
 
     // Scale the parameters (columns) by the current standard deviation
@@ -178,9 +177,15 @@ Error PgpeOptimizer::Update(ConstMatrixRef samples, ConstColumnVectorRef costs) 
     auto err = errors::find_any(
         {CheckInitialized(), ValidateSamples(samples), ValidateCosts(samples.rows(), costs)});
 
+    if (err)
+    {
+        return err;
+    }
+
     // Now we can do the parameter updates.  This follows Algorithm 1 from the
     // ClipUp paper.  Step 2 (build the population) is accomplished in the
     // Sample() method.  The gradient computation is the remaining steps.
+
     const int num_samples = samples.rows() / 2;
 
     // The "d+ - x_k" is common to both the solution and standard deviation

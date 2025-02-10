@@ -155,7 +155,7 @@ public:
     /// samples will be equal to the number of rows in the provided matrix.  The
     /// number of columns must match the length of the vector that was passed
     /// into PgpeOptimizer::Initialize().
-    Error Sample(MatrixRef samples) const;
+    Error Sample(MatrixRef samples);
 
     /// @brief Update the optimizer's internal state based on the reported sample costs.
     /// @param samples A set of state vector samples.  This has the same format
@@ -179,7 +179,7 @@ private:
 
     bool _is_initialized;
     PgpeOptimizerSettings _settings;
-    Prng<> _prng;
+    NormalDistribution<> _dist;
 
     RowVector _current_state;
     RowVector _current_standard_deviation;
