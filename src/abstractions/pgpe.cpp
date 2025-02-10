@@ -115,18 +115,14 @@ void PgpeOptimizer::Initialize(ConstRowVectorRef x_init, std::optional<double> i
     _current_velocity = RowVector::Zero(num_dim);
     _is_initialized = true;
 
-    if (init_stddev)
-    {
+    if (init_stddev) {
         _current_standard_deviation *= init_stddev.value();
-    }
-    else
-    {
+    } else {
         _current_standard_deviation *= stddev_magnitude * stddev_unit_norm;
     }
 }
 
-void PgpeOptimizer::Initialize(int num_dim, double init_stddev)
-{
+void PgpeOptimizer::Initialize(int num_dim, double init_stddev) {
     _current_state = RowVector::Zero(num_dim);
     _current_standard_deviation = RowVector::Ones(num_dim) * init_stddev;
     _current_velocity = RowVector::Zero(num_dim);
@@ -177,8 +173,7 @@ Error PgpeOptimizer::Update(ConstMatrixRef samples, ConstColumnVectorRef costs) 
     auto err = errors::find_any(
         {CheckInitialized(), ValidateSamples(samples), ValidateCosts(samples.rows(), costs)});
 
-    if (err)
-    {
+    if (err) {
         return err;
     }
 
