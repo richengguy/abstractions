@@ -105,13 +105,30 @@ void PgpeOptimizer::SetPrngSeed(DefaultRngType::result_type seed) {
     _prng = Prng(seed);
 }
 
-void PgpeOptimizer::Initialize(ConstRowVectorRef x_init) {
+void PgpeOptimizer::Initialize(ConstRowVectorRef x_init, std::optional<double> init_stddev) {
     const int num_dim = x_init.cols();
     const double stddev_magnitude = _settings.init_search_radius * _settings.max_speed;
     const double stddev_unit_norm = 1.0 / std::sqrt(num_dim);
 
     _current_state = x_init;
-    _current_standard_deviation = RowVector::Ones(num_dim) * stddev_magnitude * stddev_unit_norm;
+    _current_standard_deviation = RowVector::Ones(num_dim);
+    _current_velocity = RowVector::Zero(num_dim);
+    _is_initialized = true;
+
+    if (init_stddev)
+    {
+        _current_standard_deviation *= init_stddev.value();
+    }
+    else
+    {
+        _current_standard_deviation *= stddev_magnitude * stddev_unit_norm;
+    }
+}
+
+void PgpeOptimizer::Initialize(int num_dim, double init_stddev)
+{
+    _current_state = RowVector::Zero(num_dim);
+    _current_standard_deviation = RowVector::Ones(num_dim) * init_stddev;
     _current_velocity = RowVector::Zero(num_dim);
     _is_initialized = true;
 }
