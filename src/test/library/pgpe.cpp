@@ -1,3 +1,4 @@
+#include <abstractions/errors.h>
 #include <abstractions/math/matrices.h>
 #include <abstractions/math/random.h>
 #include <abstractions/pgpe.h>
@@ -82,6 +83,21 @@ TEST_CASE("Costs can be correctly rank-linearized.") {
     INFO("Linearized Costs: ", costs.transpose());
     INFO("Expected Costs:   ", expected.transpose());
     REQUIRE(costs == expected);
+}
+
+TEST_CASE("Two calls to Sample() should not return the same result.") {
+    Matrix first = Matrix::Zero(4, 5);
+    Matrix second = Matrix::Zero(4, 5);
+
+    auto optimizer = PgpeOptimizer::New(PgpeOptimizerSettings{.max_speed = 1.0, .seed = 1});
+    optimizer->Initialize(5, 1.0);
+    abstractions_check(optimizer->Sample(first));
+    abstractions_check(optimizer->Sample(second));
+
+    INFO("\nFirst:\n", first);
+    INFO("\nSecond:\n", second);
+
+    REQUIRE((first - second).norm() != 0);
 }
 
 TEST_CASE("PgpeOptimizer can find the equation of a line from noisy data.") {

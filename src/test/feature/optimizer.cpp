@@ -16,14 +16,15 @@ ABSTRACTIONS_FEATURE_TEST() {
     // https://github.com/nnaisense/pgpelib/blob/release/examples/01-rastrigin.ipynb
 
     constexpr int kNumDim = 100;
-    constexpr int kNumSamples = 200;
+    constexpr int kNumSamples = 250;
     constexpr int kNumIter = 5000;
+    constexpr double kA = 10.0;
 
-    auto rastrigin_fn = [](ConstRowVectorRef x) -> double {
-        Eigen::ArrayXd x_sq = x.array().pow(2);
+    auto rastrigin_fn = [&](ConstRowVectorRef x) -> double {
+        Eigen::ArrayXd x_sq = x.array() * x.array();
         Eigen::ArrayXd cos_2pi_x = Eigen::cos(2.0 * std::numbers::pi * x.array());
 
-        return 10 * kNumDim + (x_sq - 10 * cos_2pi_x).sum();
+        return kA * kNumDim + (x_sq - kA * cos_2pi_x).sum();
     };
 
     // Create the input vector to be somewhere in a hypercube where each
@@ -33,9 +34,14 @@ ABSTRACTIONS_FEATURE_TEST() {
         10.24 * RandomMatrix(1, kNumDim, uniform_distribution).array() - 5.12;
 
     // Create the optimizer and initialize it.
-    auto optimizer = PgpeOptimizer::New({.max_speed = 0.1, .seed = prng.seed() + 1});
+    auto optimizer = PgpeOptimizer::New({
+        .max_speed = 0.06,
+        .stddev_learning_rate = 0.1,
+        .stddev_max_change = 0.2,
+        .seed = prng.seed() + 1,
+    });
     abstractions_check(optimizer);
-    optimizer->Initialize(initial_solution);
+    optimizer->Initialize(initial_solution, 1.0);
 
     console.Print("Initial Guess:");
     console.Print("sln: {}", initial_solution);
@@ -62,9 +68,12 @@ ABSTRACTIONS_FEATURE_TEST() {
             auto solution = optimizer->GetEstimate();
             abstractions_check(solution);
             console.Print("{} -> {}", i, rastrigin_fn(*solution));
-            console.Print("sln:  {}", *solution);
-            console.Print("vel:  {}", *optimizer->GetSolutionVelocity());
-            console.Print("std:  {}", *optimizer->GetSolutionStdDev());
+
+            if (kNumDim <= 5) {
+                console.Print("sln:  {}", *solution);
+                console.Print("vel:  {}", *optimizer->GetSolutionVelocity());
+                console.Print("std:  {}", *optimizer->GetSolutionStdDev());
+            }
         }
     }
 
@@ -72,15 +81,17 @@ ABSTRACTIONS_FEATURE_TEST() {
     auto solution = optimizer->GetEstimate();
     abstractions_check(solution);
 
+    console.Separator();
+    console.Print("Final Result:");
+    console.Print("sln: {}", initial_solution);
+    console.Print("vel: {}", *optimizer->GetSolutionVelocity());
+    console.Print("std: {}", *optimizer->GetSolutionStdDev());
+
     auto final_cost = rastrigin_fn(*solution);
     auto distance = (*solution).norm();
     console.Separator();
     console.Print("Cost:     {}", final_cost);
     console.Print("Distance: {}", distance);
-
-    if (kNumDim <= 5) {
-        console.Print("Solution: [{}]", *solution);
-    }
 }
 
 ABSTRACTIONS_FEATURE_TEST_MAIN("optimizer",

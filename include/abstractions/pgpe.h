@@ -116,13 +116,30 @@ public:
     /// post-initialization.  This has the effect of also resetting the PRNG.
     void SetPrngSeed(DefaultRngType::result_type seed);
 
-    /// @brief Initialize the optimizer to some starting state.
-    /// @param x_init The initial state (parameters) vector
+    /// @brief Initialize the optimizer to some starting state `x_init`.
+    /// @param x_init The initial state (parameters) vector.
+    /// @param init_stddev The initial solution standard deviation.
     ///
     /// Calling this has the effect of resetting the optimizer.  All of the
     /// internal state variables will be randomly initialized, regardless of
     /// whether or not the optimizer has ran at any point before.
-    void Initialize(ConstRowVectorRef x_init);
+    ///
+    /// The initial standard deviation will be automatically calculated from the
+    /// dimensionality of the input vector.  This can be overridden by providing
+    /// a value to init_stddev.
+    void Initialize(ConstRowVectorRef x_init, std::optional<double> init_stddev = {});
+
+    /// @brief Initialize the optimizer.
+    /// @param num_dim The dimensionality of the solution space.
+    /// @param init_stddev Initial standard deviation of the solution.
+    ///
+    /// Calling this has the effect of resetting the optimizer.  All of the
+    /// internal state variables will be randomly initialized, regardless of
+    /// whether or not the optimizer has ran at any point before.
+    ///
+    /// The solution will be initially set to '0' while the initial standard
+    /// deviation will be set to init_stddev.
+    void Initialize(int num_dim, double init_stddev = 0.1);
 
     /// @brief Linearizes the costs so they are equally distributed on [-0.5, 0.5].
     /// @param[in,out] costs per-sample costs
@@ -138,7 +155,7 @@ public:
     /// samples will be equal to the number of rows in the provided matrix.  The
     /// number of columns must match the length of the vector that was passed
     /// into PgpeOptimizer::Initialize().
-    Error Sample(MatrixRef samples) const;
+    Error Sample(MatrixRef samples);
 
     /// @brief Update the optimizer's internal state based on the reported sample costs.
     /// @param samples A set of state vector samples.  This has the same format
@@ -162,7 +179,7 @@ private:
 
     bool _is_initialized;
     PgpeOptimizerSettings _settings;
-    Prng<> _prng;
+    NormalDistribution<> _dist;
 
     RowVector _current_state;
     RowVector _current_standard_deviation;
