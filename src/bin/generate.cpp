@@ -157,10 +157,12 @@ CLI::App *GenerateCommand::Init(CLI::App &parent) {
                     "Maximum number of optimizer iterations.")
         ->capture_default_str()
         ->group(kEngineOptions);
+
     app->add_option("-k,--samples", _config.num_samples,
                     "Number of samples provided to the PGPE optimizer.")
         ->capture_default_str()
         ->group(kEngineOptions);
+
     app->add_option("-s,--shapes", _config.num_drawn_shapes,
                     "Number of individual shapes that make up the abstract image.")
         ->capture_default_str()
@@ -171,6 +173,10 @@ CLI::App *GenerateCommand::Init(CLI::App &parent) {
         ->transform(AbstractionShapeEnum)
         ->default_str(fmt::format("{}", _config.shapes))
         ->take_all()
+        ->group(kEngineOptions);
+
+    app->add_option("-a,--alpha-scale", _config.alpha_scale, "Scaling factor applied to a shape's alpha channel.  Must be between 0 and 1.")
+        ->capture_default_str()
         ->group(kEngineOptions);
 
     app->add_option("--workers", _config.num_workers,
@@ -223,6 +229,7 @@ void GenerateCommand::Run() const {
     terminal::Table table;
     table.AddRow("Shapes", fmt::format("{} [{}]", _config.shapes, _config.num_drawn_shapes))
         .AddRow("Samples", _config.num_samples)
+        .AddRow("Alpha Scale", _config.alpha_scale)
         .AddRow("Image Size", fmt::format("{}x{}", image->Width(), image->Height()))
         .AddRow("Max Size", fmt::format("{}x{}", _image_size, _image_size));
 
@@ -284,7 +291,7 @@ void GenerateCommand::Run() const {
         auto file_name = fmt::format("iter-{:0>5}.png", i);
         auto out_path = _per_stage_output / file_name;
         auto iteration_output =
-            RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, params);
+            RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, params, _config.alpha_scale);
         abstractions_check(iteration_output);
         abstractions_check(iteration_output->Save(out_path));
     });
@@ -308,7 +315,7 @@ void GenerateCommand::Run() const {
 
     // Generate the final output.
     auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes,
-                                         result->solution, Pixel(255, 255, 255));
+                                         result->solution, _config.alpha_scale, Pixel(255, 255, 255));
     abstractions_check(output);
 
     auto output_image_file = _output;

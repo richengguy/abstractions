@@ -289,7 +289,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         if (!renderer.has_value()) {
             return errors::report<OptimizationResult>(renderer.error());
         }
-
+        renderer->SetAlphaScale(_config.alpha_scale);
         render_payload.renderers.push_back(*renderer);
     }
 
@@ -389,6 +389,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     render::PackedShapeCollection image_abstraction(_config.shapes, *solution);
 
     auto &renderer = render_payload.renderers.front();
+    renderer.SetAlphaScale(_config.alpha_scale);
     renderer.SetBackground(0, 0, 0);
     renderer.Render(image_abstraction);
 
@@ -424,7 +425,7 @@ void Engine::SetCallback(const std::function<void(int, double, ConstRowVectorRef
 
 Expected<Image> RenderImageAbstraction(const int width, const int height,
                                        const Options<render::AbstractionShape> shapes,
-                                       ConstRowVectorRef solution, const Pixel background_colour) {
+                                       ConstRowVectorRef solution, const double alpha_scale, const Pixel background_colour) {
     auto renderer = render::Renderer::Create(width, height);
     if (!renderer.has_value()) {
         errors::report<Image>(renderer.error());
@@ -432,6 +433,7 @@ Expected<Image> RenderImageAbstraction(const int width, const int height,
 
     render::PackedShapeCollection packed_shapes(shapes, solution);
 
+    renderer->SetAlphaScale(alpha_scale);
     renderer->SetBackground(background_colour);
     renderer->Render(packed_shapes);
     return renderer->DrawingSurface();

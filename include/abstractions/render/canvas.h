@@ -98,6 +98,10 @@ public:
     ///     the canvas when it's first created.
     void RandomFill();
 
+    /// @brief Set the alpha channel scaling.
+    /// @param scale A scaling factor between 0 and 1
+    void SetAlphaScale(const double scale);
+
     /// @brief Set the canvas' compositing mode.
     /// @param mode compositing mode
     /// @return an Error if the compositing mode is unsupported
@@ -111,6 +115,7 @@ public:
 private:
     BLContext _context;
     Prng<DefaultRngType> _prng;
+    double _alpha_scale;
 };
 
 }  // namespace abstractions::render

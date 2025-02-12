@@ -45,6 +45,15 @@ struct EngineConfig {
     /// See the AbstractionShape enum for the list of available shapes.
     Options<render::AbstractionShape> shapes = render::AbstractionShape::Triangles;
 
+    /// @brief A scaling factor applied onto the shapes' alpha channel.
+    ///
+    /// The default is '1.0', meaning shapes can be completely opaque.  Setting
+    /// the value to something lower can "soften" the abstraction by forcing
+    /// shapes to always translucent.
+    ///
+    /// This value must be greater than 0 and less than or equal to 1.0.
+    double alpha_scale = 1.0;
+
     /// @brief The number of shapes, per shape type, to draw.
     ///
     /// This, along with the shapes option, controls how "abstract" the final
@@ -229,11 +238,12 @@ private:
 /// @param height output image height
 /// @param shapes shape configuration
 /// @param solution solution vector
+/// @param alpha_scale alpha scaling
 /// @param background_colour (optional) background colour
 /// @return rendered image abstraction
 [[nodiscard]] Expected<Image> RenderImageAbstraction(
     const int width, const int height, const Options<render::AbstractionShape> shapes,
-    ConstRowVectorRef solution, const Pixel background_colour = Pixel(0, 0, 0, 255));
+    ConstRowVectorRef solution, const double alpha_scale = 1.0, const Pixel background_colour = Pixel(0, 0, 0, 255));
 
 }  // namespace abstractions
 

@@ -63,6 +63,7 @@ void RenderCommand::Run() const {
         .Render(console);
 
     auto image = RenderImageAbstraction(width, height, abstraction->shapes, abstraction->solution,
+                                        1.0,
                                         Pixel(255, 255, 255));
     abstractions_check(image);
     abstractions_check(image->Save(_output));

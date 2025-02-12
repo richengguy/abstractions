@@ -9,20 +9,23 @@
 namespace abstractions::render {
 
 Canvas::Canvas(Expected<Image> &image, std::optional<DefaultRngType::result_type> seed) :
-    _prng{seed.value_or(PrngGenerator<DefaultRngType>::DrawRandomSeed())} {
+    _prng{seed.value_or(PrngGenerator<DefaultRngType>::DrawRandomSeed())},
+    _alpha_scale{1.0} {
     abstractions_check(image);
     _context = BLContext(*image);
 }
 
 Canvas::Canvas(Expected<Image> &image, Prng<DefaultRngType> prng) :
-    _prng{prng} {
+    _prng{prng},
+    _alpha_scale{1.0} {
     abstractions_check(image);
     _context = BLContext(*image);
 }
 
 Canvas::Canvas(Image &image, Prng<DefaultRngType> prng) :
     _context{BLContext(image)},
-    _prng{prng} {}
+    _prng{prng},
+    _alpha_scale{1.0} {}
 
 Canvas::~Canvas() {
     _context.end();
@@ -63,9 +66,11 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
     // shapes as they can easily grow to cover the entire image.
 
     Matrix prepped = params;
-    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
-    prepped.rightCols(2) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(2)).array() - 0.1;
-    prepped.col(2) = ClampValues(0.1 * prepped.col(2), 0, 0.1);
+    prepped.leftCols(2) = 1.2 * RescaleValuesColumnWise(params.leftCols(2)).array() - 0.1;
+
+    prepped.rightCols(4) = params.rightCols(4);
+    prepped.rightCols(1) *= _alpha_scale;
+    prepped.rightCols(4) = ClampValues(prepped.rightCols(4));
 
     for (int i = 0; i < num_circles; i++) {
         const RowVector row = params.row(i);
@@ -102,11 +107,14 @@ Error Canvas::DrawFilledTriangles(ConstMatrixRef params) {
 
     // Force the shapes to be *mostly* inside of the frame but keep the colour
     // values clamped on [0, 1] since anything outside that doesn't make any
-    // sense.
+    // sense.  Apply the alpha scaling right before any clamping.
 
     Matrix prepped = params;
-    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
-    prepped.rightCols(6) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(6)).array() - 0.1;
+    prepped.leftCols(6) = 1.2 * RescaleValuesColumnWise(params.leftCols(6)).array() - 0.1;
+
+    prepped.rightCols(4) = params.rightCols(4);
+    prepped.rightCols(1) *= _alpha_scale;
+    prepped.rightCols(4) = ClampValues(prepped.rightCols(4));
 
     for (int i = 0; i < num_triangles; i++) {
         const RowVector row = prepped.row(i);
@@ -141,11 +149,14 @@ Error Canvas::DrawFilledRectangles(ConstMatrixRef params) {
 
     // Force the shapes to be *mostly* inside of the frame but keep the colour
     // values clamped on [0, 1] since anything outside that doesn't make any
-    // sense.
+    // sense.  Apply the alpha scaling right before any clamping.
 
     Matrix prepped = params;
-    prepped.leftCols(4) = ClampValues(prepped.leftCols(4));
-    prepped.rightCols(4) = 1.2 * RescaleValuesColumnWise(prepped.rightCols(4)).array() - 0.1;
+    prepped.leftCols(4) = 1.2 * RescaleValuesColumnWise(params.leftCols(4)).array() - 0.1;
+
+    prepped.rightCols(4) = params.rightCols(4);
+    prepped.rightCols(1) *= _alpha_scale;
+    prepped.rightCols(4) = ClampValues(prepped.rightCols(4));
 
     for (int i = 0; i < num_rects; i++) {
         const RowVector row = params.row(i);
@@ -178,6 +189,11 @@ void Canvas::RandomFill() {
     uint8_t *buffer = static_cast<uint8_t *>(image_data.pixelData);
     size_t num_bytes = image_data.stride * image_data.size.h;
     std::generate(buffer, buffer + num_bytes, _prng);
+}
+
+void Canvas::SetAlphaScale(const double alpha_scale) {
+    abstractions_assert(alpha_scale > 0 && alpha_scale <= 1.0);
+    _alpha_scale = alpha_scale;
 }
 
 Error Canvas::SetCompositeMode(const CompositeMode mode) {
