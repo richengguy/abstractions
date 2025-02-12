@@ -143,6 +143,7 @@ Error EngineConfig::Validate() const {
 Error OptimizationResult::Save(const std::filesystem::path &file) const {
     nlohmann::json json = {
         {"aspectRatio", aspect_ratio},
+        {"alphaScaling", alpha_scaling},
         {"iterations", iterations},
         {"cost", cost},
         {"shapes", shapes},
@@ -179,6 +180,7 @@ Expected<OptimizationResult> OptimizationResult::Load(const std::filesystem::pat
         .cost = json["cost"].get<double>(),
         .iterations = json["iterations"].get<int>(),
         .aspect_ratio = json["aspectRatio"].get<double>(),
+        .alpha_scaling = json["alphaScaling"].get<double>(),
         .shapes = shapes,
         .seed = json["seed"].get<uint32_t>(),
         .timing = TimingReport(0, 0),
@@ -411,6 +413,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .cost = *final_cost,
         .iterations = iterations,
         .aspect_ratio = static_cast<double>(reference.Width()) / reference.Height(),
+        .alpha_scaling = _config.alpha_scale,
         .shapes = _config.shapes,
         .seed = prng_generator.BaseSeed(),
         .timing = timing_report,
@@ -425,7 +428,8 @@ void Engine::SetCallback(const std::function<void(int, double, ConstRowVectorRef
 
 Expected<Image> RenderImageAbstraction(const int width, const int height,
                                        const Options<render::AbstractionShape> shapes,
-                                       ConstRowVectorRef solution, const double alpha_scale, const Pixel background_colour) {
+                                       ConstRowVectorRef solution, const double alpha_scale,
+                                       const Pixel background_colour) {
     auto renderer = render::Renderer::Create(width, height);
     if (!renderer.has_value()) {
         errors::report<Image>(renderer.error());

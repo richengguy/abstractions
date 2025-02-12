@@ -177,6 +177,9 @@ struct OptimizationResult {
     /// @brief Aspect ratio (width over height) of the source image.
     double aspect_ratio;
 
+    /// @brief Alpha scaling factor used during rendering.
+    double alpha_scaling;
+
     /// @brief The shapes used in the reconstruction.
     Options<render::AbstractionShape> shapes;
 
@@ -243,7 +246,8 @@ private:
 /// @return rendered image abstraction
 [[nodiscard]] Expected<Image> RenderImageAbstraction(
     const int width, const int height, const Options<render::AbstractionShape> shapes,
-    ConstRowVectorRef solution, const double alpha_scale = 1.0, const Pixel background_colour = Pixel(0, 0, 0, 255));
+    ConstRowVectorRef solution, const double alpha_scale = 1.0,
+    const Pixel background_colour = Pixel(0, 0, 0, 255));
 
 }  // namespace abstractions
 

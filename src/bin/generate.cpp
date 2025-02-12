@@ -175,7 +175,8 @@ CLI::App *GenerateCommand::Init(CLI::App &parent) {
         ->take_all()
         ->group(kEngineOptions);
 
-    app->add_option("-a,--alpha-scale", _config.alpha_scale, "Scaling factor applied to a shape's alpha channel.  Must be between 0 and 1.")
+    app->add_option("-a,--alpha-scale", _config.alpha_scale,
+                    "Scaling factor applied to a shape's alpha channel.  Must be between 0 and 1.")
         ->capture_default_str()
         ->group(kEngineOptions);
 
@@ -290,8 +291,8 @@ void GenerateCommand::Run() const {
 
         auto file_name = fmt::format("iter-{:0>5}.png", i);
         auto out_path = _per_stage_output / file_name;
-        auto iteration_output =
-            RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, params, _config.alpha_scale);
+        auto iteration_output = RenderImageAbstraction(image->Width(), image->Height(),
+                                                       _config.shapes, params, _config.alpha_scale);
         abstractions_check(iteration_output);
         abstractions_check(iteration_output->Save(out_path));
     });
@@ -314,8 +315,9 @@ void GenerateCommand::Run() const {
 #endif  // ABSTRACTIONS_ENABLE_GPERFTOOLS
 
     // Generate the final output.
-    auto output = RenderImageAbstraction(image->Width(), image->Height(), _config.shapes,
-                                         result->solution, _config.alpha_scale, Pixel(255, 255, 255));
+    auto output =
+        RenderImageAbstraction(image->Width(), image->Height(), _config.shapes, result->solution,
+                               _config.alpha_scale, Pixel(255, 255, 255));
     abstractions_check(output);
 
     auto output_image_file = _output;

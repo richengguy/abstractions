@@ -10,6 +10,9 @@ using namespace abstractions;
 CLI::App *RenderCommand::Init(CLI::App &parent) {
     auto cmd = parent.add_subcommand("render", "Render an existing abstract image.");
 
+    _use_width = false;
+    _use_height = false;
+
     auto select_dim = cmd->add_option_group("Image Dimension");
     select_dim->add_flag("--width", _use_width, "output image width");
     select_dim->add_flag("--height", _use_height, "output image height");
@@ -63,8 +66,7 @@ void RenderCommand::Run() const {
         .Render(console);
 
     auto image = RenderImageAbstraction(width, height, abstraction->shapes, abstraction->solution,
-                                        1.0,
-                                        Pixel(255, 255, 255));
+                                        abstraction->alpha_scaling, Pixel(255, 255, 255));
     abstractions_check(image);
     abstractions_check(image->Save(_output));
 }
