@@ -50,6 +50,12 @@ abstractions generate --save-intermediate steps some-image.jpg output
 magick -delay 4 -loop 0 steps/*.png animation.gif
 ```
 
+Or an .mp4 with [FFmpeg](https://ffmpeg.org/):
+
+```shell
+ffmpeg -framerate 24 -pattern_type glob -i 'steps/*.png' -c:v libx264 -pix_fmt yuv420 -qp 20 animation.mp4
+```
+
 :::{attention}
 Include an example!!!
 :::
