@@ -1,5 +1,10 @@
 # abstractions
-Generating abstract images with policy gradients.
+Generating abstract images with policy gradients.  This is a C++ implementation
+of https://es-clip.github.io/ with some minor upgrades.
+
+| Original | Abstraction |
+|----------|-------------|
+| ![original](docs/examples/original/yonge-dundas.jpg) | ![abstraction](docs/examples/yd-large.png) |
 
 ## Building
 
@@ -88,3 +93,8 @@ build folder is created:
 | `ABSTRACTIONS_ASSERTS` | Enable the internal asserts system. | `ON` |
 | `ABSTRACTIONS_ENABLE_ASAN` | Enable the Clang AddressSanitizer to catch memory leaks and other issues.  Off by default as it has a performance impact. | `OFF`|
 | `ABSTRACTIONS_ENABLE_PROFILING` | Enables linking with gperftools to enable source-level profiling.  This adds a `--profile` option to some of the subcommands. | `OFF` |
+
+## Licensing
+
+All source code falls under the BSD-3 Clause license.  The documentation in the
+[docs](docs/) falls under a [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) license.
