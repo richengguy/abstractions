@@ -27,18 +27,21 @@ set(ABSTRACTIONS_DOXYFILE ${ABSTRACTIONS_DOXYGEN_OUTPUT}/Doxyfile)
 set(ABSTRACTIONS_SPHINX_CONF_PY ${ABSTRACTIONS_DOCS}/conf.py)
 set(ABSTRACTIONS_SPHINX_OUTPUT ${ABSTRACTIONS_DOCS_OUTPUT}/sphinx)
 
-set(ABSTRACTIONS_RST_FILES
+set(ABSTRACTIONS_DOC_FILES
     ${ABSTRACTIONS_DOCS}/index.md
 
     ${ABSTRACTIONS_DOCS}/abstracting-images.md
     ${ABSTRACTIONS_DOCS}/getting-started.md
     ${ABSTRACTIONS_DOCS}/how-it-works.md
+    ${ABSTRACTIONS_DOCS}/references.md
 
     ${ABSTRACTIONS_DOCS}/api/api.rst
     ${ABSTRACTIONS_DOCS}/api/engine.rst
     ${ABSTRACTIONS_DOCS}/api/images.rst
     ${ABSTRACTIONS_DOCS}/api/pgpe.rst
     ${ABSTRACTIONS_DOCS}/api/types.rst
+
+    ${ABSTRACTIONS_DOCS}/references.bib
 )
 
 configure_file(${abstractions_SOURCE_DIR}/docs/Doxyfile.in ${ABSTRACTIONS_DOXYFILE} @ONLY)
@@ -62,7 +65,7 @@ add_custom_command(
         ${abstractions_SOURCE_DIR}/docs
         ${ABSTRACTIONS_SPHINX_OUTPUT}
     WORKING_DIRECTORY ${abstractions_BINARY_DIR}
-    DEPENDS ${ABSTRACTIONS_RST_FILES} ${ABSTRACTIONS_DOXYGEN_XML} ${ABSTRACTIONS_SPHINX_CONF_PY}
+    DEPENDS ${ABSTRACTIONS_DOC_FILES} ${ABSTRACTIONS_DOXYGEN_XML} ${ABSTRACTIONS_SPHINX_CONF_PY}
     COMMENT "Generating Sphinx docs."
 )
 

@@ -2,7 +2,8 @@
 
 
 'abstractions' is a project for generating abstract images using policy
-gradients.
+gradients.  It's an implementation of "Modern Evolution Strategies for
+Creativity" {cite}`tian2021` section on fitting shapes to a concrete image.
 
 :::{figure} examples/original/yonge-dundas.jpg
 :::
@@ -17,6 +18,7 @@ gradients.
 getting-started
 abstracting-images
 how-it-works
+references
 ```
 
 ## API

@@ -14,9 +14,11 @@ release = '1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["breathe", "myst_parser", "sphinxcontrib.video"]
+extensions = ["breathe", "myst_parser", "sphinxcontrib.bibtex", "sphinxcontrib.video"]
 
 breathe_default_project = "abstractions"
+bibtex_bibfiles = ["references.bib"]
+bibtex_reference_style = "author_year"
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
