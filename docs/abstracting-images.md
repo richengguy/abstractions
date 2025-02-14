@@ -23,8 +23,12 @@ This will create `output.png` and `output.json` files with the abstraction
 results.  The PNG file is a preview image showing what the abstraction looks
 like while the JSON file is the actual abstraction.
 
-:::{attention}
-Include an example!!!
+:::{table} Image [2018](https://github.com/BIDS/BSDS500/blob/master/BSDS500/data/images/test/2018.jpg) from the [Berkley Segmentation Data Set 500](https://github.com/BIDS/BSDS500).
+
+| Original | Abstraction |
+|----------|-------------|
+|![](examples/original/2018.jpg)|![](examples/2018.png)|
+
 :::
 
 There are a few different options available while running the optimization
@@ -35,8 +39,8 @@ more important ones are:
 |--------|-------------|
 | `-n <num>` | The number of iterations to run.  This is set to a very high number (10'000) by default but it can often be set much lower as the optimizer will converge to a solution long before then. |
 | `-k <num>` | The number of shapes to use.  The more shapes, the more complicating the abstraction will be. |
-| `-t <shape>` | Select the type of shape to use.  This can be repeated to use multiple shapes. |
-| `--save-intermediate <dir>` | Save intermediate results to `<dir>`. |
+| `-t <shape>` | Select the type of shape to use.  This can be repeated to use multiple shapes. Must be one of `circles`, `rectangles`, or `triangles`.|
+| `-a <alpha-scale>` | Scales shapes alpha values by this amount.  The default is `1.0`, meaning shapes are allowed to be completely opaque.  Setting this to something lower will cause shapes to never be fully opaque. |
 
 ### Visualizing the optimization process
 
@@ -56,8 +60,10 @@ Or an .mp4 with [FFmpeg](https://ffmpeg.org/):
 ffmpeg -framerate 24 -pattern_type glob -i 'steps/*.png' -c:v libx264 -pix_fmt yuv420 -qp 20 animation.mp4
 ```
 
-:::{attention}
-Include an example!!!
+:::{video} examples/2018.mp4
+:autoplay:
+:loop:
+:align: center
 :::
 
 ## Rendering abstractions
