@@ -73,7 +73,7 @@ Error Canvas::DrawFilledCircles(ConstMatrixRef params) {
     prepped.rightCols(4) = ClampValues(prepped.rightCols(4));
 
     for (int i = 0; i < num_circles; i++) {
-        const RowVector row = params.row(i);
+        const RowVector row = prepped.row(i);
 
         const BLRgba colour(row[3], row[4], row[5], row[6]);
         // clang-format off
@@ -159,7 +159,7 @@ Error Canvas::DrawFilledRectangles(ConstMatrixRef params) {
     prepped.rightCols(4) = ClampValues(prepped.rightCols(4));
 
     for (int i = 0; i < num_rects; i++) {
-        const RowVector row = params.row(i);
+        const RowVector row = prepped.row(i);
 
         const double x1 = x_scale * row[0];
         const double y1 = y_scale * row[1];
