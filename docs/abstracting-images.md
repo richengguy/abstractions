@@ -86,8 +86,7 @@ the width to 500 pixels.  The aspect ratio is stored inside of the JSON file so
 the output size can be any size.  Switch `--width` to `--height` to set output
 height instead.
 
-Because the generation stage may use a smaller image, creating an abstraction
-the same size as the input is done with
+Creating an abstraction that's the same size as the input is done with
 
 ```shell
 WIDTH= # get the width of the input image
