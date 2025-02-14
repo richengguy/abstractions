@@ -14,7 +14,13 @@ release = '1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["breathe", "myst_parser", "sphinxcontrib.bibtex", "sphinxcontrib.video"]
+extensions = [
+    "breathe",
+    "myst_parser",
+    "sphinx_togglebutton",
+    "sphinxcontrib.bibtex",
+    "sphinxcontrib.video"
+]
 
 breathe_default_project = "abstractions"
 bibtex_bibfiles = ["references.bib"]
