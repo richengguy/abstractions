@@ -28,6 +28,10 @@ public:
     /// values rather than using a set background colour.
     void UseRandomBackgroundFill(bool use_random);
 
+    /// @brief Sets a scaling value applied onto shape's alpha channel.
+    /// @param alpha_scale alpha scaling value
+    void SetAlphaScale(double alpha_scale);
+
     /// @brief Set the background fill colour.  This is ignored when the random
     ///     background fill is enabled.
     /// @param red red value
@@ -57,6 +61,7 @@ private:
     bool _random_background;
     Pixel _background_colour;
     Image _drawing_surface;
+    double _alpha_scale;
 };
 
 }  // namespace abstractions::render

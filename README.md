@@ -1,5 +1,10 @@
 # abstractions
-Generating abstract images with policy gradients.
+Generating abstract images with policy gradients.  This is a C++ implementation
+of https://es-clip.github.io/ with some minor upgrades.
+
+| Original | Abstraction |
+|----------|-------------|
+| ![original](docs/examples/original/yonge-dundas.jpg) | ![abstraction](docs/examples/yd-large.png) |
 
 ## Building
 
@@ -29,8 +34,14 @@ sudo apt install g++-12
 
 ### Getting Clang 19 (macOS)
 
-> [!NOTE]
-> TBD
+The easiest way to get Clang 19 is with [Homebrew](https://brew.sh/):
+
+```bash
+brew install llvm@19
+```
+
+The [macOS profile](./profiles/macos-arm64) is configured to use the
+Homebrew-installed Clang instead of the system Clang.
 
 ### Environment Setup
 
@@ -70,7 +81,7 @@ cmake --build --preset conan-release
 depend on the OS.
 
 Add `-s build_type=Debug` to compile a debug build.  Tests are built by default
-for both release and debug builds.  Add `-o "&:build_tests=False` to avoid
+for both release and debug builds.  Add `-o "&:build_tests=False"` to avoid
 building tests.
 
 There are some additional CMake variables that can be enabled/disabled once the
@@ -78,7 +89,25 @@ build folder is created:
 
 | Option | Description | Default |
 |--------|-------------|---------|
+| `ABSTRACTIONS_BUILD_DOCS` | Enable the `make docs` build target. | `OFF` |
 | `ABSTRACTIONS_BUILD_TESTS` | Build the unit and feature tests. | `OFF` |
 | `ABSTRACTIONS_ASSERTS` | Enable the internal asserts system. | `ON` |
 | `ABSTRACTIONS_ENABLE_ASAN` | Enable the Clang AddressSanitizer to catch memory leaks and other issues.  Off by default as it has a performance impact. | `OFF`|
 | `ABSTRACTIONS_ENABLE_PROFILING` | Enables linking with gperftools to enable source-level profiling.  This adds a `--profile` option to some of the subcommands. | `OFF` |
+
+> [!NOTE]
+> Building the documentation requires some extra dependencies, including
+> Doxygen.  Run
+>
+> ```shell
+> pip install -r requirements-docs.txt
+> ```
+>
+> to install the Python dependencies.  The conda environment includes Doxygen.
+> You can also add `-o "&:build_docs=True` to the `conan install` command to set
+> `-DABSTRACTIONS_BUILD_DOCS=ON` in the CMake configure step.
+
+## Licensing
+
+All source code falls under the BSD-3 Clause license.  The documentation in the
+[docs](docs/) falls under a [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) license.

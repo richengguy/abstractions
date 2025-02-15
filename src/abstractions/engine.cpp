@@ -143,6 +143,7 @@ Error EngineConfig::Validate() const {
 Error OptimizationResult::Save(const std::filesystem::path &file) const {
     nlohmann::json json = {
         {"aspectRatio", aspect_ratio},
+        {"alphaScaling", alpha_scaling},
         {"iterations", iterations},
         {"cost", cost},
         {"shapes", shapes},
@@ -179,6 +180,7 @@ Expected<OptimizationResult> OptimizationResult::Load(const std::filesystem::pat
         .cost = json["cost"].get<double>(),
         .iterations = json["iterations"].get<int>(),
         .aspect_ratio = json["aspectRatio"].get<double>(),
+        .alpha_scaling = json["alphaScaling"].get<double>(),
         .shapes = shapes,
         .seed = json["seed"].get<uint32_t>(),
         .timing = TimingReport(0, 0),
@@ -289,7 +291,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         if (!renderer.has_value()) {
             return errors::report<OptimizationResult>(renderer.error());
         }
-
+        renderer->SetAlphaScale(_config.alpha_scale);
         render_payload.renderers.push_back(*renderer);
     }
 
@@ -389,6 +391,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
     render::PackedShapeCollection image_abstraction(_config.shapes, *solution);
 
     auto &renderer = render_payload.renderers.front();
+    renderer.SetAlphaScale(_config.alpha_scale);
     renderer.SetBackground(0, 0, 0);
     renderer.Render(image_abstraction);
 
@@ -410,6 +413,7 @@ Expected<OptimizationResult> Engine::GenerateAbstraction(const Image &reference)
         .cost = *final_cost,
         .iterations = iterations,
         .aspect_ratio = static_cast<double>(reference.Width()) / reference.Height(),
+        .alpha_scaling = _config.alpha_scale,
         .shapes = _config.shapes,
         .seed = prng_generator.BaseSeed(),
         .timing = timing_report,
@@ -424,7 +428,8 @@ void Engine::SetCallback(const std::function<void(int, double, ConstRowVectorRef
 
 Expected<Image> RenderImageAbstraction(const int width, const int height,
                                        const Options<render::AbstractionShape> shapes,
-                                       ConstRowVectorRef solution, const Pixel background_colour) {
+                                       ConstRowVectorRef solution, const double alpha_scale,
+                                       const Pixel background_colour) {
     auto renderer = render::Renderer::Create(width, height);
     if (!renderer.has_value()) {
         errors::report<Image>(renderer.error());
@@ -432,6 +437,7 @@ Expected<Image> RenderImageAbstraction(const int width, const int height,
 
     render::PackedShapeCollection packed_shapes(shapes, solution);
 
+    renderer->SetAlphaScale(alpha_scale);
     renderer->SetBackground(background_colour);
     renderer->Render(packed_shapes);
     return renderer->DrawingSurface();

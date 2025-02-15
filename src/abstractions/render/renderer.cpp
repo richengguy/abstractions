@@ -17,10 +17,15 @@ Renderer::Renderer(Image &image, std::optional<Prng<>> prng) :
     _prng{prng.value_or(Prng<>(PrngGenerator<>::DrawRandomSeed()))},
     _random_background{false},
     _background_colour{0xff, 0xff, 0xff},
-    _drawing_surface{image} {}
+    _drawing_surface{image},
+    _alpha_scale{1.0} {}
 
 void Renderer::UseRandomBackgroundFill(bool use_random) {
     _random_background = use_random;
+}
+
+void Renderer::SetAlphaScale(double alpha_scale) {
+    _alpha_scale = alpha_scale;
 }
 
 void Renderer::SetBackground(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
@@ -33,6 +38,7 @@ void Renderer::SetBackground(const Pixel &background) {
 
 void Renderer::Render(const PackedShapeCollection &shapes) {
     Canvas canvas{_drawing_surface, _prng};
+    canvas.SetAlphaScale(_alpha_scale);
 
     if (_random_background) {
         canvas.RandomFill();

@@ -5,10 +5,11 @@ function(log_message msg)
     message(STATUS "Abstractions :: ${msg}")
 endfunction()
 
+option(ABSTRACTIONS_BUILD_DOCS          "Add the 'make docs' target."        OFF)
 option(ABSTRACTIONS_BUILD_TESTS         "Build the application tests."       OFF)
 option(ABSTRACTIONS_ASSERTS             "Enable the internal library asserts" ON)
 option(ABSTRACTIONS_ENABLE_ASAN         "Enable AddressSanitizer with build" OFF)
-option(ABSTRACTIONS_ENABLE_PROFILING    "Enabled profiler support."          OFF)
+option(ABSTRACTIONS_ENABLE_PROFILING    "Enable profiler support"            OFF)
 
 set(CMAKE_CXX_STANDARD 23)
 add_compile_options(-Wall)
@@ -43,3 +44,7 @@ endif()
 include(CTest)
 
 add_subdirectory(src)
+
+if (ABSTRACTIONS_BUILD_DOCS)
+    add_subdirectory(docs)
+endif()

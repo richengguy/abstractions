@@ -16,9 +16,12 @@ class AbstractionsRecipe(ConanFile):
         "nlohmann_json/3.11.3",
     ]
 
-    options = {"build_tests": [True, False]}
+    options = {
+        "build_docs": [True, False],
+        "build_tests": [True, False],
+    }
 
-    default_options = {"build_tests": True}
+    default_options = {"build_docs": False, "build_tests": True}
 
     def layout(self) -> None:
         cmake_layout(self)
@@ -37,6 +40,7 @@ class AbstractionsRecipe(ConanFile):
         deps.generate()
 
         tc = CMakeToolchain(self)
+        tc.cache_variables["ABSTRACTIONS_BUILD_DOCS"] = self.options.build_docs  # type: ignore
         tc.cache_variables["ABSTRACTIONS_BUILD_TESTS"] = self.options.build_tests  # type: ignore
         tc.generate()
 

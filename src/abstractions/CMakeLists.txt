@@ -77,3 +77,7 @@ set_target_properties(abstractions
     ARCHIVE_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/lib
 )
+
+# Ensure the two variables are moved into the parent scope.
+set(ABSTRACTIONS_INCLUDE_DIR ${ABSTRACTIONS_INCLUDE_DIR} PARENT_SCOPE)
+set(ABSTRACTIONS_INCLUDES ${ABSTRACTIONS_INCLUDES} PARENT_SCOPE)
