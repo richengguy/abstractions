@@ -1,6 +1,12 @@
 name: PR Lint, Build, and Test
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   lint-cpp:
