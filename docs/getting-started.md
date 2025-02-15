@@ -4,6 +4,15 @@
 'abstractions' is not supported on Windows.
 :::
 
+Before doing any environment setup, first clone the repo:
+
+```shell
+git clone https://github.com/richengguy/abstractions.git
+```
+
+All of the getting started instructions assume you are working in the
+`abstractions/` directory.
+
 ## Environment Setup
 
 Compiling abstractions requires:
@@ -39,7 +48,7 @@ source .venn/bin/activate
 pip install -r requirements.txt
 ```
 
-This is the method the GitHub workflow users.
+This is the method the [build workflow](https://github.com/richengguy/abstractions/blob/main/.github/workflows/build.yml) uses.
 
 Note that this requires ensuring CMake and, optionally, Doxygen are installed
 using an alternate method.
