@@ -1,6 +1,7 @@
 # abstractions
 Generating abstract images with policy gradients.  This is a C++ implementation
-of https://es-clip.github.io/ with some minor upgrades.
+of https://es-clip.github.io/, specifically the section on "Fitting Concrete
+Target Image".
 
 | Original | Abstraction |
 |----------|-------------|
