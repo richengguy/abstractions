@@ -3,7 +3,7 @@
 "Modern Evolution Strategies for Creativity" {cite}`tian2021` uses Policy
 Gradients with Parameter-based Exploration (PGPE) {cite}`sehnke2010` with the
 ClipUp extension {cite}`toklu2020`.  The first thing to do is to understand how
-PGPE works before going onto the shape fitting algorith.
+PGPE works before going onto the shape fitting algorithm.
 
 :::{note}
 The examples in this section use the same [Mona Lisa](https://github.com/google/brain-tokyo-workshop/blob/67c73645121d599f855714788db8a5c44e329c29/es-clip/assets/monalisa.png) image
