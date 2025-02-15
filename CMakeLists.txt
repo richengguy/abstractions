@@ -8,7 +8,8 @@ endfunction()
 option(ABSTRACTIONS_BUILD_TESTS         "Build the application tests."       OFF)
 option(ABSTRACTIONS_ASSERTS             "Enable the internal library asserts" ON)
 option(ABSTRACTIONS_ENABLE_ASAN         "Enable AddressSanitizer with build" OFF)
-option(ABSTRACTIONS_ENABLE_PROFILING    "Enabled profiler support."          OFF)
+option(ABSTRACTIONS_ENABLE_PROFILING    "Enable profiler support"            OFF)
+option(ABSTRACTIONS_ENABLE_DOCS         "Enable building documentation"      OFF)
 
 set(CMAKE_CXX_STANDARD 23)
 add_compile_options(-Wall)
@@ -43,4 +44,7 @@ endif()
 include(CTest)
 
 add_subdirectory(src)
-add_subdirectory(docs)
+
+if (ABSTRACTIONS_ENABLE_DOCS)
+    add_subdirectory(docs)
+endif()
