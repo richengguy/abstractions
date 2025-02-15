@@ -94,12 +94,13 @@ cmake --build --preset conan-debug
 ```
 
 The unit and feature tests are compiled by default.  They can be disabled by
-adding `-o &:build_tests=False`.
+adding `-o "&:build_tests=False"`.
 
 ### CMake Variables
 
 | Option | Description | Default |
 |--------|-------------|---------|
+| `ABSTRACTIONS_BUILD_DOCS` | Enables the `make docs` target that builds the documentation. See <project:#documentation> for how this works. |
 | `ABSTRACTIONS_BUILD_TESTS` | Build the unit and feature tests. | `OFF` |
 | `ABSTRACTIONS_ASSERTS` | Enable the internal asserts system. | `ON` |
 | `ABSTRACTIONS_ENABLE_ASAN` | Enable the Clang AddressSanitizer to catch memory leaks and other issues.  Off by default as it has a performance impact. | `OFF`|
@@ -139,3 +140,17 @@ binaries contain self-contained feature tests.
 | `optimizer-test` | Tests the PGPE optimizer by attempting to optimize the [Rastrigin function](https://en.wikipedia.org/wiki/Rastrigin_function).  It adapts a test from the [Python pgpelib library](https://github.com/nnaisense/pgpelib/blob/release/examples/01-rastrigin.ipynb). |
 | `renderer-test` | Runs through a set of rendering operations. |
 | `threads-test` | Runs the internal thread pool API through some simple tasks. |
+
+(documentation)=
+## Documentation
+
+The documentation isn't built by default.  This requires installing Doxygen and
+a separate set of Python dependencies.  Please note that the conda environment
+ensures Doxygen is available.  The minimal steps for building the docs are
+
+```shell
+conan install . -pr:a $PROFILE --build=missing -o "&:build_docs=True"
+cmake --preset conan-release
+cd build/Release
+make docs
+```
