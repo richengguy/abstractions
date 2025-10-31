@@ -44,6 +44,13 @@ set_target_properties(library-tests
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/tests
 )
+
+# Required until https://github.com/doctest/doctest/issues/900 is integrated
+# into a future doctest release (version 2.4.12 doesn't have this PR).
+get_target_property(_properties library-tests COMPILE_OPTIONS)
+string(REPLACE "-Werror" "" _properties "${_properties}")
+set_target_properties(library-tests PROPERTIES COMPILE_OPTIONS "${_properties}")
+
 add_custom_command(
     OUTPUT ${abstractions_BINARY_DIR}/tests/samples
     COMMAND ${CMAKE_COMMAND} -E copy_directory

@@ -5,14 +5,14 @@ requires-python = ">=3.14"
 dependencies = [
     # C++ Utilities
     "cmake == 4.1.2",
-    "conan == 2.9.3",
+    "conan == 2.22.1",
     "clang-format == 19.1.4",
 
     # Python Utilities
     "black",
     "isort",
     "mypy",
-    "flake8"
+    "flake8",
 ]
 
 [dependency-groups]

@@ -32,7 +32,7 @@ requires-dist = [
     { name = "black" },
     { name = "clang-format", specifier = "==19.1.4" },
     { name = "cmake", specifier = "==4.1.2" },
-    { name = "conan", specifier = "==2.9.3" },
+    { name = "conan", specifier = "==2.22.1" },
     { name = "flake8" },
     { name = "isort" },
     { name = "mypy" },
@@ -215,7 +215,7 @@ wheels = [
 
 [[package]]
 name = "conan"
-version = "2.9.3"
+version = "2.22.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama" },
@@ -228,7 +228,7 @@ dependencies = [
     { name = "requests" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/89/49/9fcbd9d07ff974b10e37dfbe8bb40ad3b353a04442ec692686653e43ce8d/conan-2.9.3.tar.gz", hash = "sha256:4c3f0ce7302fe081c603080c8babb981dc1ab7ed698480e378b389bcef700a2b", size = 471568, upload-time = "2024-11-21T10:16:58.224Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/95/f6/9617b34c095f991337740bf56da0c94924fdb758653a3304a33523ede10d/conan-2.22.1.tar.gz", hash = "sha256:c33f4d538f0827e7664813a5e2b5db5ce6a7aa58fb3d0eb6145b2261b56b005c", size = 542436, upload-time = "2025-10-30T07:23:41.441Z" }
 
 [[package]]
 name = "distro"
