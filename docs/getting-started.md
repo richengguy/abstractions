@@ -18,9 +18,9 @@ All of the getting started instructions assume you are working in the
 Compiling abstractions requires:
 
 * [Conan](https://conan.io/)
-* [CMake](https://cmake.org/) 3.23 or higher
+* [CMake](https://cmake.org/) 4.1 or higher
 * [Clang](https://clang.llvm.org/) 19
-* Python 3.12 or higher
+* Python 3.14 or higher
 
 [uv](https://docs.astral.sh/uv/) is the recommended way to setup the
 `abstractions` build environment.  Clang and Doxygen must be installed
@@ -45,7 +45,13 @@ This is the method the [build workflow](https://github.com/richengguy/abstractio
 Note that this requires ensuring CMake and, optionally, Doxygen are installed
 using an alternate method.
 
-### Getting Clang 19 on Ubuntu
+### Getting Clang 19
+
+Getting Clang 19 depends on the operating system and its package manager.  There
+are profiles in [`profiles/`](https://github.com/richengguy/abstractions/tree/main/profiles)
+that are configured for each supported build platform.
+
+#### Ubuntu or Debian Linux
 
 The easiest way to get Clang 19 on an Ubuntu or Debian system is with setup
 script provided by the LLVM project.  Adapted from https://apt.llvm.org/,
@@ -61,7 +67,15 @@ sudo ./llvm.sh 19
 sudo apt install g++-12
 ```
 
-### Getting Clang 19 on macOS
+#### Arch Linux
+
+Get Clang 19 by installing the `clang19` package via pacman:
+
+```shell
+pacman -S clang19
+```
+
+#### macOS
 
 The version of Clang that comes with Xcode, or the Xcode Command Line Tools, is
 not supported.  Instead, use [Homebrew](https://brew.sh/) to get the correct
@@ -70,9 +84,6 @@ version:
 ```shell
 brew install llvm@19
 ```
-
-The [macOS profile](https://github.com/richengguy/abstractions/blob/main/profiles/macos-arm64)
-is configured to the Homebrew version.
 
 ## Compiling
 
@@ -84,7 +95,7 @@ cmake --preset conan-release
 cmake --build --preset conan-release
 ```
 
-where `PROFILE` is `linux-x86_64` or `macos-arm64`.
+where `PROFILE` is `arch-x86_64`, `debian-x86_64`, or `macos-arm64`.
 
 Creating a debug build is done with
 

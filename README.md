@@ -12,7 +12,7 @@ Target Image".
 Building abstractions requires
 
 * Python 3.14 or higher
-* CMake 4.1.2 or higher
+* CMake 4.1 or higher
 * Clang 19
 
 ### Getting Clang 19
