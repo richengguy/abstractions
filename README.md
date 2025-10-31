@@ -11,13 +11,13 @@ Target Image".
 
 Building abstractions requires
 
-* CMake 3.23 or higher
+* Python 3.14 or higher
+* CMake 4.1.2 or higher
 * Clang 19
 
-The conda environment can get a supported version of CMake while the steps for
-installing Clang are below.
+### Getting Clang 19
 
-### Getting Clang 19 (Ubuntu)
+#### Ubuntu
 
 The easiest way to get Clang (and LLVM) 19 is with the setup script from the
 LLVM project itself.  Adapted from https://apt.llvm.org/,
@@ -33,7 +33,14 @@ sudo ./llvm.sh 19
 sudo apt install g++-12
 ```
 
-### Getting Clang 19 (macOS)
+The [Debian profile](profiles/debian-x86_64) will look for Clang in `/usr/bin`.
+
+#### Arch Linux
+
+Use `pacman` to install the `clang19` package.  The [Arch profile](profiles/arch-x86_64)
+will look for Clang in `/usr/lib/llvm19/`.
+
+#### macOS
 
 The easiest way to get Clang 19 is with [Homebrew](https://brew.sh/):
 
