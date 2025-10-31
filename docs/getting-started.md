@@ -22,31 +22,23 @@ Compiling abstractions requires:
 * [Clang](https://clang.llvm.org/) 19
 * Python 3.12 or higher
 
-The provided [conda](https://docs.conda.io/en/latest/) environment will create
-an `abstractions` environment with the necessary dependencies.  Clang is the
-exception and requires a separate installation step.
+[uv](https://docs.astral.sh/uv/) is the recommended way to setup the
+`abstractions` build environment.  Clang and Doxygen must be installed
+separately.
 
 Building the documentation also requires:
 
 * [Doxygen](https://www.doxygen.nl/)
 
-The easiest way to create the build environment is with [conda](https://docs.conda.io/en/latest/):
+The easiest way to create the build environment is with [uv](https://docs.astral.sh/uv/):
 
 ```shell
-conda env create
-conda activate abstractions
+uv sync
+source .venv/bin/activate
 ```
 
 This will install the correct versions of CMake and Doxygen into the
 `abstractions` environment.
-
-It's also possible to install the Python dependencies directly with:
-
-```shell
-python -m venv .venv
-source .venn/bin/activate
-pip install -r requirements.txt
-```
 
 This is the method the [build workflow](https://github.com/richengguy/abstractions/blob/main/.github/workflows/build.yml) uses.
 
@@ -154,10 +146,12 @@ binaries contain self-contained feature tests.
 ## Documentation
 
 The documentation isn't built by default.  This requires installing Doxygen and
-a separate set of Python dependencies.  Please note that the conda environment
-ensures Doxygen is available.  The minimal steps for building the docs are
+a separate set of Python dependencies.
+
+The minimal steps for building the docs are
 
 ```shell
+uv sync --group docs
 conan install . -pr:a $PROFILE --build=missing -o "&:build_docs=True"
 cmake --preset conan-release
 cd build/Release

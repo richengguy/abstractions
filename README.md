@@ -46,27 +46,15 @@ Homebrew-installed Clang instead of the system Clang.
 
 ### Environment Setup
 
-'abstractions' uses [Conan](https://conan.io/) as the main software package
-manager.  It needs to be installed before doing anything else.  There are two
-ways to do this.
-
-First, if you already have [conda](https://docs.conda.io/en/latest/) installed
-then just run
+'abstractions' uses [uv](https://docs.astral.sh/uv/) to manage build
+dependencies.  Once installed, run
 
 ```shell
-conda env create
-conda activate abstractions
-```
-
-to create the environment.
-
-The other approach is just to use Python virtualenvs directly with
-
-```shell
-python -m venv .venv
+uv sync
 source .venv/bin/activate
-pip install -r requirements.txt
 ```
+
+to create and activate the Python virtual environment.
 
 ### Running Conan and CMake
 
@@ -101,7 +89,7 @@ build folder is created:
 > Doxygen.  Run
 >
 > ```shell
-> pip install -r requirements-docs.txt
+> uv sync --group docs
 > ```
 >
 > to install the Python dependencies.  The conda environment includes Doxygen.
