@@ -12,7 +12,7 @@ jobs:
   lint-cpp:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: ./.github/actions/run-linter
         with:
@@ -25,7 +25,7 @@ jobs:
   lint-python:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: ./.github/actions/run-linter
         with:
@@ -39,22 +39,24 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint-cpp
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version-file: ".python-version"
 
       - name: Install build dependencies
         id: install-deps
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
           wget https://apt.llvm.org/llvm.sh
           chmod u+x ./llvm.sh
           sudo ./llvm.sh 19
-          echo "CONAN_CONFIG_HOME=$(conan config home)" >> "$GITHUB_OUTPUT"
+          uv sync
+          echo "CONAN_CONFIG_HOME=$(uv run conan config home)" >> "$GITHUB_OUTPUT"
 
       - name: Restore Conan build cache
         id: conan-restore-cache
@@ -65,7 +67,7 @@ jobs:
 
       - name: Install app dependencies
         run: |
-          conan install . -pr:a ./profiles/linux-x86_64 --build=missing
+          uv run conan install . -pr:a ./profiles/debian-x86_64 --build=missing
 
       - name: Save Conan build cache
         id: conan-save-cache
@@ -76,11 +78,11 @@ jobs:
 
       - name: Build project
         run: |
-          cmake --preset conan-release
-          cmake --build --preset conan-release
+          uv run cmake --preset conan-release
+          uv run cmake --build --preset conan-release
 
       - name: Run project tests
         run: |
           cd build/Release
-          ctest
+          uv run ctest
         timeout-minutes: 5

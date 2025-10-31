@@ -11,13 +11,13 @@ Target Image".
 
 Building abstractions requires
 
-* CMake 3.23 or higher
+* Python 3.14 or higher
+* CMake 4.1 or higher
 * Clang 19
 
-The conda environment can get a supported version of CMake while the steps for
-installing Clang are below.
+### Getting Clang 19
 
-### Getting Clang 19 (Ubuntu)
+#### Ubuntu
 
 The easiest way to get Clang (and LLVM) 19 is with the setup script from the
 LLVM project itself.  Adapted from https://apt.llvm.org/,
@@ -33,7 +33,14 @@ sudo ./llvm.sh 19
 sudo apt install g++-12
 ```
 
-### Getting Clang 19 (macOS)
+The [Debian profile](profiles/debian-x86_64) will look for Clang in `/usr/bin`.
+
+#### Arch Linux
+
+Use `pacman` to install the `clang19` package.  The [Arch profile](profiles/arch-x86_64)
+will look for Clang in `/usr/lib/llvm19/`.
+
+#### macOS
 
 The easiest way to get Clang 19 is with [Homebrew](https://brew.sh/):
 
@@ -46,27 +53,15 @@ Homebrew-installed Clang instead of the system Clang.
 
 ### Environment Setup
 
-'abstractions' uses [Conan](https://conan.io/) as the main software package
-manager.  It needs to be installed before doing anything else.  There are two
-ways to do this.
-
-First, if you already have [conda](https://docs.conda.io/en/latest/) installed
-then just run
+'abstractions' uses [uv](https://docs.astral.sh/uv/) to manage build
+dependencies.  Once installed, run
 
 ```shell
-conda env create
-conda activate abstractions
-```
-
-to create the environment.
-
-The other approach is just to use Python virtualenvs directly with
-
-```shell
-python -m venv .venv
+uv sync
 source .venv/bin/activate
-pip install -r requirements.txt
 ```
+
+to create and activate the Python virtual environment.
 
 ### Running Conan and CMake
 
@@ -101,7 +96,7 @@ build folder is created:
 > Doxygen.  Run
 >
 > ```shell
-> pip install -r requirements-docs.txt
+> uv sync --group docs
 > ```
 >
 > to install the Python dependencies.  The conda environment includes Doxygen.
