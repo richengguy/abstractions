@@ -14,9 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-
       - uses: ./.github/actions/run-linter
         with:
           cmd: python ./scripts/run-clang-format
@@ -29,9 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
 
       - uses: ./.github/actions/run-linter
         with:
