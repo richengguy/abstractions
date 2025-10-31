@@ -41,7 +41,7 @@ jobs:
 
       - name: Install app dependencies
         run: |
-          uv run conan install . -pr:a ./profiles/linux-x86_64 --build=missing -o "&:build_docs=True"
+          uv run conan install . -pr:a ./profiles/debian-x86_64 --build=missing -o "&:build_docs=True"
 
       - name: Build documentation
         run: |
