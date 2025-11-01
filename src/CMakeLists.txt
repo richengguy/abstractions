@@ -1,5 +1,6 @@
 add_subdirectory(abstractions)
 add_subdirectory(cli)
+add_subdirectory(gui)
 
 if(ABSTRACTIONS_BUILD_TESTS)
     log_message("Building library tests")
