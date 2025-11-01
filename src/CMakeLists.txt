@@ -1,5 +1,10 @@
 add_subdirectory(abstractions)
-add_subdirectory(bin)
+add_subdirectory(cli)
+
+if(ABSTRACTIONS_BUILD_GUI)
+    log_message("Building graphical frontend")
+    add_subdirectory(gui)
+endif()
 
 if(ABSTRACTIONS_BUILD_TESTS)
     log_message("Building library tests")

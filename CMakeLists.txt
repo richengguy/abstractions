@@ -6,6 +6,7 @@ function(log_message msg)
 endfunction()
 
 option(ABSTRACTIONS_BUILD_DOCS          "Add the 'make docs' target."        OFF)
+option(ABSTRACTIONS_BUILD_GUI           "Build the graphical interface."     OFF)
 option(ABSTRACTIONS_BUILD_TESTS         "Build the application tests."       OFF)
 option(ABSTRACTIONS_ASSERTS             "Enable the internal library asserts" ON)
 option(ABSTRACTIONS_ENABLE_ASAN         "Enable AddressSanitizer with build" OFF)

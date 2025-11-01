@@ -6,7 +6,7 @@ if (ABSTRACTIONS_ENABLE_PROFILING)
     find_package(gperftools REQUIRED)
 endif()
 
-add_executable(abstractions-bin
+add_executable(abstractions-cli
     main.cpp
 
     support.h
@@ -29,11 +29,11 @@ if (ABSTRACTIONS_ENABLE_PROFILING)
     list(APPEND _libraries gperftools::profiler)
 endif()
 
-target_link_libraries(abstractions-bin
+target_link_libraries(abstractions-cli
     PRIVATE
     ${_libraries}
 )
-set_target_properties(abstractions-bin
+set_target_properties(abstractions-cli
     PROPERTIES
     RUNTIME_OUTPUT_NAME abstractions
     RUNTIME_OUTPUT_DIRECTORY ${abstractions_BINARY_DIR}/bin
