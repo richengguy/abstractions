@@ -8,6 +8,9 @@ FetchContent_Declare(
     GIT_TAG 55b438dc11d0e46bc68526822380963ae9d362af
 )
 FetchContent_MakeAvailable(webview)
+
+# Have to add "-Wno-deprecated-declarations" because webview uses
+# std::aligned_storage<> and that results in a compiler warning.
 target_compile_options(webview_core_shared PRIVATE -Wno-deprecated-declarations)
 target_compile_options(webview_core_static PRIVATE -Wno-deprecated-declarations)
 
